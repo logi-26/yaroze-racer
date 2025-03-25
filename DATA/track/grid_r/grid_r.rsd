@@ -1,0 +1,8 @@
+# Created from "grid_r.dxf" by dxf2rsd(v2.81) -quad2 20.0000 -back at 17:31 03/08/125
+@RSD940102
+PLY=grid_r.ply
+MAT=grid_r.mat
+GRP=grid_r.grp
+# Number of Texture Files
+NTEX=1
+TEX[0]=grid_r.tim

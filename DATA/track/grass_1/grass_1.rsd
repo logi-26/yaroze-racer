@@ -1,0 +1,8 @@
+# Created from "grass_1.dxf" by dxf2rsd(v2.81) -quad2 20.0000 -back at 17:31 03/08/125
+@RSD940102
+PLY=grass_1.ply
+MAT=grass_1.mat
+GRP=grass_1.grp
+# Number of Texture Files
+NTEX=1
+TEX[0]=grass_1.tim

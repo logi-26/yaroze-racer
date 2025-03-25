@@ -1,0 +1,7 @@
+@RSD940102
+PLY=car01.ply
+MAT=car01.mat
+GRP=car01.grp
+# Number of Texture Files
+NTEX=1
+TEX[0]=com.tim
