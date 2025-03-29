@@ -34,7 +34,9 @@ void AddModelToPlayer(PlayerStruct *thePlayer, int nX, int nY, int nZ, unsigned 
 	thePlayer->gsObjectCoord.flg = 0;
 }
 
-void InitialisePlayer(PlayerStruct *thePlayer, int nX, int nY, int nZ, unsigned long *lModelAddress) {
+void InitialisePlayer(PlayerStruct *thePlayer, int playerNumber, int nX, int nY, int nZ, unsigned long *lModelAddress) {
+
+	thePlayer->playerNumber = playerNumber;
 
 	// Initialise the players rotation vector to 0
 	thePlayer->rotation.vx = 0;
@@ -62,11 +64,33 @@ void DrawPlayer(PlayerStruct *thePlayer, GsOT *othWorld) {
 	// Set the local screen matrix for the GTE (so it works out perspective etc)
 	GsSetLsMatrix(&tmpls);
 	
-	FntPrint(fontID_1, "POS x: %d, y: %d, z: %d\n", thePlayer->gsObjectCoord.coord.t[0], thePlayer->gsObjectCoord.coord.t[1], thePlayer->gsObjectCoord.coord.t[2]);
-	FntPrint(fontID_1, "ROT x: %d, y: %d, z: %d\n", (int)thePlayer->rotation.vx, (int)thePlayer->rotation.vy, (int)thePlayer->rotation.vz);
-	FntPrint(fontID_1, "speed: %d\n", thePlayer->speed);
-	//FntFlush();
+	if (thePlayer->playerNumber == 1) {
+		FntPrint(fontID_1, "POS x: %d, y: %d, z: %d\n", thePlayer->gsObjectCoord.coord.t[0], thePlayer->gsObjectCoord.coord.t[1], thePlayer->gsObjectCoord.coord.t[2]);
+		FntPrint(fontID_1, "ROT x: %d, y: %d, z: %d\n", (int)thePlayer->rotation.vx, (int)thePlayer->rotation.vy, (int)thePlayer->rotation.vz);
+		FntPrint(fontID_1, "speed: %d\n", thePlayer->speed);
+	}
 	
+	//if (thePlayer->playerNumber == 2) {
+		//FntPrint(fontID_1, "\nPOS x: %d, y: %d, z: %d\n", thePlayer->gsObjectCoord.coord.t[0], thePlayer->gsObjectCoord.coord.t[1], thePlayer->gsObjectCoord.coord.t[2]);
+		//FntPrint(fontID_1, "ROT x: %d, y: %d, z: %d\n", (int)thePlayer->rotation.vx, (int)thePlayer->rotation.vy, (int)thePlayer->rotation.vz);
+		//FntPrint(fontID_1, "speed: %d\n", thePlayer->speed);
+	//}
+
 	// Send Object To Ordering Table
 	GsSortObject4(&thePlayer->gsObjectHandler, othWorld, 3, (u_long *)getScratchAddr(0));
+}
+
+
+
+
+int IsObjectNearPlayer(PlayerStruct* player, GsCOORDINATE2* objectCoord) {
+    int distanceSq = CalculateDistanceSquared(
+        player->gsObjectCoord.coord.t[0],
+        player->gsObjectCoord.coord.t[1],
+        player->gsObjectCoord.coord.t[2],
+        objectCoord->coord.t[0],
+        objectCoord->coord.t[1],
+        objectCoord->coord.t[2]
+    );
+    return (distanceSq <= DISTANCE_THRESHOLD_SQUARED);
 }

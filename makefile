@@ -7,7 +7,7 @@ CFLAGS = -O3 -g -I/path/to/your/pad/
 LINKER = -Xlinker -Ttext -Xlinker 80140000
 
 PROG = main.exe
-OBJS = main.o world.o light.o graphics.o controller.o player.o model.o game.o pad.o 
+OBJS = main.o world.o light.o graphics.o controller.o player.o model.o game.o pad.o
 
 all: $(PROG)
 

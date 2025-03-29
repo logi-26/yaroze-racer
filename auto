@@ -65,6 +65,17 @@ local dload data\track\grass_1\grass_1.tmd 800ABABC
 local dload data\track\grass_1\grass_1.tim 800ABB2C
 
 local dload data\barrier2\barrier2.tmd 800ADB2C
+local dload data\barrier2\barrier2.tim 800AEB2C
+
+
+local dload data\build1\build1.tmd 800AFF20
+local dload data\build1\build1.tim 800B00B0
+
+local dload data\test\build2.tmd 800B3000
+local dload data\test\build2.tim 800B3190
+
+local dload data\stand\stand.tmd 800B5000
+local dload data\stand\crowd.tim 800B5070
 
 local load main.exe
 go

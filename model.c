@@ -3,38 +3,6 @@
 #include "model.h"
 
 
-/*
-// This function associates a model with our player datastructure
-void LinkModelToTMD(ModelStruct *theModel, int nX, int nY, int nZ, unsigned long *lModelAddress) {
-	// Increment the pointer to move past the model id. (weird huh?)
-	lModelAddress++;
-	
-	// Map tmd data to its actual address
-	GsMapModelingData((unsigned long *)lModelAddress);
-	
-	// Initialise the players coordinate system - set to be that of the world
-	GsInitCoordinate2(WORLD, &theModel->gsObjectCoord);
-	
-	// Increment pointer twice more - to point to top of model data (beats me!)
-	lModelAddress++;  
-	lModelAddress++;
-	
-	// Link the model (tmd) with the players object handler
-	GsLinkObject4((unsigned long *)lModelAddress, &theModel->gsObjectHandler, 0);
-	
-	// Assign the coordinates of the object model to the Object Handler
-	theModel->gsObjectHandler.coord2 = &theModel->gsObjectCoord;
-	
-	// Set the initial position of the object
-	theModel->gsObjectCoord.coord.t[0] = nX;   // X
-	theModel->gsObjectCoord.coord.t[1] = nY;   // Y
-	theModel->gsObjectCoord.coord.t[2] = nZ;   // Z
-
-	// Setting the players gsObjectCoord.flg to 0 indicates it is to be drawn
-	theModel->gsObjectCoord.flg = 0;
-}
-*/
-
 void LinkModelToTMD(ModelStruct *theModel, int nX, int nY, int nZ, unsigned long *lModelAddress) {
 	// Increment the pointer to move past the model ID
 	lModelAddress++;
@@ -64,8 +32,6 @@ void LinkModelToTMD(ModelStruct *theModel, int nX, int nY, int nZ, unsigned long
 	theModel->gsObjectCoord.flg = 0;
 }
 
-
-
 void InitialiseModel(ModelStruct *theModel, int nX, int nY, int nZ, int rotX, int rotY, int rotZ, unsigned long *lModelAddress) {
 
 	// Initialise the models rotation 
@@ -79,14 +45,6 @@ void InitialiseModel(ModelStruct *theModel, int nX, int nY, int nZ, int rotX, in
 	// Initialise other model variables and link in tmd
 	LinkModelToTMD(theModel, nX, nY, nZ, lModelAddress);
 }
-
-
-
-
-
-
-
-
 
 // Setup matrices needed for rendering and send the object to the ordering table so it will be drawn
 void DrawModel(ModelStruct *theModel, GsOT *othWorld) {

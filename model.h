@@ -8,7 +8,7 @@ typedef struct {
 	GsCOORDINATE2 gsObjectCoord;
 } ModelStruct;
 
-extern ModelStruct theBuilding;
+//extern ModelStruct theBuilding;
 
 /************* FUNCTION PROTOTYPES *******************/
 void InitialiseModel(ModelStruct *theModel, int nX, int nY, int nZ, int rotX, int rotY, int rotZ, unsigned long *lModelAddress);

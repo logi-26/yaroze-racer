@@ -1,37 +1,41 @@
+#include <math.h>
 #include <libps.h>
 #include "world.h"
 #include "player.h"
+#include "graphics.h"
 
 // Global variables
-GsOT othWorld[2];r
+GsOT OTable_Header[4];
+PACKET Packet_Memory[4][MAX_PACKETS];
 GsRVIEW2 viewTop;
+
+GsRVIEW2 Camera[2];
+
+
 u_long vsyncInterval = 0;
 
-
-PlayerStruct theCar;
+//PlayerStruct player1;
+//PlayerStruct player2;
 WorldStruct theWorld;
 
-//ModelStruct building1;
-//ModelStruct building2;
-//ModelStruct building3;
-//ModelStruct building4;
-//ModelStruct building5;
-//ModelStruct building6;
-//ModelStruct building7;
 
+int NumberOfPlayers = 2;
+
+
+
+// Model declarations
+ModelStruct building1;
+ModelStruct building2;
+ModelStruct building3;
+
+ModelStruct stand1;
+
+ModelStruct barrier1;
 ModelStruct barrier2;
 ModelStruct barrier3;
 ModelStruct barrier4;
 ModelStruct barrier5;
 ModelStruct barrier6;
-
-// Local variables
-PACKET out_packet[2][MAX_NO_PACKETS];
-
-//1 - 9
-//2 - b
-//3 - e
-//4 - f
 
 char worldGroundData[WORLD_GROUND_MAX_Z][WORLD_GROUND_MAX_X] = {
 	{'3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3'},
@@ -65,7 +69,6 @@ char worldGroundData[WORLD_GROUND_MAX_Z][WORLD_GROUND_MAX_X] = {
 	{'3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3'},
 	{'3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3'},
 };
-
 
 // Load up from conventional memeory into video memory
 int LoadTexture(long addr) {
@@ -206,51 +209,56 @@ void InitialiseWorld() {
 }
 
 
-
-
-
-
 void InitialiseWorldTextures() {
 	
 	// Load textures into VRAM
 	//LoadTexture(CAR_TEX_MEM_ADDR);
 	//LoadTexture(BUILDING_TEX_MEM_ADDR);
 	//LoadTexture(BUILDING_2_TEX_MEM_ADDR);
+	LoadTexture(BARRIER_2_TEX_MEM_ADDR);
+	
+	LoadTexture(BUILDING_1_TEX_MEM_ADDR);
+	LoadTexture(BUILDING_2_TEX_MEM_ADDR);
+	
+	LoadTexture(STAND_CROWD_TEX_MEM_ADDR);
 }
-
-
 
 
 void InitialiseWorldModels() {
 	
+	
 	// Initialise the player
-	InitialisePlayer(&theCar, 0, -200, 0, (long*)CAR_MEM_ADDR);
+	//InitialisePlayer(&player1, 3605, -200, 9273, (long*)CAR_MEM_ADDR);
+	
+	//InitialisePlayer(&player2, 2448, -200, 9273, (long*)CAR_MEM_ADDR);
+	
+	
 	
 	// Initialise the buildings
-	//InitialiseModel(&building1, 0, -200, 4000, 0, 0, 0, (long*)BUILDING_MEM_ADDR);
+	InitialiseModel(&building1, -7500, -450, 8000, 0, 0, 0, (long*)BUILDING_1_MEM_ADDR);
+	InitialiseModel(&building2, -6000, -300, 24000, 0, 0, 0, (long*)BUILDING_2_MEM_ADDR);
+	InitialiseModel(&building3, -7500, -450, 30000, 0, 0, 0, (long*)BUILDING_1_MEM_ADDR);
+	
+	//InitialiseModel(&stand1, 0, -200, 1200, 0, 0, 0, (long*)STAND_CROWD_TEX_MEM_ADDR);
+	
+	
 	//InitialiseModel(&building2, 0, -50, 6000, 0, 0, 0, (long*)BUILDING_2_MEM_ADDR);
 	//InitialiseModel(&building3, 0, -200, 8000, 0, 0, 0, (long*)BUILDING_MEM_ADDR);
 	//InitialiseModel(&building4, 0, -200, 10000, 0, 0, 0, (long*)BUILDING_MEM_ADDR);
 	//InitialiseModel(&building5, 0, -200, 12000, 0, 0, 0, (long*)BUILDING_MEM_ADDR);
 	//InitialiseModel(&building6, 0, -50, 14000, 0, 0, 0, (long*)BUILDING_2_MEM_ADDR);
 	//InitialiseModel(&building7, 0, -200, 16000, 0, 0, 0, (long*)BUILDING_MEM_ADDR);
-
 	
+	//4790
+
 	//InitialiseModel(&theBuilding, 1200, -200, 3700, 0, 0, 0, (long*)BARRIER_1_MEM_ADDR);
-	InitialiseModel(&barrier2, 1200, -200, 3750, 0, 0, 0, (long*)BARRIER_2_MEM_ADDR);
-	InitialiseModel(&barrier3, 1200, -200, 8540, 0, 0, 0, (long*)BARRIER_2_MEM_ADDR);
-	InitialiseModel(&barrier4, 1200, -200, 13330, 0, 0, 0, (long*)BARRIER_2_MEM_ADDR);
-	InitialiseModel(&barrier5, 1200, -200, 18120, 0, 0, 0, (long*)BARRIER_2_MEM_ADDR);
-	InitialiseModel(&barrier6, 1200, -200, 22970, 0, 0, 0, (long*)BARRIER_2_MEM_ADDR);
+	InitialiseModel(&barrier1, 1200, -200, 6210, 0, 0, 0, (long*)BARRIER_2_MEM_ADDR);
+	InitialiseModel(&barrier2, 1200, -200, 10850, 0, 0, 0, (long*)BARRIER_2_MEM_ADDR);
+	InitialiseModel(&barrier3, 1200, -200, 15490, 0, 0, 0, (long*)BARRIER_2_MEM_ADDR);
+	InitialiseModel(&barrier4, 1200, -200, 20130, 0, 0, 0, (long*)BARRIER_2_MEM_ADDR);
+	InitialiseModel(&barrier5, 1200, -200, 24770, 0, 0, 0, (long*)BARRIER_2_MEM_ADDR);
+	InitialiseModel(&barrier6, 1200, -200, 29470, 0, 0, 0, (long*)BARRIER_2_MEM_ADDR);
 }
-
-
-
-//4790
-
-
-
-
 
 void AddModelToWorld(WorldStruct *theWorld, int nX, int nY, int nZ, unsigned long *lModelAddress) {
     theWorld->lObjectPointer[theWorld->nTotalModels] = (unsigned long*)lModelAddress;
@@ -289,72 +297,53 @@ void AddModelToWorld(WorldStruct *theWorld, int nX, int nY, int nZ, unsigned lon
 	theWorld->gsObjectCoord[theWorld->nTotalModels].flg = 0;
 }
 
+void DrawWorld(WorldStruct *theWorld, PlayerStruct* currentPlayer, GsOT *OTable_Header) {
+    MATRIX  tmpls, tmplw;
+    int nCurrentModel;
+    
+    FntPrint(fontID_1, "Ground models: %d\n\n", (theWorld->nTotalModels));
 
-void DrawWorld(WorldStruct *theWorld, GsOT *othWorld) {
-	MATRIX  tmpls, tmplw;
-	int nCurrentModel;
-	char c;
-	
-	FntPrint(fontID_1, "total objects: %d\n\n", (theWorld->nTotalModels +5));
-
-	for (nCurrentModel = 0; nCurrentModel < theWorld->nTotalModels; nCurrentModel++) {
-		// Get the local world and screen coordinates, needed for light calculations
-		GsGetLws(theWorld->gsObjectHandler[nCurrentModel].coord2, &tmplw, &tmpls);
-		
-		// Set the resulting light source matrix
-		GsSetLightMatrix(&tmplw);
-		
-		// Set the local screen matrix for the GTE (so it works out perspective etc)
-		GsSetLsMatrix(&tmpls);
-		
-		// Send Object To Ordering Table
-		GsSortObject4(&theWorld->gsObjectHandler[nCurrentModel], othWorld, 2, (u_long *)getScratchAddr(0));
-	}
+    for (nCurrentModel = 0; nCurrentModel < theWorld->nTotalModels; nCurrentModel++) {
+        // Only render if object is near the current player
+        if (IsObjectNearPlayer(currentPlayer, &theWorld->gsObjectCoord[nCurrentModel])) {
+            // Get the local world and screen coordinates
+            GsGetLws(theWorld->gsObjectHandler[nCurrentModel].coord2, &tmplw, &tmpls);
+            
+            // Set the resulting matrices
+            GsSetLightMatrix(&tmplw);
+            GsSetLsMatrix(&tmpls);
+            
+            // Send Object To Ordering Table
+            GsSortObject4(&theWorld->gsObjectHandler[nCurrentModel], OTable_Header, 2, (u_long *)getScratchAddr(0));
+        }
+    }
 }
 
-
-// This function deals with double buffering and drawing of 3D objects
+// This function performs all of the rendering
 void RenderWorld() {
+	
 	// This variable keeps track of the current buffer for double buffering
 	int currentBuffer;
-	
+
 	// Get the current buffer
 	currentBuffer = GsGetActiveBuff();
 	
-	// Set the address of the packet area that will contain drawing commands
-	GsSetWorkBase((PACKET*)out_packet[currentBuffer]);
+	// Activates the view for the top screen
+	GsSetRefView2(&Camera[0]);                          
 	
-	// Clear the ordering table
-	GsClearOt(0, 0, &othWorld[currentBuffer]);
+	// Set the address of the packet area for the top screen
+	GsSetWorkBase((PACKET*)Packet_Memory[currentBuffer]);
 	
-	// Set the viewport
-	GsSetRefView2(&viewTop);
+	// Clear the ordering table for the top screen
+	GsClearOt(0, 0, &OTable_Header[currentBuffer]);
 	
-	// Draw the world
-	DrawWorld(&theWorld, &othWorld[currentBuffer]);
+	// Draw the world for player 1
+	RenderWorldPlayer1(currentBuffer);
 	
-	// Draw the player
-	DrawPlayer(&theCar, &othWorld[currentBuffer]);
-	
-	
-	
-	
-	//DrawModel(&building1, &othWorld[currentBuffer]);
-	//DrawModel(&building2, &othWorld[currentBuffer]);
-	//DrawModel(&building3, &othWorld[currentBuffer]);
-	//DrawModel(&building4, &othWorld[currentBuffer]);
-	//DrawModel(&building5, &othWorld[currentBuffer]);
-	//DrawModel(&building6, &othWorld[currentBuffer]);
-	//DrawModel(&building7, &othWorld[currentBuffer]);
-	
-	DrawModel(&barrier2, &othWorld[currentBuffer]);
-	DrawModel(&barrier3, &othWorld[currentBuffer]);
-	DrawModel(&barrier4, &othWorld[currentBuffer]);
-	DrawModel(&barrier5, &othWorld[currentBuffer]);
-	DrawModel(&barrier6, &othWorld[currentBuffer]);
-	
-	
-	
+	// Draw the world for player 2
+	if (NumberOfPlayers == 2) {
+		RenderWorldPlayer2(currentBuffer);
+	}
 	
 	// Wait for end of drawing
 	DrawSync(0);
@@ -363,17 +352,113 @@ void RenderWorld() {
 	vsyncInterval = VSync(0);
 	
 	// Print the vSync interval
-	//FntPrint("VSync Interval: %d.\n", vsyncInterval);
-	
-	// Force text output
-	FntFlush(-1);
+	FntPrint(fontID_1, "\nVSync Interval: %d.\n", vsyncInterval);
 	
 	// Swap The Buffers
 	GsSwapDispBuff();
 	
 	// Register clear-command: clear to black
-	GsSortClear(0, 0, 0, &othWorld[currentBuffer]);
+	GsSortClear(0, 0, 0, &OTable_Header[currentBuffer]);
 	
-	// Register request to draw ordering table
-	GsDrawOt(&othWorld[currentBuffer]);
+	// Set up top half for drawing
+	PutDrawEnv(&SplitScreenInfo[currentBuffer]);        
+	
+	// Draw the commands in queue
+	GsDrawOt(&OTable_Header[currentBuffer]);
+	
+	FntFlush(fontID_1);
+	FntFlush(fontID_2);
+	
+	// If 2 player mode
+	if (NumberOfPlayers == 2) {
+		// Set up bottom half for drawing
+		PutDrawEnv(&SplitScreenInfo[currentBuffer+2]);      
+	  
+		// Draw the commands in queue
+		GsDrawOt(&OTable_Header[currentBuffer+2]);   
+	}
+}
+
+// This function renders the world for player 1
+void RenderWorldPlayer1(int currentBuffer) {
+	// Draw the world
+	DrawWorld(&theWorld, &player1, &OTable_Header[currentBuffer]);
+	
+	// Draw player 1
+	DrawPlayer(&player1, &OTable_Header[currentBuffer]);
+	
+	// If it is 2 player mode, draw the second player vehicle
+	if (NumberOfPlayers == 2) {
+		DrawPlayer(&player2, &OTable_Header[currentBuffer]);
+	}
+	
+	// Draw the buildings
+	RenderBuildings(&player1, currentBuffer);
+}
+
+// This function renders the world for player 2
+void RenderWorldPlayer2(int currentBuffer) {
+	// Activates the view for the bottom screen
+	GsSetRefView2(&Camera[1]);    
+
+	// Set the address of the packet area for the bottom screen
+	GsSetWorkBase((PACKET*)Packet_Memory[currentBuffer+2]);
+	
+	// Clear the ordering table for the bottom screen
+	GsClearOt(0, 0, &OTable_Header[currentBuffer+2]); 
+	
+	// Draw the world
+	DrawWorld(&theWorld, &player2, &OTable_Header[currentBuffer+2]);
+	
+	// Draw player 1
+	DrawPlayer(&player1, &OTable_Header[currentBuffer+2]);
+	
+	// Draw player 2
+	DrawPlayer(&player2, &OTable_Header[currentBuffer+2]);
+	
+	// Draw the buildings
+	RenderBuildings(&player2, currentBuffer+2);
+}
+
+// This functions renders all of the models in the world
+void RenderBuildings(PlayerStruct* currentPlayer, int currentBuffer) {
+	// Draw the buildings
+	if (IsObjectNearPlayer(currentPlayer, &building1.gsObjectCoord)) {
+		DrawModel(&building1, &OTable_Header[currentBuffer]);
+	}
+	if (IsObjectNearPlayer(currentPlayer, &building2.gsObjectCoord)) {
+		DrawModel(&building2, &OTable_Header[currentBuffer]);
+	}
+	if (IsObjectNearPlayer(currentPlayer, &building2.gsObjectCoord)) {
+		DrawModel(&building3, &OTable_Header[currentBuffer]);
+	}
+
+	// Draw the barriers
+	if (IsObjectNearPlayer(currentPlayer, &barrier1.gsObjectCoord)) {
+		DrawModel(&barrier1, &OTable_Header[currentBuffer]);
+	}
+	if (IsObjectNearPlayer(currentPlayer, &barrier2.gsObjectCoord)) {
+		DrawModel(&barrier2, &OTable_Header[currentBuffer]);
+	}
+	if (IsObjectNearPlayer(currentPlayer, &barrier3.gsObjectCoord)) {
+		DrawModel(&barrier3, &OTable_Header[currentBuffer]);
+	}
+	if (IsObjectNearPlayer(currentPlayer, &barrier4.gsObjectCoord)) {
+		DrawModel(&barrier4, &OTable_Header[currentBuffer]);
+	}
+	if (IsObjectNearPlayer(currentPlayer, &barrier5.gsObjectCoord)) {
+		DrawModel(&barrier5, &OTable_Header[currentBuffer]);
+	}
+	if (IsObjectNearPlayer(currentPlayer, &barrier6.gsObjectCoord)) {
+		DrawModel(&barrier6, &OTable_Header[currentBuffer]);
+	}
+
+	//DrawModel(&stand1, &OTable_Header[currentBuffer]);
+}
+
+int CalculateDistanceSquared(int x1, int y1, int z1, int x2, int y2, int z2) {
+    int dx = x2 - x1;
+    int dy = y2 - y1;
+    int dz = z2 - z1;
+    return (dx*dx + dy*dy + dz*dz);
 }

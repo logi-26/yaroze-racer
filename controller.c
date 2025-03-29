@@ -1,53 +1,99 @@
 #include "controller.h"
 #include "pad.h"
 #include "world.h"
+#include "game.h"
 
 u_long PADstatus = 0;
+
+
+
+
+
+void InitialiseController() {
+	
+}
+
+
+
+
 
 void ProcessUserInput() {
 	
 	PADstatus=PadRead();
 	
-	if (PADstatus & PADselect)PLAYING = 0;
-	if (PADstatus & PADLleft) {
-		RotateModel(&theCar.gsObjectCoord, &theCar.rotation, 0, -32, -0, &theCar.speed);
+	if (PADstatus & PAD1select)PLAYING = 0;
+	
+	
+	
+	// Player 1 direction
+	if (PADstatus & PAD1left) {
+		RotateModel(&player1.gsObjectCoord, &player1.rotation, 0, -32, -0);
 	}
-	if (PADstatus & PADLright) {
-		RotateModel(&theCar.gsObjectCoord, &theCar.rotation, 0, 32, 0, &theCar.speed);
-	}
-	if (PADstatus & PADstart) {
-		theCar.gsObjectCoord.coord=GsIDMATRIX;
-        theCar.gsObjectCoord.coord.t[1] =- 200;
-		theCar.speed = 0;
-		theCar.rotation.vx = 0;  
-		theCar.rotation.vy = 0;  
-		theCar.rotation.vy = 0;
-        theCar.gsObjectCoord.flg = 0;
+	if (PADstatus & PAD1right) {
+		RotateModel(&player1.gsObjectCoord, &player1.rotation, 0, 32, 0);
 	}
 	
-	// Cross moves the vehicle forwards and Square moves it backwards
-	if (PADstatus & PADcross) {
-		AdvanceModel(&theCar.gsObjectCoord, &theCar.rotation, &theCar.speed, 1);
+	
+	
+	
+	// Player 2 direction
+	if (PADstatus & PAD2left) {
+		RotateModel(&player2.gsObjectCoord, &player2.rotation, 0, -32, -0);
 	}
-	else if (PADstatus & PADsquare) {
-		AdvanceModel(&theCar.gsObjectCoord, &theCar.rotation, &theCar.speed, -1);
+	if (PADstatus & PAD2right) {
+		RotateModel(&player2.gsObjectCoord, &player2.rotation, 0, 32, 0);
+	}
+	
+	
+	
+	
+	
+	// Player 1 forwards and backwards movement
+	if (PADstatus & PAD1cross) {
+		AdvanceModel(&player1.gsObjectCoord, &player1.rotation, &player1.speed, 1, 1);
+	}
+	else if (PADstatus & PAD1square) {
+		AdvanceModel(&player1.gsObjectCoord, &player1.rotation, &player1.speed, -1, 1);
 	}
 	else {
-		AdvanceModel(&theCar.gsObjectCoord, &theCar.rotation, &theCar.speed, 0);
+		AdvanceModel(&player1.gsObjectCoord, &player1.rotation, &player1.speed, 0, 1);
 	}
 	
 	
-	if (PADstatus & PADL1) {
-		InitialiseStaticView(&viewTop, 250, 0, 0, -500, -1000, 0, 0, 0);		// W
-	}
-	if (PADstatus & PADL2) {
-		InitialiseTrackerView(&viewTop, 250, 0, 0, -300, -1500, 0, 200, 0);		// E
-	}
-	if (PADstatus & PADR1) {
-		InitialiseTopDownView(&viewTop, 250, -3000, 0, 0);						// R
-	}
-	if (PADstatus & PADR2) {
-		InitialiseTopDownView(&viewTop, 250, -6000, 0, 0);						// T
-	}
 	
+	// Player 2 forwards and backwards movement
+	if (PADstatus & PAD2cross) {
+		AdvanceModel(&player2.gsObjectCoord, &player2.rotation, &player2.speed, 1, 1);
+	}
+	else if (PADstatus & PAD2square) {
+		AdvanceModel(&player2.gsObjectCoord, &player2.rotation, &player2.speed, -1, 1);
+	}
+	else {
+		AdvanceModel(&player2.gsObjectCoord, &player2.rotation, &player2.speed, 0, 1);
+	}
+
+
+
+
+
+
+	if (PADstatus & PAD1start) {
+		player1.gsObjectCoord.coord=GsIDMATRIX;
+        player1.gsObjectCoord.coord.t[1] =- 200;
+		player1.speed = 0;
+		player1.rotation.vx = 0;  
+		player1.rotation.vy = 0;  
+		player1.rotation.vy = 0;
+        player1.gsObjectCoord.flg = 0;
+	}
+
+
+
+	// Camera
+	if (PADstatus & PAD1L1) {
+		InitSplitScreen(0, 0, 160, 240, 160, 0, 160, 240);
+	}
+	if (PADstatus & PAD1L2) {
+		InitSplitScreen(0, 0, 320, 120, 0, 120, 320, 120);
+	}
 }
