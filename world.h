@@ -8,9 +8,7 @@
 #include "player.h"
 #include "model.h"
 
-
 // ******************************************************************	
-
 #define LINE_L_MEM_ADDR                     (0x80093000)
 #define LINE_L_TEX_MEM_ADDR                 (0x80093070)  // +112B (0x70)
 
@@ -74,57 +72,28 @@
 #define GRASS_MEM_ADDR                      (0x800ABABC)  // +4,700B (0x125C)
 #define GRASS_TEX_MEM_ADDR                  (0x800ABB2C)  // +112B (0x70)     
 
-
 #define BARRIER_2_MEM_ADDR                  (0x800ADB2C)
 #define BARRIER_2_TEX_MEM_ADDR              (0x800AEB2C)
  
-
-
 #define BUILDING_1_MEM_ADDR                 (0x800AFF20)
 #define BUILDING_1_TEX_MEM_ADDR             (0x800B00B0)
 
 #define BUILDING_2_MEM_ADDR                 (0x800B3000)
 #define BUILDING_2_TEX_MEM_ADDR             (0x800B3190)
 
-
-
 #define STAND_MEM_ADDR                      (0x800B5000)  
 #define STAND_CROWD_TEX_MEM_ADDR            (0x800B5070) 
-
-
-
-//#define STAND_MEM_ADDR                      
-//#define STAND_CROWD_TEX_MEM_ADDR           
-//#define STAND_SIGN_TEX_MEM_ADDR             
-
-
-
-
-
-//#define BUILDING_MEM_ADDR                   (GRASS_TEX_MEM_ADDR + 4096) 		// 0x800A2690
-//#define BUILDING_TEX_MEM_ADDR               (BUILDING_MEM_ADDR + 400) 		// 0x800A2820
-
-//#define BUILDING_2_MEM_ADDR                 (BUILDING_TEX_MEM_ADDR + 8192) 	// 0x800A4820
-//#define BUILDING_2_TEX_MEM_ADDR             (BUILDING_2_MEM_ADDR + 400) 		// 0x800A49B0
-
-//#define BARRIER_1_MEM_ADDR                 (BUILDING_2_TEX_MEM_ADDR + 8192) 	// 0x800A69B0
-
 // ******************************************************************
-
 
 #define MAX_NO_PACKETS (248000)
 
 #define WORLD_GROUND_MAX_X (30)
 #define WORLD_GROUND_MAX_Z (30)
 
-
 #define MAX_WORLD_OBJECTS (2000)
 #define SEPERATION (1200)
 
-//extern GsRVIEW2 viewTop, viewBottom;		// Two separate views for top and bottom viewports
-
 extern GsRVIEW2 Camera[2]; 
-
 
 extern u_long vsyncInterval;
 
@@ -148,7 +117,6 @@ void RenderWorldPlayer1(int currentBuffer);
 void RenderWorldPlayer2(int currentBuffer);
 void InitialiseWorldTextures();
 void InitialiseWorldModels();
-
 void RenderBuildings(PlayerStruct* currentPlayer, int currentBuffer);
 /*****************************************************/
 

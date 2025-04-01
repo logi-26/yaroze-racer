@@ -65,9 +65,9 @@ void DrawPlayer(PlayerStruct *thePlayer, GsOT *othWorld) {
 	GsSetLsMatrix(&tmpls);
 	
 	if (thePlayer->playerNumber == 1) {
-		FntPrint(fontID_1, "POS x: %d, y: %d, z: %d\n", thePlayer->gsObjectCoord.coord.t[0], thePlayer->gsObjectCoord.coord.t[1], thePlayer->gsObjectCoord.coord.t[2]);
-		FntPrint(fontID_1, "ROT x: %d, y: %d, z: %d\n", (int)thePlayer->rotation.vx, (int)thePlayer->rotation.vy, (int)thePlayer->rotation.vz);
-		FntPrint(fontID_1, "speed: %d\n", thePlayer->speed);
+		//FntPrint(fontID_1, "POS x: %d, y: %d, z: %d\n", thePlayer->gsObjectCoord.coord.t[0], thePlayer->gsObjectCoord.coord.t[1], thePlayer->gsObjectCoord.coord.t[2]);
+		//FntPrint(fontID_1, "ROT x: %d, y: %d, z: %d\n", (int)thePlayer->rotation.vx, (int)thePlayer->rotation.vy, (int)thePlayer->rotation.vz);
+		//FntPrint(fontID_1, "speed: %d\n", thePlayer->speed);
 	}
 	
 	//if (thePlayer->playerNumber == 2) {
@@ -79,9 +79,6 @@ void DrawPlayer(PlayerStruct *thePlayer, GsOT *othWorld) {
 	// Send Object To Ordering Table
 	GsSortObject4(&thePlayer->gsObjectHandler, othWorld, 3, (u_long *)getScratchAddr(0));
 }
-
-
-
 
 int IsObjectNearPlayer(PlayerStruct* player, GsCOORDINATE2* objectCoord) {
     int distanceSq = CalculateDistanceSquared(

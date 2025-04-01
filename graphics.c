@@ -7,7 +7,6 @@ GsOT_TAG OTable_Array[4][1<<OTABLE_LENGTH];
 int fontID_1;
 int fontID_2;
 
-
 void InitialiseGraphics() {
 	
 	if (IS_PAL_USED) {
@@ -46,10 +45,8 @@ void InitialiseGraphics() {
 	GsClearOt(0, 0, &OTable_Header[3]);
 };
 
-
 void InitialiseFontSystem() {
 	FntLoad(960, 256);
 	fontID_1 = FntOpen(-150, -100, PAL_WIDTH, PAL_HEIGHT, 0, 512);
-	
 	fontID_2 = FntOpen(-150, 0, PAL_WIDTH, PAL_HEIGHT, 0, 512);
 }

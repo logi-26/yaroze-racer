@@ -1,10 +1,18 @@
-// low-level pad buffers
+#ifndef PAD_H
+#define PAD_H
+
+// Low-level pad buffers
 volatile u_char *bb0, *bb1;
 
-// Function Prototypes
+// Analog axis for each controller
+extern u_char PAD1lh, PAD1lv, PAD1rh, PAD1rv;                  
+extern u_char PAD2lh, PAD2lv, PAD2rh, PAD2rv;
+
+// Function prototypes
 void PadInit();
 u_long PadRead();
 
+// Definitions for controller port 1 buttons
 #define PAD1up       (1<<12)
 #define PAD1down     (1<<14)
 #define PAD1left     (1<<15)
@@ -19,9 +27,10 @@ u_long PadRead();
 #define PAD1R2       (1<< 1)
 #define PAD1L1       (1<< 2)
 #define PAD1L2       (1<< 0)
-#define PAD1i        (1<< 9)
-#define PAD1j        (1<<10)
+#define PAD1L3       (1<< 9)
+#define PAD1R3       (1<<10)
 
+// Definitions for controller port 2 buttons
 #define PAD2up       (1<<28)
 #define PAD2down     (1<<30)
 #define PAD2left     (1<<31)
@@ -36,5 +45,7 @@ u_long PadRead();
 #define PAD2R2       (1<<17)
 #define PAD2L1       (1<<18)
 #define PAD2L2       (1<<16)
-#define PAD2i        (1<<25)
-#define PAD2j        (1<<26)
+#define PAD2L3       (1<<25)
+#define PAD2R3       (1<<26)
+
+#endif // PAD_H

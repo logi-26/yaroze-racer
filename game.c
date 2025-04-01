@@ -2,28 +2,6 @@
 #include "player.h"
 #include "graphics.h"
 
-
-
-
-/*
-void InitView(GsRVIEW2 *tView, int tProjDist, int tRZ, int tFromX, int tFromY, int tFromZ, int tToX, int tToY, int tToZ, GsCOORDINATE2 *tReference) {
-	GsSetProjection(tProjDist);                        
-	tView->vpx = tFromX;  tView->vpy = tFromY;  tView->vpz = tFromZ;                             
-	tView->vrx = tToX;    tView->vry = tToY;    tView->vrz = tToZ;
-                                                     
-	tView->rz =- tRZ;                                     
-	if (tReference != false) {
-		tView->super = tReference; // set origin of model
-	}
-	else {
-		tView->super = WORLD;
-	}
-};
-*/
-
-
-
-
 void InitialiseTrackerViewPlayer1(GsRVIEW2 *view, int nProjDist, int nRZ, int nVPX, int nVPY, int nVPZ, int nVRX, int nVRY, int nVRZ) {
 	// This is the distance between the eye and the imaginary projection screen
 	GsSetProjection(nProjDist);
@@ -47,11 +25,6 @@ void InitialiseTrackerViewPlayer1(GsRVIEW2 *view, int nProjDist, int nRZ, int nV
 	// Activate view
 	GsSetRefView2(view);
 }
-
-
-
-
-
 
 void InitialiseTrackerViewPlayer2(GsRVIEW2 *view, int nProjDist, int nRZ, int nVPX, int nVPY, int nVPZ, int nVRX, int nVRY, int nVRZ) {
 	// This is the distance between the eye and the imaginary projection screen
@@ -77,27 +50,20 @@ void InitialiseTrackerViewPlayer2(GsRVIEW2 *view, int nProjDist, int nRZ, int nV
 	GsSetRefView2(view);
 }
 
-
-
-
-
-
-
-
 void InitialiseTopDownView(GsRVIEW2 *view, int nProjDist, int nHeight, int nVPX, int nVPZ) {
     // This is the distance between the eye and the imaginary projection screen
     GsSetProjection(nProjDist);
     
     // Set the eye position (camera position)
     // Place the camera directly above the car at a specified height
-    view->vpx = nVPX;        // X position (same as car's X)
-    view->vpy = nHeight;     // Y position (height above the car)
-    view->vpz = nVPZ;        // Z position (same as car's Z)
+    view->vpx = nVPX;
+    view->vpy = nHeight;
+    view->vpz = nVPZ;
     
     // Set the look-at position (car's position)
-    view->vrx = nVPX;        // Look at the car's X position
-    view->vry = 1500;        // Look at the car's Y position (initial Y position of the car)
-    view->vrz = nVPZ;        // Look at the car's Z position
+    view->vrx = nVPX; 
+    view->vry = 1500;  
+    view->vrz = nVPZ;
     
     // Set which way is up
     view->rz = -1000;
@@ -138,129 +104,12 @@ void ResetMatrix(short m[3][3]) {
 	m[0][1]=m[0][2]=m[1][0]=m[1][2]=m[2][0]=m[2][1]=0;
 }
 
-
-/*
-void RotateModel(GsCOORDINATE2 *gsObjectCoord, SVECTOR *rotateVector, int nRX, int nRY, int nRZ, long *speed) {
-    int speedFactor;
-	int maxRotation;
-	
-	// Only allow rotation if the car is moving
-    if (*speed != 0) {
-        MATRIX matTmp;
-
-        // Reset the player's coordinate system to the identity matrix
-        ResetMatrix(gsObjectCoord->coord.m);
-
-        // Calculate speedFactor based on the car's speed
-        // Directly scale rotation by the car's speed
-        speedFactor = abs(*speed); // Use absolute value of speed
-
-        // Clamp speedFactor to avoid overscaling
-        if (speedFactor > MAX_SPEED) speedFactor = MAX_SPEED;
-
-        // Scale the rotation values based on speedFactor
-        nRX = (nRX * speedFactor) / MAX_SPEED;
-        nRY = (nRY * speedFactor) / MAX_SPEED;
-        nRZ = (nRZ * speedFactor) / MAX_SPEED;
-
-        // Clamp rotation values to prevent excessive rotation at low speeds
-        maxRotation = (ONE / 16); // Maximum rotation at low speeds (adjust as needed)
-        if (abs(nRX) > maxRotation) nRX = (nRX > 0) ? maxRotation : -maxRotation;
-        if (abs(nRY) > maxRotation) nRY = (nRY > 0) ? maxRotation : -maxRotation;
-        if (abs(nRZ) > maxRotation) nRZ = (nRZ > 0) ? maxRotation : -maxRotation;
-
-        // Apply rotation
-        rotateVector->vx = (rotateVector->vx + nRX) % ONE;
-        rotateVector->vy = (rotateVector->vy + nRY) % ONE;
-        rotateVector->vz = (rotateVector->vz + nRZ) % ONE;
-
-        // Set up the rotation matrix
-        RotMatrix(rotateVector, &matTmp);
-
-        // Multiply the existing object's matrix with the rotation matrix
-        MulMatrix0(&gsObjectCoord->coord, &matTmp, &gsObjectCoord->coord);
-
-        // Mark for redraw
-        gsObjectCoord->flg = 0;
-    }
-}
-
-// Move the model with proper acceleration, deceleration, and smooth direction changes
-void AdvanceModel(GsCOORDINATE2 *gsObjectCoord, SVECTOR *rotateVector, long *speed, int movementDirection) {
-    MATRIX matTmp;
-    SVECTOR startVector;
-    SVECTOR currentDirection;
-
-    // Apply acceleration or deceleration based on movementDirection
-    if (movementDirection > 0) {  // Accelerating forward
-        if (*speed < 0) {
-            // If reversing, slow down first before going forward
-            *speed += DECELERATION;
-        } else {
-            // Normal acceleration
-            *speed += ACCELERATION;
-            if (*speed > MAX_SPEED) {
-                *speed = MAX_SPEED;
-            }
-        }
-    } else if (movementDirection < 0) {  // Reversing
-        if (*speed > 0) {
-            // If moving forward, slow down first before reversing
-            *speed -= DECELERATION;
-        } else {
-            // Normal reverse acceleration
-            *speed -= ACCELERATION;
-            if (*speed < MAX_REVERSE_SPEED) {
-                *speed = MAX_REVERSE_SPEED;
-            }
-        }
-    } else {  
-        // No input, apply smooth deceleration to gradually stop
-        if (*speed > 0) {
-            *speed -= DECELERATION;
-            if (*speed < 0) *speed = 0;
-        } else if (*speed < 0) {
-            *speed += DECELERATION;
-            if (*speed > 0) *speed = 0;
-        }
-    }
-	
-    // Only move if speed is not zero
-    if (*speed != 0) {
-        // Set up original vector, pointing down the positive Z-axis
-        startVector.vx = 0; startVector.vy = 0; startVector.vz = ONE;
-
-        // Compute rotation matrix
-        RotMatrix(rotateVector, &matTmp);
-
-        // Multiply startVector by matTmp to get the direction vector
-        ApplyMatrixSV(&matTmp, &startVector, &currentDirection);
-
-        // Apply movement based on speed
-        gsObjectCoord->coord.t[0] += (currentDirection.vx * (*speed)) / 4096;
-        gsObjectCoord->coord.t[1] += (currentDirection.vy * (*speed)) / 4096;
-        gsObjectCoord->coord.t[2] += (currentDirection.vz * (*speed)) / 4096;
-		
-        // Mark the object for redrawing
-        gsObjectCoord->flg = 0;
-    }
-}
-*/
-
-
-
-
-
-
-
-
-
 void RotateModel(GsCOORDINATE2 *gsObjectCoord, SVECTOR *rotateVector, int nRX, int nRY, int nRZ) {
     MATRIX matTmp;
 	long absSpeed;
     int steeringResponse;
 	long multiplier;
-	int maxRotation
+	int maxRotation;
 	
 	maxRotation = ONE / 8;
 	absSpeed = abs(player1.speed);
@@ -273,9 +122,12 @@ void RotateModel(GsCOORDINATE2 *gsObjectCoord, SVECTOR *rotateVector, int nRX, i
 			steeringResponse = 50;
 		}
 		else {
-			multiplier = 30 + (absSpeed * 190 / MAX_SPEED); 			// Linear ramp
+			// Linear ramp
+			multiplier = 30 + (absSpeed * 190 / MAX_SPEED); 			
+			
+			// Cap at max
 			if (multiplier > 220) {
-				multiplier = 220; 										// Cap at max
+				multiplier = 220; 										
 			}
 			steeringResponse = (STEERING_RESPONSE * multiplier) / absSpeed;
 		}
@@ -295,7 +147,6 @@ void RotateModel(GsCOORDINATE2 *gsObjectCoord, SVECTOR *rotateVector, int nRX, i
 		nRY = (nRY > maxRotation) ? maxRotation : (nRY < -maxRotation) ? -maxRotation : nRY;
 		nRZ = (nRZ > maxRotation) ? maxRotation : (nRZ < -maxRotation) ? -maxRotation : nRZ;
 		
-
 		// Add drifting effect at higher speeds
         //if (absSpeed > 200) {
             //nRY += (nRX * absSpeed) / (DRIFT_FACTOR * 10000);
@@ -320,22 +171,14 @@ void RotateModel(GsCOORDINATE2 *gsObjectCoord, SVECTOR *rotateVector, int nRX, i
     }
 }
 
-
-
-
-
-
-
-
-
-
+// Handle acceleration/deceleration
 void AdvanceModel(GsCOORDINATE2 *gsObjectCoord, SVECTOR *rotateVector, long *speed, int movementDirection, int isBraking) {
     MATRIX matTmp;
     SVECTOR startVector = {0, 0, ONE};
     SVECTOR currentDirection;
     
-    // Handle acceleration/deceleration
-    if (movementDirection > 0) {  // Accelerating forward
+	// Accelerating forward
+    if (movementDirection > 0) {  
         if (*speed < 0) {
             // Braking while reversing
             *speed += isBraking ? BRAKE_DECELERATION * 2 : DECELERATION;
@@ -345,7 +188,8 @@ void AdvanceModel(GsCOORDINATE2 *gsObjectCoord, SVECTOR *rotateVector, long *spe
             if (*speed > MAX_SPEED) *speed = MAX_SPEED;
         }
     } 
-    else if (movementDirection < 0) {  // Reversing
+	// Reversing
+    else if (movementDirection < 0) {  
         if (*speed > 0) {
             // Braking while moving forward
             *speed -= isBraking ? BRAKE_DECELERATION * 2 : DECELERATION;
@@ -355,7 +199,8 @@ void AdvanceModel(GsCOORDINATE2 *gsObjectCoord, SVECTOR *rotateVector, long *spe
             if (*speed < MAX_REVERSE_SPEED) *speed = MAX_REVERSE_SPEED;
         }
     } 
-    else {  // No input - natural deceleration
+	// No input - natural deceleration
+    else {  
         if (*speed > 0) {
             *speed -= isBraking ? BRAKE_DECELERATION : DECELERATION / 2;
             if (*speed < 0) *speed = 0;
@@ -384,9 +229,7 @@ void AdvanceModel(GsCOORDINATE2 *gsObjectCoord, SVECTOR *rotateVector, long *spe
     }
 }
 
-
-
-
+// Initialise single-screen mode
 void InitSingleScreen() {
 
   SplitScreenInfo[0].clip.x = 0;                     
@@ -404,11 +247,7 @@ void InitSingleScreen() {
   SplitScreenInfo[1].ofs[1] = 0 + (240 / 2) + 240;
 };
 
-
-
-
-
-
+// Initialise the split-screen co-ordinates
 void InitSplitScreen(int x1, int y1, int w1, int h1, int x2, int y2, int w2, int h2) {
 
   SplitScreenInfo[0].clip.x = x1;                     

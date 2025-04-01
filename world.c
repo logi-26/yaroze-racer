@@ -7,21 +7,10 @@
 // Global variables
 GsOT OTable_Header[4];
 PACKET Packet_Memory[4][MAX_PACKETS];
-GsRVIEW2 viewTop;
-
 GsRVIEW2 Camera[2];
-
-
 u_long vsyncInterval = 0;
-
-//PlayerStruct player1;
-//PlayerStruct player2;
 WorldStruct theWorld;
-
-
 int NumberOfPlayers = 2;
-
-
 
 // Model declarations
 ModelStruct building1;
@@ -103,7 +92,6 @@ int LoadTexture(long addr) {
 	return(0);
 }
 
-
 void InitialiseWorld() {
 	int tmpx, tmpz;
 	char c;
@@ -132,7 +120,6 @@ void InitialiseWorld() {
 	LoadTexture(STRAIGHT_R_01_TEX_MEM_ADDR);			
 	LoadTexture(STRAIGHT_R_02_TEX_MEM_ADDR);	
 	LoadTexture(GRASS_TEX_MEM_ADDR); 
-
 
 	// Then for each element of the worldGroundData array if we find a 1
 	// then place an instance of square1.tmd at the appropriate position in the world.
@@ -213,26 +200,14 @@ void InitialiseWorldTextures() {
 	
 	// Load textures into VRAM
 	//LoadTexture(CAR_TEX_MEM_ADDR);
-	//LoadTexture(BUILDING_TEX_MEM_ADDR);
-	//LoadTexture(BUILDING_2_TEX_MEM_ADDR);
 	LoadTexture(BARRIER_2_TEX_MEM_ADDR);
-	
 	LoadTexture(BUILDING_1_TEX_MEM_ADDR);
 	LoadTexture(BUILDING_2_TEX_MEM_ADDR);
-	
 	LoadTexture(STAND_CROWD_TEX_MEM_ADDR);
 }
 
 
 void InitialiseWorldModels() {
-	
-	
-	// Initialise the player
-	//InitialisePlayer(&player1, 3605, -200, 9273, (long*)CAR_MEM_ADDR);
-	
-	//InitialisePlayer(&player2, 2448, -200, 9273, (long*)CAR_MEM_ADDR);
-	
-	
 	
 	// Initialise the buildings
 	InitialiseModel(&building1, -7500, -450, 8000, 0, 0, 0, (long*)BUILDING_1_MEM_ADDR);
@@ -240,15 +215,7 @@ void InitialiseWorldModels() {
 	InitialiseModel(&building3, -7500, -450, 30000, 0, 0, 0, (long*)BUILDING_1_MEM_ADDR);
 	
 	//InitialiseModel(&stand1, 0, -200, 1200, 0, 0, 0, (long*)STAND_CROWD_TEX_MEM_ADDR);
-	
-	
-	//InitialiseModel(&building2, 0, -50, 6000, 0, 0, 0, (long*)BUILDING_2_MEM_ADDR);
-	//InitialiseModel(&building3, 0, -200, 8000, 0, 0, 0, (long*)BUILDING_MEM_ADDR);
-	//InitialiseModel(&building4, 0, -200, 10000, 0, 0, 0, (long*)BUILDING_MEM_ADDR);
-	//InitialiseModel(&building5, 0, -200, 12000, 0, 0, 0, (long*)BUILDING_MEM_ADDR);
-	//InitialiseModel(&building6, 0, -50, 14000, 0, 0, 0, (long*)BUILDING_2_MEM_ADDR);
-	//InitialiseModel(&building7, 0, -200, 16000, 0, 0, 0, (long*)BUILDING_MEM_ADDR);
-	
+
 	//4790
 
 	//InitialiseModel(&theBuilding, 1200, -200, 3700, 0, 0, 0, (long*)BARRIER_1_MEM_ADDR);
@@ -301,7 +268,7 @@ void DrawWorld(WorldStruct *theWorld, PlayerStruct* currentPlayer, GsOT *OTable_
     MATRIX  tmpls, tmplw;
     int nCurrentModel;
     
-    FntPrint(fontID_1, "Ground models: %d\n\n", (theWorld->nTotalModels));
+    //FntPrint(fontID_1, "Ground models: %d\n\n", (theWorld->nTotalModels));
 
     for (nCurrentModel = 0; nCurrentModel < theWorld->nTotalModels; nCurrentModel++) {
         // Only render if object is near the current player
@@ -352,7 +319,7 @@ void RenderWorld() {
 	vsyncInterval = VSync(0);
 	
 	// Print the vSync interval
-	FntPrint(fontID_1, "\nVSync Interval: %d.\n", vsyncInterval);
+	//FntPrint(fontID_1, "\nVSync Interval: %d.\n", vsyncInterval);
 	
 	// Swap The Buffers
 	GsSwapDispBuff();
@@ -367,7 +334,7 @@ void RenderWorld() {
 	GsDrawOt(&OTable_Header[currentBuffer]);
 	
 	FntFlush(fontID_1);
-	FntFlush(fontID_2);
+	//FntFlush(fontID_2);
 	
 	// If 2 player mode
 	if (NumberOfPlayers == 2) {
@@ -381,6 +348,7 @@ void RenderWorld() {
 
 // This function renders the world for player 1
 void RenderWorldPlayer1(int currentBuffer) {
+	
 	// Draw the world
 	DrawWorld(&theWorld, &player1, &OTable_Header[currentBuffer]);
 	
@@ -398,6 +366,7 @@ void RenderWorldPlayer1(int currentBuffer) {
 
 // This function renders the world for player 2
 void RenderWorldPlayer2(int currentBuffer) {
+	
 	// Activates the view for the bottom screen
 	GsSetRefView2(&Camera[1]);    
 
@@ -422,6 +391,7 @@ void RenderWorldPlayer2(int currentBuffer) {
 
 // This functions renders all of the models in the world
 void RenderBuildings(PlayerStruct* currentPlayer, int currentBuffer) {
+	
 	// Draw the buildings
 	if (IsObjectNearPlayer(currentPlayer, &building1.gsObjectCoord)) {
 		DrawModel(&building1, &OTable_Header[currentBuffer]);

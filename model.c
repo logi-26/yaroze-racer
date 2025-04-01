@@ -2,7 +2,6 @@
 #include "graphics.h"
 #include "model.h"
 
-
 void LinkModelToTMD(ModelStruct *theModel, int nX, int nY, int nZ, unsigned long *lModelAddress) {
 	// Increment the pointer to move past the model ID
 	lModelAddress++;
