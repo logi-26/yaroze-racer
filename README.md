@@ -5,7 +5,7 @@
 
 - [ ] Add support for pausing the game
 - [x] Add support for 2 controllers (player 1 and player 2)
-- [x] Add support for analgue controllers
+- [x] Add support for analogue controllers
 - [ ] Add support for negcon controllers
 - [ ] Handle controller inserted/removed
 - [x] Add support for 2 playable vehicles
