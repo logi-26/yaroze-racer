@@ -1,0 +1,5 @@
+@RSD940102
+PLY=build1.ply
+MAT=build1.mat
+NTEX=1
+TEX[0]=build1.tim

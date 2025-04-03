@@ -42,12 +42,6 @@ int main() {
 	// Initialise the lights 
 	InitialiseAllLights();
 
-	// Initialise the models in the world
-	InitialiseWorldModels();
-	
-	// Load the world textures into VRAM
-	InitialiseWorldTextures();
-	
 	// Initialise the world
 	InitialiseWorld();
 	

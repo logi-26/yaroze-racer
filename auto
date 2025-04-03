@@ -77,5 +77,8 @@ local dload data\test\build2.tim 800B3190
 local dload data\stand\stand.tmd 800B5000
 local dload data\stand\crowd.tim 800B5070
 
+
+local dload data\porch\porch.tmd 800F5000
+
 local load main.exe
 go

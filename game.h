@@ -18,7 +18,7 @@ void InitialiseTrackerViewPlayer2(GsRVIEW2 *view, int nProjDist, int nRZ, int nV
 
 
 void InitialiseStaticView(GsRVIEW2 *view, int nProjDist, int nRZ, int nVPX, int nVPY, int nVPZ, int nVRX, int nVRY, int nVRZ);
-void RotateModel(GsCOORDINATE2 *gsObjectCoord,SVECTOR *rotateVector , int nRX, int nRY, int nRZ);
+void RotateModel(GsCOORDINATE2 *gsObjectCoord,SVECTOR *rotateVector , int nRX, int nRY, int nRZ, long *speed);
 void AdvanceModel(GsCOORDINATE2 *gsObjectCoord, SVECTOR *rotateVector, long *speed, int movementDirection, int isBraking);
 void ResetMatrix(short m[3][3]);
 void InitSplitScreen(int x1, int y1, int w1, int h1, int x2, int y2, int w2, int h2);

@@ -1,4 +1,5 @@
 @RSD940102
 PLY=barrier2.ply
 MAT=barrier2.mat
-NTEX=0
+NTEX=1
+TEX[0]=barrier2.tim

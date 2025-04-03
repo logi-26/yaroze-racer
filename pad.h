@@ -1,16 +1,19 @@
 #ifndef PAD_H
 #define PAD_H
 
+#include <libps.h> 
+
 // Low-level pad buffers
-volatile u_char *bb0, *bb1;
+extern volatile u_char *bb0, *bb1;
 
 // Analog axis for each controller
 extern u_char PAD1lh, PAD1lv, PAD1rh, PAD1rv;                  
 extern u_char PAD2lh, PAD2lv, PAD2rh, PAD2rv;
 
-// Function prototypes
-void PadInit();
-u_long PadRead();
+/************* FUNCTION PROTOTYPES *******************/
+void PadInit(void);
+u_long PadRead(void);
+/*****************************************************/
 
 // Definitions for controller port 1 buttons
 #define PAD1up       (1<<12)

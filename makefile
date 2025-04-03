@@ -7,7 +7,7 @@ CFLAGS = -O3 -g -I/path/to/your/pad/
 LINKER = -Xlinker -Ttext -Xlinker 80140000
 
 PROG = main.exe
-OBJS = main.o world.o light.o graphics.o controller.o player.o model.o game.o pad.o
+OBJS = main.o world.o light.o graphics.o controller.o player.o model.o game.o pad.o ground.o
 
 all: $(PROG)
 
@@ -40,6 +40,9 @@ controller.o: controller.c controller.h
 
 pad.o: pad.c pad.h
 	$(CC) $(CFLAGS) -c pad.c
+	
+ground.o: ground.c ground.h
+	$(CC) $(CFLAGS) -c ground.c
 
 run: $(PROG)	
 	del psx.exe 

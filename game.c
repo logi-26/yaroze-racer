@@ -104,7 +104,7 @@ void ResetMatrix(short m[3][3]) {
 	m[0][1]=m[0][2]=m[1][0]=m[1][2]=m[2][0]=m[2][1]=0;
 }
 
-void RotateModel(GsCOORDINATE2 *gsObjectCoord, SVECTOR *rotateVector, int nRX, int nRY, int nRZ) {
+void RotateModel(GsCOORDINATE2 *gsObjectCoord, SVECTOR *rotateVector, int nRX, int nRY, int nRZ, long *speed) {
     MATRIX matTmp;
 	long absSpeed;
     int steeringResponse;
@@ -112,7 +112,7 @@ void RotateModel(GsCOORDINATE2 *gsObjectCoord, SVECTOR *rotateVector, int nRX, i
 	int maxRotation;
 	
 	maxRotation = ONE / 8;
-	absSpeed = abs(player1.speed);
+	absSpeed = abs(*speed);
 
     if (absSpeed > 0) {
         steeringResponse = STEERING_RESPONSE;

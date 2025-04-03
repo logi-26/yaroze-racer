@@ -1,6 +1,7 @@
 #include <libps.h>
 #include "graphics.h"
 #include "model.h"
+#include "player.h"
 
 void LinkModelToTMD(ModelStruct *theModel, int nX, int nY, int nZ, unsigned long *lModelAddress) {
 	// Increment the pointer to move past the model ID
@@ -41,8 +42,18 @@ void InitialiseModel(ModelStruct *theModel, int nX, int nY, int nZ, int rotX, in
 	// Initialise speed to 0
 	theModel->speed = 0;
 	
+	// Initialise the collision radius
+	theModel->collisionRadius = 300;
+	
 	// Initialise other model variables and link in tmd
 	LinkModelToTMD(theModel, nX, nY, nZ, lModelAddress);
+}
+
+// Only draw the model if it is near to the player
+void DrawModelCulled(PlayerStruct *currentPlayer, ModelStruct *model, int currentBuffer) {
+    if (model && IsObjectNearPlayer(currentPlayer, &model->gsObjectCoord)) {
+        DrawModel(model, &OTable_Header[currentBuffer]);
+    }
 }
 
 // Setup matrices needed for rendering and send the object to the ordering table so it will be drawn

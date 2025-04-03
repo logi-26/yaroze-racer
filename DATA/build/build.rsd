@@ -1,6 +1,0 @@
-@RSD940102
-PLY=build.ply
-MAT=build.mat
-NTEX=2
-TEX[0]=build.tim
-TEX[1]=C:\code\car-basic-working\DATA\track\stone1\stone1.tim

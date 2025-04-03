@@ -1,0 +1,6 @@
+@RSD940102
+PLY=stand.ply
+MAT=stand.mat
+NTEX=2
+TEX[0]=crowd.tim
+TEX[1]=s_sign.tim

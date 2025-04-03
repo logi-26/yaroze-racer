@@ -1,10 +1,6 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-// Memory addresses
-#define CAR_MEM_ADDR 			(0x80090000)
-#define CAR_TEX_MEM_ADDR 		(0x800A69C0)
-
 #define MAX_SPEED 500
 #define ACCELERATION 8
 #define DECELERATION 6				// How quickly the vehicle slows down (higher value slows vehicle faster)
@@ -22,6 +18,7 @@ typedef struct {
 	SVECTOR rotation;
 	GsDOBJ2 gsObjectHandler;
 	GsCOORDINATE2 gsObjectCoord;
+	int collisionRadius;
 } PlayerStruct;
 
 // Define players
@@ -33,6 +30,14 @@ void InitialisePlayer(PlayerStruct *thePlayer, int playerNumber, int nX, int nY,
 void AddModelToPlayer(PlayerStruct *thePlayer, int nX, int nY, int nZ, unsigned long *lModelAddress);
 void DrawPlayer(PlayerStruct *thePlayer, GsOT *othWorld);
 int IsObjectNearPlayer(PlayerStruct* player, GsCOORDINATE2* objectCoord);
+/*****************************************************/
+
+/*****************************************************/
+// Player model and texture memory addresses
+/*****************************************************/
+//#define CAR_MEM_ADDR 			(0x80090000)
+#define CAR_TEX_MEM_ADDR 		(0x800A69C0)
+#define CAR_MEM_ADDR            (0x800F5000)
 /*****************************************************/
 
 #endif // PLAYER_H

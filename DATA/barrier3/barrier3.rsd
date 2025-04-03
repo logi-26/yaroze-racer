@@ -1,0 +1,5 @@
+@RSD940102
+PLY=barrier3.ply
+MAT=barrier3.mat
+NTEX=1
+TEX[0]=barrier3.tim

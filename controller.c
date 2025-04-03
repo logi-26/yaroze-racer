@@ -39,10 +39,10 @@ void ProcessUserInput() {
 void ProcessInputPort1() {
 	// Direction
     if (padStatus & PAD1left || PAD1lh < 80) {
-        RotateModel(&player1.gsObjectCoord, &player1.rotation, 0, -32, 0);
+        RotateModel(&player1.gsObjectCoord, &player1.rotation, 0, -32, 0, &player1.speed);
     }
     if (padStatus & PAD1right || PAD1lh > 140) {
-        RotateModel(&player1.gsObjectCoord, &player1.rotation, 0, 32, 0);
+        RotateModel(&player1.gsObjectCoord, &player1.rotation, 0, 32, 0, &player1.speed);
     }
 	
 	// Movement
@@ -60,11 +60,11 @@ void ProcessInputPort1() {
 void ProcessInputPort2() {
 	// Direction
 	if (padStatus & PAD2left) {
-        RotateModel(&player2.gsObjectCoord, &player2.rotation, 0, -32, 0);
+        RotateModel(&player2.gsObjectCoord, &player2.rotation, 0, -32, 0, &player2.speed);
     }
 	
 	if (padStatus & PAD2right) {
-        RotateModel(&player2.gsObjectCoord, &player2.rotation, 0, 32, 0);
+        RotateModel(&player2.gsObjectCoord, &player2.rotation, 0, 32, 0, &player2.speed);
     }
 	
 	// Movement

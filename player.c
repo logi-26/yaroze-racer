@@ -1,6 +1,7 @@
 #include <libps.h>
 #include "graphics.h"
 #include "player.h"
+#include "game.h"
 
 // This function associates a model with our player datastructure
 // later we will want to add more than one model to the player to implement animation
@@ -45,6 +46,9 @@ void InitialisePlayer(PlayerStruct *thePlayer, int playerNumber, int nX, int nY,
 	
 	// Initialise speed to 0
 	thePlayer->speed = 0;
+	
+	// Initialise the collision radius
+	thePlayer->collisionRadius = 300;
 	
 	// Initialise other player variables and link in tmd
 	AddModelToPlayer(thePlayer, nX, nY, nZ, lModelAddress);
