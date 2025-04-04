@@ -35,6 +35,14 @@
 - [ ] Add support for different weather conditions (rain, fog)
 
 
-![Screenshot](https://raw.githubusercontent.com/logi-26/yaroze-racer/refs/heads/main/screenshots/screen.BMP)
+![Screenshot](https://raw.githubusercontent.com/logi-26/yaroze-racer/refs/heads/main/screenshots/1-player.bmp)
 
-![Screenshot](https://raw.githubusercontent.com/logi-26/yaroze-racer/refs/heads/main/screenshots/screen_2.BMP)
+![Screenshot](https://raw.githubusercontent.com/logi-26/yaroze-racer/refs/heads/main/screenshots/2-player-h.bmp)
+
+![Screenshot](https://raw.githubusercontent.com/logi-26/yaroze-racer/refs/heads/main/screenshots/2-player-v.bmp)
+
+![Screenshot](https://raw.githubusercontent.com/logi-26/yaroze-racer/refs/heads/main/screenshots/car1.bmp)
+
+![Screenshot](https://raw.githubusercontent.com/logi-26/yaroze-racer/refs/heads/main/screenshots/track.bmp)
+
+![Screenshot](https://raw.githubusercontent.com/logi-26/yaroze-racer/refs/heads/main/screenshots/mem-map.bmp)
