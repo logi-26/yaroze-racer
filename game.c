@@ -50,6 +50,39 @@ void InitialiseTrackerViewPlayer2(GsRVIEW2 *view, int nProjDist, int nRZ, int nV
 	GsSetRefView2(view);
 }
 
+void InitialiseFrontViewPlayer1(GsRVIEW2 *view, int nProjDist, int nRZ, int nVPX, int nVPY, int nVPZ, int nVRX, int nVRY, int nVRZ) {
+	// This is the distance between the eye and the imaginary projection screen
+	GsSetProjection(nProjDist);
+	
+	// Set the eye position or center of projection
+	view->vpx = 0;  // dont touch
+	view->vpy = -400;  
+	view->vpz = -600;
+	
+	// Set the look at position
+	view->vrx = 0; // dont touch
+	view->vry = -500; 
+	view->vrz = 100;
+	
+	// Set which way is up
+	view->rz =- nRZ;
+	
+	// Set the origin of the coord system in this case the car
+	view->super = &player1.gsObjectCoord;
+	
+	// Activate view
+	GsSetRefView2(view);
+}
+
+
+
+
+
+
+
+
+
+/*
 void InitialiseTopDownView(GsRVIEW2 *view, int nProjDist, int nHeight, int nVPX, int nVPZ) {
     // This is the distance between the eye and the imaginary projection screen
     GsSetProjection(nProjDist);
@@ -74,20 +107,24 @@ void InitialiseTopDownView(GsRVIEW2 *view, int nProjDist, int nHeight, int nVPX,
     // Activate view
     GsSetRefView2(view);
 }
+*/
+
+
+// InitialiseStaticView(&Camera[0], 250, 0, 0, -500, -1000, 0, -800, 0);
 
 void InitialiseStaticView(GsRVIEW2 *view, int nProjDist, int nRZ, int nVPX, int nVPY, int nVPZ, int nVRX, int nVRY, int nVRZ) {
 	// This is the distance between the eye and the imaginary projection screen
 	GsSetProjection(nProjDist);
 	
 	// Set the eye position or center of projection
-	view->vpx = nVPX; 
-	view->vpy = nVPY;  
-	view->vpz = nVPZ;
+	view->vpx = 0; 
+	view->vpy = -32000; // height 
+	view->vpz = -1000;
 	
 	// Set the look at position
-	view->vrx = nVRX; 
-	view->vry = nVRY; 
-	view->vrz = nVRZ;
+	view->vrx = 12000; 
+	view->vry = 800; 
+	view->vrz = 18000; // angle
 	
 	// Set which way is up
 	view->rz =- nRZ;
@@ -98,6 +135,10 @@ void InitialiseStaticView(GsRVIEW2 *view, int nProjDist, int nRZ, int nVPX, int 
 	// Activate view
 	GsSetRefView2(view);
 }
+
+
+
+
 
 void ResetMatrix(short m[3][3]) {
 	m[0][0]=m[1][1]=m[2][2]=ONE;

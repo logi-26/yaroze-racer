@@ -29,3 +29,67 @@ u_long PadRead(void) {
 	// Return the pad buffer
 	return(~(*(bb0+3) | *(bb0+2) << 8 | *(bb1+3) << 16 | *(bb1+2) << 24));
 }
+
+int CheckPort1(void) {
+	
+	if (*(bb0) == PAD_BAD) {
+		FntPrint("PAD port-1 removed.\n\n");
+		return 0;
+	}
+	else if ((*(bb0+1) >> 4) == MOUSE) {
+		FntPrint("Mouse port-1 connected.\n\n");
+		return 1;
+	}
+	else if ((*(bb0+1) >> 4) == NEGCON) {
+		FntPrint("NeGcon port-1 connected.\n\n");
+		return 2;
+	}
+	else if ((*(bb0+1) >> 4) == NORMAL) {
+		FntPrint("Standard PAD port-1 connected.\n\n");
+		return 3;
+	}
+	else if ((*(bb0+1) >> 4) == ANALOG) {
+		FntPrint("Analog PAD port-1 connected.\n\n"); 
+		return 4;
+	}
+	else if ((*(bb0+1) >> 4) == ANALOG_JOY) {
+		FntPrint("Joystick port-1 connected.\n\n");
+		return 5;
+	}
+	else {
+		FntPrint("No controller in port 1\n\n");
+		return 0;
+	}
+}
+
+int CheckPort2(void) {
+	
+	if (*(bb1) == PAD_BAD) {
+		FntPrint("PAD port-2 removed.\n\n");
+		return 0;
+	}
+	else if ((*(bb1+1) >> 4) == MOUSE) {
+		FntPrint("Mouse port-2 connected.\n\n");
+		return 1;
+	}
+	else if ((*(bb1+1) >> 4) == NEGCON) {
+		FntPrint("NeGcon port-2 connected.\n\n");
+		return 2;
+	}
+	else if ((*(bb1+1) >> 4) == NORMAL) {
+		FntPrint("Standard PAD port-2 connected.\n\n");
+		return 3;
+	}
+	else if ((*(bb1+1) >> 4) == ANALOG) {
+		FntPrint("Analog PAD port-2 connected.\n\n"); 
+		return 4;
+	}
+	else if ((*(bb1+1) >> 4) == ANALOG_JOY) {
+		FntPrint("Joystick port-2 connected.\n\n");
+		return 5;
+	}
+	else {
+		FntPrint("No controller in port 2\n\n");
+		return 0;
+	}
+}

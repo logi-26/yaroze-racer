@@ -4,6 +4,8 @@
 #include "player.h"
 #include "graphics.h"
 #include "ground.h"
+#include "skybox.h"
+#include "calculations.h"
 
 // Global variables
 GsOT OTable_Header[4];
@@ -12,6 +14,7 @@ GsRVIEW2 Camera[2];
 u_long vsyncInterval = 0;
 GroundStruct theGround;
 int NumberOfPlayers = 1;
+Skybox skybox;
 
 // Model declarations
 ModelStruct building1;
@@ -26,6 +29,14 @@ ModelStruct barrier3;
 ModelStruct barrier4;
 ModelStruct barrier5;
 ModelStruct barrier6;
+
+ModelStruct barrier7;
+ModelStruct barrier8;
+ModelStruct barrier9;
+ModelStruct barrier10;
+ModelStruct barrier11;
+ModelStruct barrier12;
+
 
 // Load up from conventional memeory into video memory
 int LoadTexture(long addr) {
@@ -61,6 +72,8 @@ int LoadTexture(long addr) {
 
 void InitialiseWorld() {
 	
+	Skybox_Init(&skybox, BUILDING_1_TEX_MEM_ADDR);
+	
 	// Load the ground textures into VRAM
 	InitialiseGroundTextures();
 	
@@ -77,11 +90,9 @@ void InitialiseWorld() {
 void InitialiseWorldTextures() {
 	
 	// Load world model textures into VRAM
-	//LoadTexture(CAR_TEX_MEM_ADDR);
 	LoadTexture(BARRIER_2_TEX_MEM_ADDR);
 	LoadTexture(BUILDING_1_TEX_MEM_ADDR);
 	LoadTexture(BUILDING_2_TEX_MEM_ADDR);
-	LoadTexture(STAND_CROWD_TEX_MEM_ADDR);
 }
 
 void InitialiseWorldModels() {
@@ -91,8 +102,6 @@ void InitialiseWorldModels() {
 	InitialiseModel(&building2, -6000, -300, 24000, 0, 0, 0, (long*)BUILDING_2_MEM_ADDR);
 	InitialiseModel(&building3, -7500, -450, 30000, 0, 0, 0, (long*)BUILDING_1_MEM_ADDR);
 	
-	//InitialiseModel(&stand1, 0, -200, 1200, 0, 0, 0, (long*)STAND_CROWD_TEX_MEM_ADDR);
-
 	//InitialiseModel(&theBuilding, 1200, -200, 3700, 0, 0, 0, (long*)BARRIER_1_MEM_ADDR);
 	InitialiseModel(&barrier1, 1200, -200, 6210, 0, 0, 0, (long*)BARRIER_2_MEM_ADDR);
 	InitialiseModel(&barrier2, 1200, -200, 10850, 0, 0, 0, (long*)BARRIER_2_MEM_ADDR);
@@ -100,6 +109,31 @@ void InitialiseWorldModels() {
 	InitialiseModel(&barrier4, 1200, -200, 20130, 0, 0, 0, (long*)BARRIER_2_MEM_ADDR);
 	InitialiseModel(&barrier5, 1200, -200, 24770, 0, 0, 0, (long*)BARRIER_2_MEM_ADDR);
 	InitialiseModel(&barrier6, 1200, -200, 29470, 0, 0, 0, (long*)BARRIER_2_MEM_ADDR);
+	
+	
+	InitialiseModel(&barrier7, 4600, -200, 7000, 0, 5000, 5000, (long*)BARRIER_2_MEM_ADDR);
+	RotateModel180(&barrier7.gsObjectCoord, &barrier7.rotation);
+	
+	InitialiseModel(&barrier8, 4600, -200, 11600, 0, 5000, 5000, (long*)BARRIER_2_MEM_ADDR);
+	RotateModel180(&barrier8.gsObjectCoord, &barrier8.rotation);
+	
+	InitialiseModel(&barrier9, 4600, -200, 16200, 0, 5000, 5000, (long*)BARRIER_2_MEM_ADDR);
+	RotateModel180(&barrier9.gsObjectCoord, &barrier9.rotation);
+	
+	InitialiseModel(&barrier10, 4600, -200, 20800, 0, 5000, 5000, (long*)BARRIER_2_MEM_ADDR);
+	RotateModel180(&barrier10.gsObjectCoord, &barrier10.rotation);
+	
+	InitialiseModel(&barrier11, 4600, -200, 25400, 0, 5000, 5000, (long*)BARRIER_2_MEM_ADDR);
+	RotateModel180(&barrier11.gsObjectCoord, &barrier11.rotation);
+	
+	
+	InitialiseModel(&barrier12, 4600, -200, 30000, 0, 5000, 5000, (long*)BARRIER_2_MEM_ADDR);
+	RotateModel270(&barrier12.gsObjectCoord, &barrier12.rotation);
+	
+	
+	//RotateModel(&barrier12.gsObjectCoord, &barrier12.rotation, 0, 15375, 0);
+	
+	//5125
 }
 
 void AddModelToWorld() {
@@ -121,10 +155,20 @@ void DrawWorldModels(PlayerStruct *currentPlayer, int currentBuffer) {
 	DrawModelCulled(currentPlayer, &barrier5, currentBuffer);
 	DrawModelCulled(currentPlayer, &barrier6, currentBuffer);
 	
+	DrawModelCulled(currentPlayer, &barrier7, currentBuffer);
+	DrawModelCulled(currentPlayer, &barrier8, currentBuffer);
+	DrawModelCulled(currentPlayer, &barrier9, currentBuffer);
+	DrawModelCulled(currentPlayer, &barrier10, currentBuffer);
+	DrawModelCulled(currentPlayer, &barrier11, currentBuffer);
+	
+	//DrawModelCulled(currentPlayer, &barrier12, currentBuffer);
+	
 	//DrawModel(&stand1, &OTable_Header[currentBuffer]);
 }
 
 void DrawWorld(PlayerStruct *currentPlayer, int currentBuffer) {
+	
+	Skybox_Draw(&skybox, &Camera[0], &OTable_Header[currentBuffer]);
 	
 	// Draw the ground
 	DrawGround(&theGround, currentPlayer, &OTable_Header[currentBuffer]);
@@ -187,7 +231,7 @@ void RenderWorld() {
 	
 	// Clear the ordering table for the top screen
 	GsClearOt(0, 0, &OTable_Header[currentBuffer]);
-	
+
 	// Draw the world for player 1
 	RenderWorldPlayer1(currentBuffer);
 	
@@ -228,11 +272,4 @@ void RenderWorld() {
 		// Draw the commands in queue
 		GsDrawOt(&OTable_Header[currentBuffer+2]);   
 	}
-}
-
-int CalculateDistanceSquared(int x1, int y1, int z1, int x2, int y2, int z2) {
-    int dx = x2 - x1;
-    int dy = y2 - y1;
-    int dz = z2 - z1;
-    return (dx*dx + dy*dy + dz*dz);
 }

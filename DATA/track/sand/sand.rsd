@@ -1,8 +1,0 @@
-# Created from "sand.dxf" by dxf2rsd(v2.81) -quad2 20.0000 -back at 17:31 03/08/125
-@RSD940102
-PLY=sand.ply
-MAT=sand.mat
-GRP=sand.grp
-# Number of Texture Files
-NTEX=1
-TEX[0]=sand.tim

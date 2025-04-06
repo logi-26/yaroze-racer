@@ -1,8 +1,0 @@
-# Created from "t_l_4.dxf" by dxf2rsd(v2.81) -quad2 20.0000 -back at 17:31 03/08/125
-@RSD940102
-PLY=t_l_4.ply
-MAT=t_l_4.mat
-GRP=t_l_4.grp
-# Number of Texture Files
-NTEX=1
-TEX[0]=t_l_4.tim

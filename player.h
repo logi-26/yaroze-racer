@@ -36,8 +36,10 @@ int IsObjectNearPlayer(PlayerStruct* player, GsCOORDINATE2* objectCoord);
 // Player model and texture memory addresses
 /*****************************************************/
 //#define CAR_MEM_ADDR 			(0x80090000)
-#define CAR_TEX_MEM_ADDR 		(0x800A69C0)
+//#define CAR_TEX_MEM_ADDR 		(0x800A69C0)
+
 #define CAR_MEM_ADDR            (0x800F5000)
+#define CAR_2_MEM_ADDR          (0x80104000)
 /*****************************************************/
 
 #endif // PLAYER_H

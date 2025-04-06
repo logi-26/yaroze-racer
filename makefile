@@ -7,7 +7,7 @@ CFLAGS = -O3 -g -I/path/to/your/pad/
 LINKER = -Xlinker -Ttext -Xlinker 80140000
 
 PROG = main.exe
-OBJS = main.o world.o light.o graphics.o controller.o player.o model.o game.o pad.o ground.o
+OBJS = main.o world.o light.o graphics.o controller.o player.o model.o game.o pad.o ground.o skybox.o calculations.o screen.o
 
 all: $(PROG)
 
@@ -44,10 +44,19 @@ pad.o: pad.c pad.h
 ground.o: ground.c ground.h
 	$(CC) $(CFLAGS) -c ground.c
 
-run: $(PROG)	
-	del psx.exe 
-	yarexe auto	
-	nopsx psx.exe	
+skybox.o: skybox.c skybox.h
+	$(CC) $(CFLAGS) -c skybox.c
+	
+calculations.o: calculations.c calculations.h
+	$(CC) $(CFLAGS) -c calculations.c
+
+screen.o: screen.c screen.h
+	$(CC) $(CFLAGS) -c screen.c
+
+run: $(PROG)
+	del psx.exe
+	yarexe auto
+	nopsx psx.exe
 
 usb: $(PROG)
 	@if exist ny.exe del ny.exe

@@ -13,7 +13,7 @@
 #define NTSC_HEIGHT   (256)
 
 // Distance threshold for graphics culling
-#define DISTANCE_THRESHOLD_SQUARED (12000*12000)
+#define DISTANCE_THRESHOLD_SQUARED (80000*80000)
 
 // Define 4 ordering tables, 4 memory packets and 4 draw environments
 // This will give use 2 screen buffers for each view (split screen)

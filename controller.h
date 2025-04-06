@@ -5,8 +5,9 @@ extern unsigned long PLAYING;
 
 /************* FUNCTION PROTOTYPES *******************/
 void ProcessUserInput();
-void ProcessInputPort1();
-void ProcessInputPort2();
+void ProcessControllerPort1();
+void ProcessNegconPort1();
+void ProcessControllerPort2();
 /*****************************************************/
 
 #endif

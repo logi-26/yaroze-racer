@@ -1,72 +1,35 @@
-local dload data\car\car01.tmd 80090000
-local dload data\car\com.TIM 800A69C0
+local dload data\track\line\line.tmd 80093000
+local dload data\track\line\line.tim 80093070
 
-local dload data\track\line_l\line_l.tmd 80093000
-local dload data\track\line_l\line_l.tim 80093070
+local dload data\track\st_1\st_1.tmd 800942CC
+local dload data\track\st_1\st_1.tim 8009433C
 
-local dload data\track\line_r\line_r.tmd 800942CC
-local dload data\track\line_r\line_r.tim 8009433C
+local dload data\track\t_1\t_1.tmd 80095598
+local dload data\track\t_1\t_1.tim 80095608
 
-local dload data\track\st_l_1\st_l_1.tmd 80095598
-local dload data\track\st_l_1\st_l_1.tim 80095608
+local dload data\track\t_00\t_00.tmd 80096864
+local dload data\track\t_00\t_00.tim 800968D4
 
-local dload data\track\st_l_2\st_l_2.tmd 80096864
-local dload data\track\st_l_2\st_l_2.tim 800968D4
+local dload data\track\t_01\t_01.tmd 80098DFC
+local dload data\track\t_01\t_01.tim 80098E6C
 
-local dload data\track\st_r_1\st_r_1.tmd 80097B30
-local dload data\track\st_r_1\st_r_1.tim 80097BA0
+local dload data\track\t_02\t_02.tmd 8009B394
+local dload data\track\t_02\t_02.tim 8009B404
 
-local dload data\track\st_r_2\st_r_2.tmd 80098DFC
-local dload data\track\st_r_2\st_r_2.tim 80098E6C
+local dload data\track\blank\blank.tmd 8009FEC4
+local dload data\track\blank\blank.tim 8009FF34
 
-local dload data\track\t_l_1\t_l_1.tmd 8009A0C8
-local dload data\track\t_l_1\t_l_1.tim 8009A138
+local dload data\track\grid\grid.tmd 800A5CC0
+local dload data\track\grid\grid.tim 800A5D30
 
-local dload data\track\t_l_2\t_l_2.tmd 8009B394
-local dload data\track\t_l_2\t_l_2.tim 8009B404
+local dload data\track\st_01\st_01.tmd 800A6F8C
+local dload data\track\st_01\st_01.tim 800A6FFC
 
-local dload data\track\t_l_3\t_l_3.tmd 8009C660
-local dload data\track\t_l_3\t_l_3.tim 8009C6D0
-
-local dload data\track\t_l_4\t_l_4.tmd 8009D92C
-local dload data\track\t_l_4\t_l_4.tim 8009D99C
-
-local dload data\track\t_r_1\t_r_1.tmd 8009EBF8
-local dload data\track\t_r_1\t_r_1.tim 8009EC68
-
-local dload data\track\t_r_2\t_r_2.tmd 8009FEC4
-local dload data\track\t_r_2\t_r_2.tim 8009FF34
-
-local dload data\track\t_r_3\t_r_3.tmd 800A1190
-local dload data\track\t_r_3\t_r_3.tim 800A1200
-
-local dload data\track\t_r_4\t_r_4.tmd 800A245C
-local dload data\track\t_r_4\t_r_4.tim 800A24CC
-
-local dload data\track\grid_l\grid_l.tmd 800A49F4
-local dload data\track\grid_l\grid_l.tim 800A4A64
-
-local dload data\track\grid_r\grid_r.tmd 800A5CC0
-local dload data\track\grid_r\grid_r.tim 800A5D30
-
-local dload data\track\st_l_01\st_l_01.tmd 800A6F8C
-local dload data\track\st_l_01\st_l_01.tim 800A6FFC
-
-local dload data\track\st_l_02\st_l_02.tmd 800A8258
-local dload data\track\st_l_02\st_l_02.tim 800A82C8
-
-local dload data\track\st_r_01\st_r_01.tmd 800A9524
-local dload data\track\st_r_01\st_r_01.tim 800A9594
-
-local dload data\track\st_r_02\st_r_02.tmd 800AA7F0
-local dload data\track\st_r_02\st_r_02.tim 800AA860
-
-local dload data\track\grass_1\grass_1.tmd 800ABABC
-local dload data\track\grass_1\grass_1.tim 800ABB2C
+local dload data\track\grass_1\grass_1.tmd 800A8258
+local dload data\track\grass_1\grass_1.tim 800A82C8
 
 local dload data\barrier2\barrier2.tmd 800ADB2C
 local dload data\barrier2\barrier2.tim 800AEB2C
-
 
 local dload data\build1\build1.tmd 800AFF20
 local dload data\build1\build1.tim 800B00B0
@@ -77,8 +40,10 @@ local dload data\test\build2.tim 800B3190
 local dload data\stand\stand.tmd 800B5000
 local dload data\stand\crowd.tim 800B5070
 
-
 local dload data\porch\porch.tmd 800F5000
+local dload data\ferar\ferar.tmd 80104000
+
+local dload data\skybox\skybox.tim 801A4000
 
 local load main.exe
 go

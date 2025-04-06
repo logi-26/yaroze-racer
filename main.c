@@ -26,17 +26,23 @@ int main() {
 	InitialiseGraphics();
 	
 	InitialisePlayer(&player1, 1, 3605, -200, 9273, (long*)CAR_MEM_ADDR);
-	InitialisePlayer(&player2, 2, 2448, -200, 9273, (long*)CAR_MEM_ADDR);
+	InitialisePlayer(&player2, 2, 2448, -200, 9273, (long*)CAR_2_MEM_ADDR);
 	
 	// Initialise the views (use horizontal split-screen in 2 player mode)
 	if (NumberOfPlayers == 2) {
-		InitSplitScreen(0, 0, 320, 120, 0, 120, 320, 120);
+		InitSplitScreen(0, 0, 320, 120, 0, 120, 320, 120); // Horizontal (Only select 1 of these)
+		//InitSplitScreen(0, 0, 160, 240, 160, 0, 160, 240); // Vertical   (Only select 1 of these)
 		InitialiseTrackerViewPlayer1(&Camera[0], 250, 0, 0, -500, -2200, 0, -200, 0);
 		InitialiseTrackerViewPlayer2(&Camera[1], 250, 0, 0, -500, -2200, 0, -200, 0);
 	}
 	else {
 		InitSingleScreen();
-		InitialiseTrackerViewPlayer1(&Camera[0], 250, 0, 0, -500, -1500, 0, -200, 0);
+		//InitialiseTrackerViewPlayer1(&Camera[0], 250, 0, 0, -500, -1500, 0, -200, 0);
+		//InitialiseFrontViewPlayer1(&Camera[0], 250, 0, 0, -500, -1000, 0, -800, 0);
+		
+		
+		InitialiseStaticView(&Camera[0], 250, 0, 0, -500, -1000, 0, -800, 0);
+	  
 	}
 	
 	// Initialise the lights 

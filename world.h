@@ -44,8 +44,10 @@ void RenderWorldPlayer2(int currentBuffer);
 #define BUILDING_2_MEM_ADDR                 (0x800B3000)
 #define BUILDING_2_TEX_MEM_ADDR             (0x800B3190)
 
-#define STAND_MEM_ADDR                      (0x800B5000)  
-#define STAND_CROWD_TEX_MEM_ADDR            (0x800B5070) 
+
+
+//#define STAND_MEM_ADDR                      (0x800B5000)  
+//#define STAND_CROWD_TEX_MEM_ADDR            (0x800B5070) 
 /*****************************************************/
 
 #endif // WORLD_H

@@ -1,8 +1,0 @@
-# Created from "grid_l.dxf" by dxf2rsd(v2.81) -quad2 20.0000 -back at 17:31 03/08/125
-@RSD940102
-PLY=grid_l.ply
-MAT=grid_l.mat
-GRP=grid_l.grp
-# Number of Texture Files
-NTEX=1
-TEX[0]=grid_l.tim

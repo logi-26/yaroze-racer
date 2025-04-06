@@ -6,12 +6,12 @@
 - [ ] Add support for pausing the game
 - [x] Add support for 2 controllers (player 1 and player 2)
 - [x] Add support for analogue controllers
-- [ ] Add support for negcon controllers
-- [ ] Handle controller inserted/removed
+- [x] Add support for negcon controllers
+- [x] Handle controller inserted/removed
 - [x] Add support for 2 playable vehicles
 - [x] Add support for horizontal split-screen mode
 - [x] Add support for vertical split-screen mode
-- [ ] Add internal camera/view for each player
+- [x] Add front camera/view for each player
 - [ ] Add rear camera/view for each player
 - [ ] Add single skybox image
 - [ ] Add multiple skybox images for different weather conditions/times of day
@@ -42,6 +42,8 @@
 ![Screenshot](https://raw.githubusercontent.com/logi-26/yaroze-racer/refs/heads/main/screenshots/2-player-v.bmp)
 
 ![Screenshot](https://raw.githubusercontent.com/logi-26/yaroze-racer/refs/heads/main/screenshots/car1.bmp)
+
+![Screenshot](https://raw.githubusercontent.com/logi-26/yaroze-racer/refs/heads/main/screenshots/track-view.bmp)
 
 ![Screenshot](https://raw.githubusercontent.com/logi-26/yaroze-racer/refs/heads/main/screenshots/track.bmp)
 

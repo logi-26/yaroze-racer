@@ -49,6 +49,43 @@ void InitialiseModel(ModelStruct *theModel, int nX, int nY, int nZ, int rotX, in
 	LinkModelToTMD(theModel, nX, nY, nZ, lModelAddress);
 }
 
+// Rotate a model 90 degrees around Y axis
+void RotateModel90(GsCOORDINATE2 *gsObjectCoord, SVECTOR *rotateVector) {
+	RotModel(gsObjectCoord, rotateVector, 0, 5125, 0);
+}
+
+// Rotate a model 180 degrees around Y axis
+void RotateModel180(GsCOORDINATE2 *gsObjectCoord, SVECTOR *rotateVector) {
+	RotModel(gsObjectCoord, rotateVector, 0, 10250, 0);
+}
+
+// Rotate a model 270 degrees around Y axis
+void RotateModel270(GsCOORDINATE2 *gsObjectCoord, SVECTOR *rotateVector) {
+	RotModel(gsObjectCoord, rotateVector, 0, 15375, 0);
+}
+
+// Rotate a model using X/Y/Z values
+void RotModel(GsCOORDINATE2 *gsObjectCoord, SVECTOR *rotateVector, int nRX, int nRY, int nRZ) {
+    MATRIX matTmp;
+
+	// Update rotation vector
+	rotateVector->vx = (rotateVector->vx + nRX) % ONE;
+	rotateVector->vy = (rotateVector->vy + nRY) % ONE;
+	rotateVector->vz = (rotateVector->vz + nRZ) % ONE;
+	
+	// Reset the coordinate system
+	ResetMatrix(gsObjectCoord->coord.m);
+	
+	// Set up the rotation matrix
+	RotMatrix(rotateVector, &matTmp);
+	
+	// Apply the rotation
+	MulMatrix0(&gsObjectCoord->coord, &matTmp, &gsObjectCoord->coord);
+	
+	// Mark for redraw
+	gsObjectCoord->flg = 0;
+}
+
 // Only draw the model if it is near to the player
 void DrawModelCulled(PlayerStruct *currentPlayer, ModelStruct *model, int currentBuffer) {
     if (model && IsObjectNearPlayer(currentPlayer, &model->gsObjectCoord)) {
