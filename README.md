@@ -43,8 +43,8 @@
 
 ![Screenshot](https://raw.githubusercontent.com/logi-26/yaroze-racer/refs/heads/main/screenshots/car1.bmp)
 
-![Screenshot](https://raw.githubusercontent.com/logi-26/yaroze-racer/refs/heads/main/screenshots/track-view.bmp)
+![Screenshot](https://raw.githubusercontent.com/logi-26/yaroze-racer/refs/heads/main/screenshots/track-overview.bmp)
 
 ![Screenshot](https://raw.githubusercontent.com/logi-26/yaroze-racer/refs/heads/main/screenshots/track.bmp)
 
-![Screenshot](https://raw.githubusercontent.com/logi-26/yaroze-racer/refs/heads/main/screenshots/mem-map.bmp)
+![Screenshot](https://raw.githubusercontent.com/logi-26/yaroze-racer/refs/heads/main/screenshots/memory-map.bmp)
