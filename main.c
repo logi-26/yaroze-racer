@@ -3,13 +3,15 @@
 #include <libps.h>
 #include <string.h>
 #include "main.h"
-#include "world.h"
-#include "light.h"
-#include "graphics.h"
-#include "player.h"
-#include "model.h"
-#include "game.h"
-#include "controller.h"
+#include "game/world.h"
+#include "game/light.h"
+#include "game/graphics.h"
+#include "game/player.h"
+#include "game/model.h"
+#include "game/game.h"
+
+//#include "controller.h"
+//#include "padio.h"
 
 PlayerStruct player1;
 PlayerStruct player2;
@@ -20,12 +22,17 @@ int main() {
 	InitialiseFontSystem();
 	
 	// Setup the controller pad
-	PadInit();
+	//PadInit();
+	//PadioInit();
 	
 	// Initialise the graphics, lights and view 
 	InitialiseGraphics();
 	
-	InitialisePlayer(&player1, 1, 3605, -200, 9273, (long*)CAR_MEM_ADDR);
+	InitialisePlayer(&player1, 1, 3605, -200, 9273, (long*)CAR_3_MEM_ADDR);
+	{
+		SVECTOR modelRot = {0, 0, 0, 0};
+		RotModel(&player1.gsModelCoord, &modelRot, 3072, 2048, 0);
+	}
 	InitialisePlayer(&player2, 2, 2448, -200, 9273, (long*)CAR_2_MEM_ADDR);
 	
 	// Initialise the views (use horizontal split-screen in 2 player mode)
@@ -37,12 +44,10 @@ int main() {
 	}
 	else {
 		InitSingleScreen();
-		//InitialiseTrackerViewPlayer1(&Camera[0], 250, 0, 0, -500, -1500, 0, -200, 0);
+		InitialiseTrackerViewPlayer1(&Camera[0], 250, 0, 0, -500, -1500, 0, -200, 0);
 		//InitialiseFrontViewPlayer1(&Camera[0], 250, 0, 0, -500, -1000, 0, -800, 0);
-		
-		
-		InitialiseStaticView(&Camera[0], 250, 0, 0, -500, -1000, 0, -800, 0);
-	  
+		//InitialiseStaticView(&Camera[0], 250, 0, 0, -500, -1000, 0, -800, 0);
+		//InitialiseTopDownView(&Camera[0], 250, 0, 0, 0);
 	}
 	
 	// Initialise the lights 
@@ -53,8 +58,11 @@ int main() {
 	
 	// Run the game loop
 	while(PLAYING) {
-		// Handle user input and render the game world
-		ProcessUserInput();
+		//ProcessUserInput();
+		CheckWorldCollisions(&player1, &player1_lateralSpeed);
+		if (NumberOfPlayers == 2) {
+			CheckWorldCollisions(&player2, &player2_lateralSpeed);
+		}
 		RenderWorld();
 	}
 	

@@ -1,0 +1,5 @@
+@RSD940102
+PLY=car200.ply
+MAT=car200.mat
+NTEX=1
+TEX[0]=car2_red.tim

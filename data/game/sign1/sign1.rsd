@@ -1,0 +1,5 @@
+@RSD940102
+PLY=sign1.ply
+MAT=sign1.mat
+NTEX=1
+TEX[0]=sign1.tim

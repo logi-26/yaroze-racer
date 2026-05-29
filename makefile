@@ -7,51 +7,39 @@ CFLAGS = -O3 -g -I/path/to/your/pad/
 LINKER = -Xlinker -Ttext -Xlinker 80140000
 
 PROG = main.exe
-OBJS = main.o world.o light.o graphics.o controller.o player.o model.o game.o pad.o ground.o skybox.o calculations.o screen.o
+OBJS = main.o world.o light.o graphics.o player.o model.o game.o ground.o calculations.o
 
 all: $(PROG)
 
 $(PROG): $(OBJS)
 	$(CC) $(LINKER) -o $@ $?
 
-main.o: main.c main.h world.h light.h graphics.h player.h model.h game.h controller.h
+main.o: main.c main.h game/world.h game/light.h game/graphics.h game/player.h game/model.h game/game.h
 	$(CC) $(CFLAGS) -c main.c
 
-world.o: world.c world.h
-	$(CC) $(CFLAGS) -c world.c
+world.o: game/world.c game/world.h
+	$(CC) $(CFLAGS) -I. -c game/world.c
 
-light.o: light.c light.h
-	$(CC) $(CFLAGS) -c light.c
+light.o: game/light.c game/light.h
+	$(CC) $(CFLAGS) -I. -c game/light.c
 
-graphics.o: graphics.c graphics.h
-	$(CC) $(CFLAGS) -c graphics.c
+graphics.o: game/graphics.c game/graphics.h
+	$(CC) $(CFLAGS) -I. -c game/graphics.c
 
-player.o: player.c player.h
-	$(CC) $(CFLAGS) -c player.c
+player.o: game/player.c game/player.h
+	$(CC) $(CFLAGS) -I. -c game/player.c
 
-model.o: model.c model.h
-	$(CC) $(CFLAGS) -c model.c
+model.o: game/model.c game/model.h
+	$(CC) $(CFLAGS) -I. -c game/model.c
 
-game.o: game.c game.h
-	$(CC) $(CFLAGS) -c game.c
-
-controller.o: controller.c controller.h
-	$(CC) $(CFLAGS) -c controller.c
-
-pad.o: pad.c pad.h
-	$(CC) $(CFLAGS) -c pad.c
+game.o: game/game.c game/game.h
+	$(CC) $(CFLAGS) -I. -c game/game.c
 	
-ground.o: ground.c ground.h
-	$(CC) $(CFLAGS) -c ground.c
-
-skybox.o: skybox.c skybox.h
-	$(CC) $(CFLAGS) -c skybox.c
+ground.o: game/ground.c game/ground.h
+	$(CC) $(CFLAGS) -I. -c game/ground.c
 	
-calculations.o: calculations.c calculations.h
-	$(CC) $(CFLAGS) -c calculations.c
-
-screen.o: screen.c screen.h
-	$(CC) $(CFLAGS) -c screen.c
+calculations.o: game/calculations.c game/calculations.h
+	$(CC) $(CFLAGS) -I. -c game/calculations.c
 
 run: $(PROG)
 	del psx.exe

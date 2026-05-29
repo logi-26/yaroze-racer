@@ -1,0 +1,1 @@
+rsdlink -s 2 -o stand.tmd stand.rsd
