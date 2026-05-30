@@ -126,7 +126,17 @@ void SetScreenMode(ScreenMode mode) {
         SplitScreenInfo[1].r      = 0; SplitScreenInfo[1].g = 0; SplitScreenInfo[1].b = 0;
 
         GsSetProjection(250);
- 
+
+        // Set GTE screen projection center (OFX/OFY, COP2 ctrl regs 24/25)
+        // GsInit3D zeroes these; PutDrawEnv does not restore them.
+        // Format is 16.16 fixed-point, so shift the integer pixel value left 16
+        {
+            int ofx = (gScreenWidth  / 2) << 16;
+            int ofy = (gScreenHeight / 2) << 16;
+            asm volatile("ctc2 %0, $24" : : "r"(ofx));
+            asm volatile("ctc2 %0, $25" : : "r"(ofy));
+        }
+
 #if ENABLE_SPLITSCREEN
     } else {
 		/*****************************************************
@@ -176,6 +186,14 @@ void SetScreenMode(ScreenMode mode) {
         SplitScreenInfo[3].r      = 0; SplitScreenInfo[3].g = 0; SplitScreenInfo[3].b = 0;
  
         GsSetProjection(200);
+
+        // Set GTE screen projection center for half-height splitscreen viewports
+        {
+            int ofx = (gScreenWidth / 2) << 16;
+            int ofy = (halfH        / 2) << 16;
+            asm volatile("ctc2 %0, $24" : : "r"(ofx));
+            asm volatile("ctc2 %0, $25" : : "r"(ofy));
+        }
 #endif
     }
 }
@@ -228,7 +246,7 @@ void UpdateGraphicsSystem(int activeBuffer) {
         PutDrawEnv(&SplitScreenInfo[activeBuffer]);
         GsSortClear(r, g, b, &WorldOrderingTable[activeBuffer]);
         GsDrawOt(&WorldOrderingTable[activeBuffer]);
- 
+
         // Bottom half
         PutDrawEnv(&SplitScreenInfo[activeBuffer + 2]);
         GsSortClear(r, g, b, &WorldOrderingTable[activeBuffer + 2]);

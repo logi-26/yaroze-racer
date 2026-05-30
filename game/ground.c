@@ -3,6 +3,7 @@
 #include "../engine/graphics.h"
 #include "game.h"
 
+
 char groundDataTrack1[GROUND_MAX_Z][GROUND_MAX_X] = {
 	{'3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3'},
 	{'3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3','3'},
@@ -36,6 +37,7 @@ char groundDataTrack1[GROUND_MAX_Z][GROUND_MAX_X] = {
 	{'3','3','v','v','v','v','v','v','v','v','v','v','v','v','v','v','v','v','3','3','3','3','3','3','3','3','3','3','3','3'},
 };
 
+
 void InitialiseGroundTextures() {
 	
 	// Load ground textures into vram
@@ -53,6 +55,7 @@ void InitialiseGroundTextures() {
 	
 	LoadTexture(SAND_TEX_MEM_ADDR); 
 }
+
 
 /*
 1 = STRAIGHT_L_1_MEM_ADDR 					data\track\st_l_1\st_l_1
@@ -238,18 +241,15 @@ void InitialiseGround() {
 				AddModelToGround(&theGround, (tmpz * SEPERATION), (0), (tmpx * SEPERATION), (long *)TURN_02_MEM_ADDR);
 				RotateGround270(&theGround);
 			}
-			
-			
+
 			
 			if (groundData == 'v') {
 				AddModelToGround(&theGround, (tmpz * SEPERATION), (0), (tmpx * SEPERATION), (long *)SAND_MEM_ADDR);
 			}
-			
-			
-			
 		}
 	}
 }
+
 
 void AddModelToGround(GroundStruct *theGround, int nX, int nY, int nZ, unsigned long *lModelAddress) {
     theGround->lObjectPointer[theGround->nTotalModels] = (unsigned long*)lModelAddress;
@@ -288,11 +288,13 @@ void AddModelToGround(GroundStruct *theGround, int nX, int nY, int nZ, unsigned 
 	theGround->gsObjectCoord[theGround->nTotalModels].flg = 0;
 }
 
+
 // Rotate a ground section 90 degrees around Y axis
 void RotateGround90(GroundStruct *theGround) {
     SVECTOR rotateVector;
     RotateGround(&theGround->gsObjectCoord[theGround->nTotalModels -1], &rotateVector, 0, 5125, 0);
 }
+
 
 // Rotate a ground section 180 degrees around Y axis
 void RotateGround180(GroundStruct *theGround) {
@@ -300,11 +302,13 @@ void RotateGround180(GroundStruct *theGround) {
     RotateGround(&theGround->gsObjectCoord[theGround->nTotalModels -1], &rotateVector, 0, 10250, 0);
 }
 
+
 // Rotate a ground section 270 degrees around Y axis
 void RotateGround270(GroundStruct *theGround) {
     SVECTOR rotateVector;
     RotateGround(&theGround->gsObjectCoord[theGround->nTotalModels -1], &rotateVector, 0, 15375, 0);
 }
+
 
 // Rotate a ground section using X/Y/Z values
 void RotateGround(GsCOORDINATE2 *gsObjectCoord, SVECTOR *rotateVector, int nRX, int nRY, int nRZ) {
@@ -327,6 +331,7 @@ void RotateGround(GsCOORDINATE2 *gsObjectCoord, SVECTOR *rotateVector, int nRX, 
     // Mark for redraw
     gsObjectCoord->flg = 0;
 }
+
 
 void DrawGround(GroundStruct *theGround, PlayerStruct *currentPlayer, GsOT *ot) {
     MATRIX  tmpls, tmplw;
@@ -352,11 +357,14 @@ void DrawGround(GroundStruct *theGround, PlayerStruct *currentPlayer, GsOT *ot) 
         }
     }
 
-	/* Draw brake lights for any player that is braking */
+
+	// Draw brake lights for any player that is braking
 	otIdx = (int)(ot - WorldOrderingTable);
+	
 	if (player1_isBraking) {
 		DrawBrakeLights(&player1, ot, otIdx);
 	}
+	
 	if (NumberOfPlayers == 2 && player2_isBraking) {
 		DrawBrakeLights(&player2, ot, otIdx);
 	}

@@ -4,16 +4,20 @@
 #include <libps.h>
 #include "game/player.h"
 
-// Size of the ground
+
+// Size of the ground (900 ground tiles: 30x30 tile ground)
 #define MAX_GROUND_OBJECTS (900)
 #define GROUND_MAX_X (30)
 #define GROUND_MAX_Z (30)
 
+
 // Seperation between ground tiles
 #define SEPERATION (1200)
 
+
 // Array for the ground tiles
 extern char groundDataTrack1[GROUND_MAX_Z][GROUND_MAX_X];
+
 
 // Struct to store the ground data 
 typedef struct {
@@ -24,8 +28,10 @@ typedef struct {
 
 } GroundStruct;
 
+
 // Create an instance of the ground
 extern GroundStruct theGround;
+
 
 /************* FUNCTION PROTOTYPES *******************/
 void InitialiseGroundTextures();
@@ -37,6 +43,7 @@ void RotateGround270(GroundStruct *theGround);
 void RotateGround(GsCOORDINATE2 *gsObjectCoord, SVECTOR *rotateVector, int nRX, int nRY, int nRZ);
 void DrawGround(GroundStruct *theGround, PlayerStruct* currentPlayer, GsOT *ot);
 /*****************************************************/
+
 
 /*****************************************************/
 // Ground model and texture memory addresses

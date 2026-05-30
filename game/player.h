@@ -1,11 +1,11 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-#define MAX_SPEED 150
+#define MAX_SPEED 240				// 120 MPH
 #define ACCELERATION 3
 #define DECELERATION 2              // Natural coast deceleration
-#define BRAKE_DECELERATION 6       // Hard braking (only applied when brake button held)
-#define MAX_REVERSE_SPEED -150
+#define BRAKE_DECELERATION 6        // Hard braking (only applied when brake button held)
+#define MAX_REVERSE_SPEED -100		// 50 MPH backwards
 #define STEERING_RESPONSE 120       // Steering sensitivity (higher value steers vehicle faster)
 #define DRIFT_FACTOR 400            // Oversteer (higher value is more drift)
 #define TRACTION 400                // Steering damping (higher value for tighter handling in corners)
