@@ -2,6 +2,7 @@
 #include "model.h"
 #include "calculations.h"
 
+
 void LinkModelToTMD(ModelStruct *theModel, int nX, int nY, int nZ, unsigned long *lModelAddress) {
     lModelAddress++;
     GsMapModelingData((unsigned long *)lModelAddress);
@@ -16,6 +17,7 @@ void LinkModelToTMD(ModelStruct *theModel, int nX, int nY, int nZ, unsigned long
     theModel->gsObjectCoord.flg = 0;
 }
 
+
 void InitialiseModel(ModelStruct *theModel, int nX, int nY, int nZ, int rotX, int rotY, int rotZ, unsigned long *lModelAddress) {
     theModel->rotation.vx = 0;
     theModel->rotation.vy = 0;
@@ -24,6 +26,7 @@ void InitialiseModel(ModelStruct *theModel, int nX, int nY, int nZ, int rotX, in
     theModel->collisionRadius = 300;
     LinkModelToTMD(theModel, nX, nY, nZ, lModelAddress);
 }
+
 
 void RotModel(GsCOORDINATE2 *gsObjectCoord, SVECTOR *rotateVector, int nRX, int nRY, int nRZ) {
     MATRIX matTmp;
@@ -36,17 +39,21 @@ void RotModel(GsCOORDINATE2 *gsObjectCoord, SVECTOR *rotateVector, int nRX, int 
     gsObjectCoord->flg = 0;
 }
 
+
 void RotateModel90(GsCOORDINATE2 *gsObjectCoord, SVECTOR *rotateVector) {
     RotModel(gsObjectCoord, rotateVector, 0, 5125, 0);
 }
+
 
 void RotateModel180(GsCOORDINATE2 *gsObjectCoord, SVECTOR *rotateVector) {
     RotModel(gsObjectCoord, rotateVector, 0, 10240, 0);
 }
 
+
 void RotateModel270(GsCOORDINATE2 *gsObjectCoord, SVECTOR *rotateVector) {
     RotModel(gsObjectCoord, rotateVector, 0, 15360, 0);
 }
+
 
 void DrawModel(ModelStruct *theModel, GsOT *othWorld) {
     MATRIX tmpls, tmplw;

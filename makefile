@@ -2,7 +2,7 @@ CFLAGS = -O3 -g -I/path/to/your/pad/
 LINKER = -Xlinker -Ttext -Xlinker 80140000
 
 PROG = main
-OBJS = main.o state_manager.o graphics.o controller.o memcard.o audio.o font.o timer.o lang.o ui.o sincos.o asset_manager.o profiler.o menu_main.o menu_memcard.o menu_memcard_load.o menu_memcard_save.o menu_options.o menu_lobby.o menu_pause.o gameplay.o gameover.o memcard_context.o message.o keyboard.o world.o light.o player.o model.o game.o ground.o calculations.o car_controls.o
+OBJS = main.o state_manager.o graphics.o controller.o memcard.o audio.o font.o timer.o lang.o ui.o sincos.o asset_manager.o profiler.o menu_main.o menu_memcard.o menu_memcard_load.o menu_memcard_save.o menu_options.o menu_lobby.o menu_vehicle_select.o menu_pause.o gameplay.o gameover.o memcard_context.o message.o keyboard.o world.o light.o player.o model.o game.o ground.o calculations.o car_controls.o
 
 all: $(PROG)
 
@@ -82,6 +82,9 @@ menu_options.o: states/menu_options.c engine/state_manager.h engine/font.h engin
 menu_lobby.o: states/menu_lobby.c engine/state_manager.h engine/font.h engine/colours.h engine/controller.h engine/audio.h engine/graphics.h engine/ui.h
 	$(CC) $(CFLAGS) -c states/menu_lobby.c
 
+
+menu_vehicle_select.o: states/menu_vehicle_select.c engine/state_manager.h engine/font.h engine/colours.h engine/controller.h engine/graphics.h engine/light.h engine/model.h game/player.h game/world.h
+	$(CC) $(CFLAGS) -I. -c states/menu_vehicle_select.c
 
 menu_pause.o: states/menu_pause.c engine/state_manager.h engine/font.h engine/colours.h engine/controller.h engine/audio.h engine/graphics.h
 	$(CC) $(CFLAGS) -c states/menu_pause.c
