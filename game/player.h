@@ -50,8 +50,15 @@ int IsObjectNearPlayer(PlayerStruct* player, GsCOORDINATE2* objectCoord);
 
 #define CAR_MEM_ADDR            (0x800F5000)
 #define CAR_2_MEM_ADDR          (0x80113000)
+
 #define CAR_3_MEM_ADDR          (0x800F5000)
 #define CAR_3_TEX_MEM_ADDR      (0x80122000)
+
+#define CAR_3R_MEM_ADDR         (0x80127000)
+#define CAR_3R_TEX_MEM_ADDR     (0x8012C000)
+
+#define CAR_3Y_MEM_ADDR         (0x80131000)
+#define CAR_3Y_TEX_MEM_ADDR     (0x80136000)
 /*****************************************************/
 
 #endif // PLAYER_H

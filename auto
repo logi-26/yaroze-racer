@@ -63,4 +63,10 @@ local dload data\game\build2\build2.tim 800D32BC
 local dload data\game\car3\green\car3.tmd 800F5000
 local dload data\game\car3\green\car3.tim 80122000
 
+local dload data\game\car3\red\CAR3R.TMD 80127000
+local dload data\game\car3\red\car3_red.tim 8012C000
+
+local dload data\game\car3\yellow\CAR3Y.TMD 80131000
+local dload data\game\car3\yellow\car3_yel.tim 80136000
+
 go
