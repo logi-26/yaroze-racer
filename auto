@@ -61,10 +61,6 @@ local dload data\game\build2\build2.tmd 800E312C
 local dload data\game\build2\build2.tim 800D32BC
 
 local dload data\game\car3\car3.tmd 800F5000
-local dload data\game\ferar\ferar.tmd 80113000
-
 local dload data\game\car3\car3.tim 80122000
-
-local dload data\game\skybox\skybox.tim 801A4000
 
 go
