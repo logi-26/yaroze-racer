@@ -1,6 +1,7 @@
 #include "game.h"
 #include "game/player.h"
-#include "game/graphics.h"
+#include "../engine/graphics.h"
+#include "../engine/calculations.h"
 
 long player1_lateralSpeed = 0;
 long player2_lateralSpeed = 0;
@@ -32,23 +33,23 @@ void ScaleTmdVertices(unsigned long *tmdAddr, int divisor) {
 void InitialiseTrackerViewPlayer1(GsRVIEW2 *view, int nProjDist, int nRZ, int nVPX, int nVPY, int nVPZ, int nVRX, int nVRY, int nVRZ) {
 	// This is the distance between the eye and the imaginary projection screen
 	GsSetProjection(200);
-	
+
 	// Set the eye position or center of projection
-	view->vpx = nVPX; 
-	view->vpy = nVPY;  
+	view->vpx = nVPX;
+	view->vpy = nVPY;
 	view->vpz = nVPZ;
-	
+
 	// Set the look at position
-	view->vrx = nVRX; 
-	view->vry = nVRY; 
+	view->vrx = nVRX;
+	view->vry = nVRY;
 	view->vrz = nVRZ;
-	
+
 	// Set which way is up
 	view->rz =- nRZ;
-	
+
 	// Set the origin of the coord system in this case the car
 	view->super = &player1.gsObjectCoord;
-	
+
 	// Activate view
 	GsSetRefView2(view);
 }
@@ -56,23 +57,23 @@ void InitialiseTrackerViewPlayer1(GsRVIEW2 *view, int nProjDist, int nRZ, int nV
 void InitialiseTrackerViewPlayer2(GsRVIEW2 *view, int nProjDist, int nRZ, int nVPX, int nVPY, int nVPZ, int nVRX, int nVRY, int nVRZ) {
 	// This is the distance between the eye and the imaginary projection screen
 	GsSetProjection(nProjDist);
-	
+
 	// Set the eye position or center of projection
-	view->vpx = nVPX; 
-	view->vpy = nVPY;  
+	view->vpx = nVPX;
+	view->vpy = nVPY;
 	view->vpz = nVPZ;
-	
+
 	// Set the look at position
-	view->vrx = nVRX; 
-	view->vry = nVRY; 
+	view->vrx = nVRX;
+	view->vry = nVRY;
 	view->vrz = nVRZ;
-	
+
 	// Set which way is up
 	view->rz =- nRZ;
-	
+
 	// Set the origin of the coord system in this case the car
 	view->super = &player2.gsObjectCoord;
-	
+
 	// Activate view
 	GsSetRefView2(view);
 }
@@ -80,23 +81,23 @@ void InitialiseTrackerViewPlayer2(GsRVIEW2 *view, int nProjDist, int nRZ, int nV
 void InitialiseFrontViewPlayer1(GsRVIEW2 *view, int nProjDist, int nRZ, int nVPX, int nVPY, int nVPZ, int nVRX, int nVRY, int nVRZ) {
 	// This is the distance between the eye and the imaginary projection screen
 	GsSetProjection(nProjDist);
-	
+
 	// Set the eye position or center of projection
 	view->vpx = 0;  // dont touch
-	view->vpy = -400;  
+	view->vpy = -400;
 	view->vpz = -600;
-	
+
 	// Set the look at position
 	view->vrx = 0; // dont touch
-	view->vry = -500; 
+	view->vry = -500;
 	view->vrz = 100;
-	
+
 	// Set which way is up
 	view->rz =- nRZ;
-	
+
 	// Set the origin of the coord system in this case the car
 	view->super = &player1.gsObjectCoord;
-	
+
 	// Activate view
 	GsSetRefView2(view);
 }
@@ -105,24 +106,24 @@ void InitialiseFrontViewPlayer1(GsRVIEW2 *view, int nProjDist, int nRZ, int nVPX
 void InitialiseTopDownView(GsRVIEW2 *view, int nProjDist, int nHeight, int nVPX, int nVPZ) {
     // This is the distance between the eye and the imaginary projection screen
     GsSetProjection(nProjDist);
-    
+
     // Set the eye position (camera position)
     // Place the camera directly above the car at a specified height
-    view->vpx = 0; 
-	view->vpy = -3000; // height 
+    view->vpx = 0;
+	view->vpy = -3000; // height
 	view->vpz = -1000;
-    
+
     // Set the look-at position (car's position)
-    iew->vrx = 12000; 
-	view->vry = 800; 
+    iew->vrx = 12000;
+	view->vry = 800;
 	view->vrz = 0; // angle
-    
+
     // Set which way is up
     view->rz = -1000;
-    
+
     // Set the origin of the coordinate system (the car)
     view->super = &player1.gsObjectCoord;
-    
+
     // Activate view
     GsSetRefView2(view);
 }
@@ -131,30 +132,25 @@ void InitialiseTopDownView(GsRVIEW2 *view, int nProjDist, int nHeight, int nVPX,
 void InitialiseStaticView(GsRVIEW2 *view, int nProjDist, int nRZ, int nVPX, int nVPY, int nVPZ, int nVRX, int nVRY, int nVRZ) {
 	// This is the distance between the eye and the imaginary projection screen
 	GsSetProjection(nProjDist);
-	
+
 	// Set the eye position or center of projection
-	view->vpx = 0; 
-	view->vpy = -32000; // height 
+	view->vpx = 0;
+	view->vpy = -32000; // height
 	view->vpz = -1000;
-	
+
 	// Set the look at position
-	view->vrx = 12000; 
-	view->vry = 800; 
+	view->vrx = 12000;
+	view->vry = 800;
 	view->vrz = 18000; // angle
-	
+
 	// Set which way is up
 	view->rz =- nRZ;
-	
+
 	// Set the origin of the coord system in this case the WORLD
 	view->super = WORLD;
-	
+
 	// Activate view
 	GsSetRefView2(view);
-}
-
-void ResetMatrix(short m[3][3]) {
-	m[0][0]=m[1][1]=m[2][2]=ONE;
-	m[0][1]=m[0][2]=m[1][0]=m[1][2]=m[2][0]=m[2][1]=0;
 }
 
 void RotateModel(GsCOORDINATE2 *gsObjectCoord, SVECTOR *rotateVector, int nRX, int nRY, int nRZ, long *speed, long *lateralSpeed) {
@@ -183,13 +179,10 @@ void RotateModel(GsCOORDINATE2 *gsObjectCoord, SVECTOR *rotateVector, int nRX, i
 
         // Momentum transfer: rotating the heading while moving converts forward velocity
         // into lateral velocity — the physical reason why fast corners cause slides.
-        // Formula: lateral += speed * sin(steeringAngle) ≈ speed * angle (for small angles)
-        // Only applies when moving forward (reversing physics handled separately)
         if (*speed > 0) {
             maxLateral = MAX_SPEED / 3;
             if (absLateral > gripLimit) {
                 // Traction limit exceeded: oversteer
-                // Rear kicks out harder the more you steer, steering authority is lost
                 *lateralSpeed -= (*speed * originalNRY * 2) / TURN_RADIUS_FACTOR;
                 nRY = nRY / 3;
             } else {
@@ -262,7 +255,6 @@ void AdvanceModel(GsCOORDINATE2 *gsObjectCoord, SVECTOR *rotateVector, long *spe
     }
 
     // Friction: gripped tires snap back quickly; sliding tires recover slowly
-    // This makes slides persist — the car stays sideways once it breaks loose
     absLateral = abs(*lateralSpeed);
     absSpeed = abs(*speed);
     gripLimit = MAX_GRIP - (absSpeed * (MAX_GRIP - MIN_GRIP) / MAX_SPEED);
@@ -292,50 +284,50 @@ void AdvanceModel(GsCOORDINATE2 *gsObjectCoord, SVECTOR *rotateVector, long *spe
 // Initialise single-screen mode
 void InitSingleScreen() {
 
-  SplitScreenInfo[0].clip.x = 0;                     
+  SplitScreenInfo[0].clip.x = 0;
   SplitScreenInfo[0].clip.y = 0;
   SplitScreenInfo[0].clip.w = 320;
   SplitScreenInfo[0].clip.h = 240;
-  SplitScreenInfo[0].ofs[0] = 0 + (320 / 2);          
+  SplitScreenInfo[0].ofs[0] = 0 + (320 / 2);
   SplitScreenInfo[0].ofs[1] = 0 + (240 / 2);
 
-  SplitScreenInfo[1].clip.x = 0;                     
+  SplitScreenInfo[1].clip.x = 0;
   SplitScreenInfo[1].clip.y = 240;
   SplitScreenInfo[1].clip.w = 320;
   SplitScreenInfo[1].clip.h = 240;
-  SplitScreenInfo[1].ofs[0] = 0 + (320 / 2);          
+  SplitScreenInfo[1].ofs[0] = 0 + (320 / 2);
   SplitScreenInfo[1].ofs[1] = 0 + (240 / 2) + 240;
 };
 
 // Initialise the split-screen co-ordinates
 void InitSplitScreen(int x1, int y1, int w1, int h1, int x2, int y2, int w2, int h2) {
 
-  SplitScreenInfo[0].clip.x = x1;                     
+  SplitScreenInfo[0].clip.x = x1;
   SplitScreenInfo[0].clip.y = y1;
   SplitScreenInfo[0].clip.w = w1;
   SplitScreenInfo[0].clip.h = h1;
-  SplitScreenInfo[0].ofs[0] = x1 + (w1 / 2);          
+  SplitScreenInfo[0].ofs[0] = x1 + (w1 / 2);
   SplitScreenInfo[0].ofs[1] = y1 + (h1 / 2);
 
-  SplitScreenInfo[1].clip.x = x1;                     
+  SplitScreenInfo[1].clip.x = x1;
   SplitScreenInfo[1].clip.y = y1 + 240;
   SplitScreenInfo[1].clip.w = w1;
   SplitScreenInfo[1].clip.h = h1;
-  SplitScreenInfo[1].ofs[0] = x1 + (w1 / 2);          
+  SplitScreenInfo[1].ofs[0] = x1 + (w1 / 2);
   SplitScreenInfo[1].ofs[1] = y1 + (h1 / 2) + 240;
 
-  SplitScreenInfo[2].clip.x = x2;                     
+  SplitScreenInfo[2].clip.x = x2;
   SplitScreenInfo[2].clip.y = y2;
   SplitScreenInfo[2].clip.w = w2;
   SplitScreenInfo[2].clip.h = h2;
-  SplitScreenInfo[2].ofs[0] = x2 + (w2 / 2);          
+  SplitScreenInfo[2].ofs[0] = x2 + (w2 / 2);
   SplitScreenInfo[2].ofs[1] = y2 + (h2 / 2);
 
-  SplitScreenInfo[3].clip.x = x2;                     
+  SplitScreenInfo[3].clip.x = x2;
   SplitScreenInfo[3].clip.y = y2 + 240;
   SplitScreenInfo[3].clip.w = w2;
   SplitScreenInfo[3].clip.h = h2;
-  SplitScreenInfo[3].ofs[0] = x2 + (w2 / 2);          
+  SplitScreenInfo[3].ofs[0] = x2 + (w2 / 2);
   SplitScreenInfo[3].ofs[1] = y2 + (h2 / 2) + 240;
 };
 
@@ -343,7 +335,7 @@ void InitSplitScreen(int x1, int y1, int w1, int h1, int x2, int y2, int w2, int
    Avoids AddPrim/setTile from libgpu (not linked in this build). */
 static void sortBrakeLightTile(GsOT *ot, int otz, TILE *t, int sx, int sy) {
 	u_long *entry;
-	if (otz <= 0 || otz >= (1 << OTABLE_LENGTH)) return;
+	if (otz <= 0 || otz >= (1 << OT_LENGTH)) return;
 	entry  = (u_long *)&ot->org[otz];
 	t->r0  = 255; t->g0 = 0; t->b0 = 0; t->code = 0x60; /* P_TILE */
 	t->x0  = (short)(sx - 4);
@@ -377,7 +369,7 @@ void DrawBrakeLights(PlayerStruct *player, GsOT *ot, int otIdx) {
 		screenY = (int)((camY * 200L) / camZ);
 		otz = (int)(camZ / 8); /* depth: camZ >> 3, matches GsSortObject4 shift=3 */
 		if (otz < 1) otz = 1;
-		if (otz >= (1 << OTABLE_LENGTH)) otz = (1 << OTABLE_LENGTH) - 1;
+		if (otz >= (1 << OT_LENGTH)) otz = (1 << OT_LENGTH) - 1;
 		sortBrakeLightTile(ot, otz, &brakeLightPrims[otIdx][baseIdx], screenX, screenY);
 	}
 
@@ -392,7 +384,7 @@ void DrawBrakeLights(PlayerStruct *player, GsOT *ot, int otIdx) {
 		screenY = (int)((camY * 200L) / camZ);
 		otz = (int)(camZ / 8); /* depth: camZ >> 3, matches GsSortObject4 shift=3 */
 		if (otz < 1) otz = 1;
-		if (otz >= (1 << OTABLE_LENGTH)) otz = (1 << OTABLE_LENGTH) - 1;
+		if (otz >= (1 << OT_LENGTH)) otz = (1 << OT_LENGTH) - 1;
 		sortBrakeLightTile(ot, otz, &brakeLightPrims[otIdx][baseIdx + 1], screenX, screenY);
 	}
 }

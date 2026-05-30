@@ -1,7 +1,8 @@
 #include <libps.h>
-#include "graphics.h"
+#include "../engine/graphics.h"
 #include "player.h"
 #include "game.h"
+
 
 // This function associates a model with our player datastructure
 // later we will want to add more than one model to the player to implement animation
@@ -40,6 +41,7 @@ void AddModelToPlayer(PlayerStruct *thePlayer, int nX, int nY, int nZ, unsigned 
 	thePlayer->gsObjectCoord.flg = 0;
 }
 
+
 void InitialisePlayer(PlayerStruct *thePlayer, int playerNumber, int nX, int nY, int nZ, unsigned long *lModelAddress) {
 
 	thePlayer->playerNumber = playerNumber;
@@ -58,6 +60,7 @@ void InitialisePlayer(PlayerStruct *thePlayer, int playerNumber, int nX, int nY,
 	// Initialise other player variables and link in tmd
 	AddModelToPlayer(thePlayer, nX, nY, nZ, lModelAddress);
 }
+
 
 // This function deals with setting up matrices needed for rendering
 // and sends the object to the ordering table so it will be drawn
@@ -88,6 +91,7 @@ void DrawPlayer(PlayerStruct *thePlayer, GsOT *othWorld) {
 	// Send Object To Ordering Table
 	GsSortObject4(&thePlayer->gsObjectHandler, othWorld, 3, (u_long *)getScratchAddr(0));
 }
+
 
 int IsObjectNearPlayer(PlayerStruct* player, GsCOORDINATE2* objectCoord) {
     int distanceSq = CalculateDistanceSquared(

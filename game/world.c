@@ -2,27 +2,34 @@
 #include <libps.h>
 #include "world.h"
 #include "game/player.h"
-#include "graphics.h"
+#include "../engine/graphics.h"
+#include "../engine/calculations.h"
 #include "ground.h"
-#include "calculations.h"
 
 // Global variables
-GsOT OTable_Header[4];
-PACKET Packet_Memory[4][MAX_PACKETS];
 GsRVIEW2 Camera[2];
 u_long vsyncInterval = 0;
 GroundStruct theGround;
 int NumberOfPlayers = 1;
 
-// Model declarations
+
+/*****************************************************
+Model declarations
+*****************************************************/
+
+// Buildings
 ModelStruct building1;
 ModelStruct building2;
 ModelStruct building3;
+ModelStruct building4;
+ModelStruct building5;
+ModelStruct building6;
 
+// Crowd stand
 ModelStruct stand1;
 ModelStruct stand2;
 
-
+// Track signs
 ModelStruct sign0;
 ModelStruct sign1;
 ModelStruct sign2;
@@ -33,7 +40,7 @@ ModelStruct sign6;
 ModelStruct sign7;
 ModelStruct sign8;
 
-
+// Track barriers
 ModelStruct barrier00;
 ModelStruct barrier0;
 ModelStruct barrier1;
@@ -61,18 +68,15 @@ ModelStruct barrier19;
 ModelStruct barrier20;
 ModelStruct barrier21;
 
-
-
-ModelStruct building4;
-ModelStruct building5;
-ModelStruct building6;
-
-
+// Tunnel (just testing)
 ModelStruct tunnel;
 
+// Variables for the camera sway
+static long camSwayX = 0;
+static long prevCarYaw = 0;
 
 
-// Load up from conventional memeory into video memory
+// Load from RAM into VRAM
 int LoadTexture(long addr) {
 	RECT rect;
 	GsIMAGE tim1;
@@ -82,9 +86,9 @@ int LoadTexture(long addr) {
 
 	// Set the rect struct to contain the images x and y offset, width and height
 	rect.x = tim1.px;
-	rect.y = tim1.py;	
-	rect.w = tim1.pw;	
-	rect.h = tim1.ph;	
+	rect.y = tim1.py;
+	rect.w = tim1.pw;
+	rect.h = tim1.ph;
 
 	// Load image from main memory to video memory
 	LoadImage(&rect, tim1.pixel);
@@ -93,10 +97,10 @@ int LoadTexture(long addr) {
 	if ((tim1.pmode>>3)&0x01) {
 		// Set the rect struct to contain the clut's x and y offset, width and height
 		rect.x = tim1.cx;
-		rect.y = tim1.cy;	
-		rect.w = tim1.cw;	
-		rect.h = tim1.ch;	
-		
+		rect.y = tim1.cy;
+		rect.w = tim1.cw;
+		rect.h = tim1.ch;
+
 		// Load the clut into video memeory
 		LoadImage(&rect, tim1.clut);
 	}
@@ -104,134 +108,86 @@ int LoadTexture(long addr) {
 	return(0);
 }
 
+
 void InitialiseWorld() {
-	
-		// Load the ground textures into VRAM
+
+	// Load the ground textures into VRAM
 	InitialiseGroundTextures();
-	
+
 	// Initialise the world ground data
 	InitialiseGround();
-	
+
 	// Load the world textures into VRAM
 	InitialiseWorldTextures();
-	
+
 	// Initialise the models in the world
 	InitialiseWorldModels();
 }
 
+
 void InitialiseWorldTextures() {
-	
+
 	// Load world model textures into VRAM
 	LoadTexture(BARRIER_1_TEX_MEM_ADDR);
 	LoadTexture(BARRIER_2_TEX_MEM_ADDR);
 	LoadTexture(BUILDING_1_TEX_MEM_ADDR);
 	LoadTexture(BUILDING_2_TEX_MEM_ADDR);
-	
+
 	LoadTexture(CROWD_TEX_MEM_ADDR);
 	LoadTexture(STONE_TEX_MEM_ADDR);
-	
+
 	LoadTexture(SIGN_1_TEX_MEM_ADDR);
 	LoadTexture(CAR_3_TEX_MEM_ADDR);
 }
 
+
 void InitialiseWorldModels() {
-	
+
 	// Initialise the buildings
 	InitialiseModel(&building1, -5500, -450, 6000, 0, 0, 0, (long*)BUILDING_1_MEM_ADDR);
 	InitialiseModel(&building2, -4000, -300, 25000, 0, 0, 0, (long*)BUILDING_2_MEM_ADDR);
 	InitialiseModel(&building3, -5500, -450, 30000, 0, 0, 0, (long*)BUILDING_1_MEM_ADDR);
-	
+
 	// Stand
 	InitialiseModel(&stand1, -1000, -450, 15000, 0, 5000, 5000, (long*)STAND_MEM_ADDR);
-	
+
 	InitialiseModel(&stand2, 7000, -450, 15000, 0, 5000, 5000, (long*)STAND_MEM_ADDR);
 	RotateModel180(&stand2.gsObjectCoord, &stand2.rotation);
-	
-	
-	
-	/*
-	// Signs (gap between signs = 700)
-	InitialiseModel(&sign1, 1900, -200, -1400, 0, 0, 0, (long*)SIGN_1_MEM_ADDR);
-	InitialiseModel(&sign2, 1800, -200,  -700, 0, 0, 0, (long*)SIGN_1_MEM_ADDR);
-	
-	
-	
-	InitialiseModel(&sign3, 2090, -200, 1480, 0, 0, 0, (long*)SIGN_1_MEM_ADDR);
-	RotModel(&sign3.gsObjectCoord, &sign3.rotation, 0, -750, 0);
-	
-	
-	InitialiseModel(&sign4, 1780, -200, 1820, 0, 0, 0, (long*)SIGN_1_MEM_ADDR);
-	RotModel(&sign4.gsObjectCoord, &sign4.rotation, 0, -600, 0);
-	
-	
-	InitialiseModel(&sign5, 1530, -200, 2230, 0, 0, 0, (long*)SIGN_1_MEM_ADDR);
-	RotModel(&sign5.gsObjectCoord, &sign5.rotation, 0, -450, 0);
-	
-	
-	InitialiseModel(&sign6, 1350, -200, 2700, 0, 0, 0, (long*)SIGN_1_MEM_ADDR);
-	RotModel(&sign6.gsObjectCoord, &sign6.rotation, 0, -300, 0);
-	
-	InitialiseModel(&sign7, 1240, -200, 3230, 0, 0, 0, (long*)SIGN_1_MEM_ADDR);
-	RotModel(&sign7.gsObjectCoord, &sign7.rotation, 0, -150, 0);
-	
 
-	InitialiseModel(&sign8, 1200, -200, 3800, 0, 0, 0, (long*)SIGN_1_MEM_ADDR);
-	*/
-	
-	
-	
-	
-	// Signs 
+	// Signs
 	InitialiseModel(&sign0, 4140, -200,  1380, 0, 0, 0, (long*)SIGN_1_MEM_ADDR);
 	RotateModel270(&sign0.gsObjectCoord, &sign0.rotation);
-	
-	
+
 	InitialiseModel(&sign1, 3560, -200,  1380, 0, 0, 0, (long*)SIGN_1_MEM_ADDR);
-	//RotModel(&sign1.gsObjectCoord, &sign1.rotation, 0, -1050, 0);
 	RotateModel270(&sign1.gsObjectCoord, &sign1.rotation);
-	
-	
+
 	InitialiseModel(&sign2, 3000, -200,  1430, 0, 0, 0, (long*)SIGN_1_MEM_ADDR);
 	RotModel(&sign2.gsObjectCoord, &sign2.rotation, 0, -900, 0);
-	
+
 	InitialiseModel(&sign3, 2490, -200, 1610, 0, 0, 0, (long*)SIGN_1_MEM_ADDR);
 	RotModel(&sign3.gsObjectCoord, &sign3.rotation, 0, -750, 0);
-	
-	
+
 	InitialiseModel(&sign4, 2020, -200, 1910, 0, 0, 0, (long*)SIGN_1_MEM_ADDR);
 	RotModel(&sign4.gsObjectCoord, &sign4.rotation, 0, -600, 0);
-	
-	
+
 	InitialiseModel(&sign5, 1650, -200, 2300, 0, 0, 0, (long*)SIGN_1_MEM_ADDR);
 	RotModel(&sign5.gsObjectCoord, &sign5.rotation, 0, -450, 0);
-	
-	
+
 	InitialiseModel(&sign6, 1390, -200, 2740, 0, 0, 0, (long*)SIGN_1_MEM_ADDR);
 	RotModel(&sign6.gsObjectCoord, &sign6.rotation, 0, -300, 0);
-	
-	
+
 	InitialiseModel(&sign7, 1250, -200, 3230, 0, 0, 0, (long*)SIGN_1_MEM_ADDR);
 	RotModel(&sign7.gsObjectCoord, &sign7.rotation, 0, -150, 0);
-	
 
 	InitialiseModel(&sign8, 1200, -200, 3800, 0, 0, 0, (long*)SIGN_1_MEM_ADDR);
-	
-	// 		 // 600
-	// 180	 // 590
-	// 110	 // 580
-	// 40 	 // 570
-	
-	
-	
-	
+
 	// Initialise the barriers (gap between barriers = 1950)
 	InitialiseModel(&barrier00, 7360, -200, 1380, 0, 0, 0, (long*)BARRIER_1_MEM_ADDR);
 	RotateModel270(&barrier00.gsObjectCoord, &barrier00.rotation);
-	
+
 	InitialiseModel(&barrier0, 5410, -200, 1380, 0, 0, 0, (long*)BARRIER_2_MEM_ADDR);
 	RotateModel270(&barrier0.gsObjectCoord, &barrier0.rotation);
-	
-	
+
 	InitialiseModel(&barrier1, 1200, -200, 5000, 0, 0, 0, (long*)BARRIER_1_MEM_ADDR);
 	InitialiseModel(&barrier2, 1200, -200, 6950, 0, 0, 0, (long*)BARRIER_2_MEM_ADDR);
 	InitialiseModel(&barrier3, 1200, -200, 8900, 0, 0, 0, (long*)BARRIER_1_MEM_ADDR);
@@ -245,35 +201,31 @@ void InitialiseWorldModels() {
 	InitialiseModel(&barrier11, 1200, -200, 24500, 0, 0, 0, (long*)BARRIER_1_MEM_ADDR);
 	InitialiseModel(&barrier12, 1200, -200, 26450, 0, 0, 0, (long*)BARRIER_2_MEM_ADDR);
 	InitialiseModel(&barrier13, 1200, -200, 28400, 0, 0, 0, (long*)BARRIER_1_MEM_ADDR);
-	
-	
+
 	InitialiseModel(&barrier17, 4800, -200, 7000, 0, 0, 0, (long*)BARRIER_1_MEM_ADDR);
 	RotateModel180(&barrier17.gsObjectCoord, &barrier17.rotation);
-	
+
 	InitialiseModel(&barrier15, 4800, -200, 8950, 0, 0, 0, (long*)BARRIER_2_MEM_ADDR);
 	RotateModel180(&barrier15.gsObjectCoord, &barrier15.rotation);
-	
+
 	InitialiseModel(&barrier16, 4800, -200, 10900, 0, 0, 0, (long*)BARRIER_1_MEM_ADDR);
 	RotateModel180(&barrier16.gsObjectCoord, &barrier16.rotation);
-	
+
 	InitialiseModel(&barrier17, 4800, -200, 12850, 0, 0, 0, (long*)BARRIER_2_MEM_ADDR);
 	RotateModel180(&barrier17.gsObjectCoord, &barrier17.rotation);
-	
+
 	InitialiseModel(&barrier18, 4800, -200, 14800, 0, 0, 0, (long*)BARRIER_1_MEM_ADDR);
 	RotateModel180(&barrier18.gsObjectCoord, &barrier18.rotation);
-	
+
 	InitialiseModel(&barrier19, 4800, -200, 16750, 0, 0, 0, (long*)BARRIER_2_MEM_ADDR);
 	RotateModel180(&barrier19.gsObjectCoord, &barrier19.rotation);
-	
+
 	InitialiseModel(&barrier20, 4800, -200, 18700, 0, 0, 0, (long*)BARRIER_1_MEM_ADDR);
 	RotateModel180(&barrier20.gsObjectCoord, &barrier20.rotation);
-	
+
 	InitialiseModel(&barrier21, 4800, -200, 20650, 0, 0, 0, (long*)BARRIER_2_MEM_ADDR);
 	RotateModel180(&barrier21.gsObjectCoord, &barrier21.rotation);
-	
-	
-	
-	
+
 	//InitialiseModel(&tunnel, 18500, -200, 29000, 0, 0, 0, (long*)TUNNEL_MEM_ADDR);
 
 	// Sphere collision radii for rounded structures.
@@ -285,11 +237,13 @@ void InitialiseWorldModels() {
 	stand2.collisionRadius    = 350;
 }
 
+
 void AddModelToWorld() {
-	
+
 }
 
-// Approximate 2D distance without sqrt using octagonal approximation (~99% accurate).
+
+// Approximate 2D distance without sqrt using octagonal approximation
 static int OctagonalDistance(int dx, int dz) {
 	int absDx = (dx < 0) ? -dx : dx;
 	int absDz = (dz < 0) ? -dz : dz;
@@ -298,24 +252,28 @@ static int OctagonalDistance(int dx, int dz) {
 	return (maxD * 123 + minD * 51) >> 7;
 }
 
-// Shared response: push player to the combined-sphere surface, bounce speed, clear drift.
+
+// Shared response: push player to the combined-sphere surface, bounce speed, clear drift
 static void ApplyCollisionResponse(PlayerStruct *player, long *lateralSpeed,
 	long closestX, long closestZ, int combinedRadius) {
 	int dx = (int)(player->gsObjectCoord.coord.t[0] - closestX);
 	int dz = (int)(player->gsObjectCoord.coord.t[2] - closestZ);
 	int approxDist = OctagonalDistance(dx, dz);
+	
 	if (approxDist < 1) {
 		player->gsObjectCoord.coord.t[0] = closestX + combinedRadius;
 	} else {
 		player->gsObjectCoord.coord.t[0] = closestX + ((long)dx * combinedRadius) / approxDist;
 		player->gsObjectCoord.coord.t[2] = closestZ + ((long)dz * combinedRadius) / approxDist;
 	}
+	
 	player->gsObjectCoord.flg = 0;
 	player->speed  = -(player->speed) / 3;
 	*lateralSpeed  = 0;
 }
 
-// Sphere-sphere collision for rounded objects (buildings, stands).
+
+// Sphere-sphere collision for rounded objects (buildings, stands)
 static void TestSphereCollision(PlayerStruct *player, long *lateralSpeed, ModelStruct *model) {
 	int dx, dz, combinedRadius;
 	long distSq;
@@ -335,11 +293,11 @@ static void TestSphereCollision(PlayerStruct *player, long *lateralSpeed, ModelS
 		combinedRadius);
 }
 
-// Capsule collision for elongated barriers.
-// Models the barrier as a line segment (its length) with a small cross-section radius,
-// which accurately matches the visual shape without the invisible-wall problem of spheres.
-// axisIsZ=1: segment runs along Z; axisIsZ=0: segment runs along X.
-// halfLen: half the barrier length. capsuleRadius: half the barrier's thickness.
+
+// Capsule collision for elongated barriers
+// Models the barrier as a line segment (its length) with a small cross-section radius
+// axisIsZ=1: segment runs along Z; axisIsZ=0: segment runs along X
+// halfLen: half the barrier length. capsuleRadius: half the barrier's thickness
 static void TestCapsuleCollision(PlayerStruct *player, long *lateralSpeed,
 	int cx, int cz, int axisIsZ, int halfLen, int capsuleRadius) {
 	int playerX, playerZ, combinedRadius, relAxis;
@@ -376,18 +334,19 @@ static void TestCapsuleCollision(PlayerStruct *player, long *lateralSpeed,
 	ApplyCollisionResponse(player, lateralSpeed, closestX, closestZ, combinedRadius);
 }
 
+
 void CheckWorldCollisions(PlayerStruct *player, long *lateralSpeed) {
-	// Sphere collision for buildings and grandstands
+	// Sphere collision for buildings and crowd stands
 	TestSphereCollision(player, lateralSpeed, &building1);
 	TestSphereCollision(player, lateralSpeed, &building2);
 	TestSphereCollision(player, lateralSpeed, &building3);
 	TestSphereCollision(player, lateralSpeed, &stand1);
 	TestSphereCollision(player, lateralSpeed, &stand2);
 
-	// Capsule collision for barriers.
-	// halfLen=975: each barrier is 1950 units long. capsuleRadius=100: thin panel.
-	// player(300) + capsule(100) = 400 combined -- triggers 400 units from barrier surface.
-	// Adjacent capsule end-caps meet exactly (spacing 1950 = 2 x halfLen), so no gaps.
+	// Capsule collision for barriers
+	// halfLen=975: each barrier is 1950 units long. capsuleRadius=100: thin panel
+	// player(300) + capsule(100) = 400 combined -- triggers 400 units from barrier surface
+	// Adjacent capsule end-caps meet exactly (spacing 1950 = 2 x halfLen)
 
 	// X-aligned barriers at Z=1380 (start straight)
 	TestCapsuleCollision(player, lateralSpeed, 7360, 1380, 0, 975, 100);
@@ -409,7 +368,6 @@ void CheckWorldCollisions(PlayerStruct *player, long *lateralSpeed) {
 	TestCapsuleCollision(player, lateralSpeed, 1200, 28400, 1, 975, 100);
 
 	// Z-aligned right wall at X=4800
-	// Note: barrier17 was initialised twice; second init (Z=12850) is the live one.
 	TestCapsuleCollision(player, lateralSpeed, 4800,  8950, 1, 975, 100);
 	TestCapsuleCollision(player, lateralSpeed, 4800, 10900, 1, 975, 100);
 	TestCapsuleCollision(player, lateralSpeed, 4800, 12850, 1, 975, 100);
@@ -419,17 +377,25 @@ void CheckWorldCollisions(PlayerStruct *player, long *lateralSpeed) {
 	TestCapsuleCollision(player, lateralSpeed, 4800, 20650, 1, 975, 100);
 }
 
+
+static void DrawModelCulled(PlayerStruct *currentPlayer, ModelStruct *model, int currentBuffer) {
+	if (model && IsObjectNearPlayer(currentPlayer, &model->gsObjectCoord)) {
+		DrawModel(model, &WorldOrderingTable[currentBuffer]);
+	}
+}
+
+
 void DrawWorldModels(PlayerStruct *currentPlayer, int currentBuffer) {
-	
+
 	// Draw the buildings
 	DrawModelCulled(currentPlayer, &building1, currentBuffer);
 	DrawModelCulled(currentPlayer, &building2, currentBuffer);
 	DrawModelCulled(currentPlayer, &building3, currentBuffer);
-	
+
 	// Draw the stands
 	DrawModelCulled(currentPlayer, &stand1, currentBuffer);
 	DrawModelCulled(currentPlayer, &stand2, currentBuffer);
-	
+
 	// Draw the signs
 	DrawModelCulled(currentPlayer, &sign0, currentBuffer);
 	DrawModelCulled(currentPlayer, &sign1, currentBuffer);
@@ -440,7 +406,7 @@ void DrawWorldModels(PlayerStruct *currentPlayer, int currentBuffer) {
 	DrawModelCulled(currentPlayer, &sign6, currentBuffer);
 	DrawModelCulled(currentPlayer, &sign7, currentBuffer);
 	DrawModelCulled(currentPlayer, &sign8, currentBuffer);
-	
+
 	// Draw the barriers
 	DrawModelCulled(currentPlayer, &barrier00, currentBuffer);
 	DrawModelCulled(currentPlayer, &barrier0, currentBuffer);
@@ -450,7 +416,7 @@ void DrawWorldModels(PlayerStruct *currentPlayer, int currentBuffer) {
 	DrawModelCulled(currentPlayer, &barrier4, currentBuffer);
 	DrawModelCulled(currentPlayer, &barrier5, currentBuffer);
 	DrawModelCulled(currentPlayer, &barrier6, currentBuffer);
-	
+
 	DrawModelCulled(currentPlayer, &barrier7, currentBuffer);
 	DrawModelCulled(currentPlayer, &barrier8, currentBuffer);
 	DrawModelCulled(currentPlayer, &barrier9, currentBuffer);
@@ -459,7 +425,7 @@ void DrawWorldModels(PlayerStruct *currentPlayer, int currentBuffer) {
 	DrawModelCulled(currentPlayer, &barrier12, currentBuffer);
 	DrawModelCulled(currentPlayer, &barrier13, currentBuffer);
 	DrawModelCulled(currentPlayer, &barrier14, currentBuffer);
-	
+
 	DrawModelCulled(currentPlayer, &barrier15, currentBuffer);
 	DrawModelCulled(currentPlayer, &barrier16, currentBuffer);
 	DrawModelCulled(currentPlayer, &barrier17, currentBuffer);
@@ -467,60 +433,61 @@ void DrawWorldModels(PlayerStruct *currentPlayer, int currentBuffer) {
 	DrawModelCulled(currentPlayer, &barrier19, currentBuffer);
 	DrawModelCulled(currentPlayer, &barrier20, currentBuffer);
 	DrawModelCulled(currentPlayer, &barrier21, currentBuffer);
-	
+
 	//DrawModelCulled(currentPlayer, &tunnel, currentBuffer);
 }
 
+
 void DrawWorld(PlayerStruct *currentPlayer, int currentBuffer) {
-	
-		// Draw the ground
-	DrawGround(&theGround, currentPlayer, &OTable_Header[currentBuffer]);
-	
+
+	// Draw the ground
+	DrawGround(&theGround, currentPlayer, &WorldOrderingTable[currentBuffer]);
+
 	// Draw the world models
 	DrawWorldModels(currentPlayer, currentBuffer);
 }
 
+
 // This function renders the world for player 1
 void RenderWorldPlayer1(int currentBuffer) {
-	
+
 	// Draw the world
 	DrawWorld(&player1, currentBuffer);
-	
+
 	// Draw player 1
-	DrawPlayer(&player1, &OTable_Header[currentBuffer]);
-	
+	DrawPlayer(&player1, &WorldOrderingTable[currentBuffer]);
+
 	// If it is 2 player mode, draw the second player vehicle
 	if (NumberOfPlayers == 2) {
-		DrawPlayer(&player2, &OTable_Header[currentBuffer]);
+		DrawPlayer(&player2, &WorldOrderingTable[currentBuffer]);
 	}
 }
 
+
 // This function renders the world for player 2
 void RenderWorldPlayer2(int currentBuffer) {
-	
+
 	// Activates the view for the bottom screen
-	GsSetRefView2(&Camera[1]);    
+	GsSetRefView2(&Camera[1]);
 
 	// Set the address of the packet area for the bottom screen
-	GsSetWorkBase((PACKET*)Packet_Memory[currentBuffer+2]);
-	
+	GsSetWorkBase((PACKET*)GpuPacketArea[currentBuffer+2]);
+
 	// Clear the ordering table for the bottom screen
-	GsClearOt(0, 0, &OTable_Header[currentBuffer+2]); 
-	
+	GsClearOt(0, 0, &WorldOrderingTable[currentBuffer+2]);
+
 	// Draw the world
 	DrawWorld(&player2, currentBuffer+2);
-	
+
 	// Draw player 1
-	DrawPlayer(&player1, &OTable_Header[currentBuffer+2]);
-	
+	DrawPlayer(&player1, &WorldOrderingTable[currentBuffer+2]);
+
 	// Draw player 2
-	DrawPlayer(&player2, &OTable_Header[currentBuffer+2]);
+	DrawPlayer(&player2, &WorldOrderingTable[currentBuffer+2]);
 }
 
-// This function performs all of the rendering
-static long camSwayX = 0;
-static long prevCarYaw = 0;
 
+// Update the camera sway when the vehicle turns
 static void UpdateCameraLag() {
 	long carYaw = player1.rotation.vy;
 	long yawDelta = carYaw - prevCarYaw;
@@ -538,62 +505,21 @@ static void UpdateCameraLag() {
 }
 
 
+// This function performs all of the rendering
 void RenderWorld() {
+	int currentBuffer = GsGetActiveBuff();
 	
-	// This variable keeps track of the current buffer for double buffering
-	int currentBuffer;
-
-	// Get the current buffer
-	currentBuffer = GsGetActiveBuff();
-	
-	// Activates the view for the top screen
+	// Update the camera sway
 	UpdateCameraLag();
-	GsSetRefView2(&Camera[0]);                 
 	
-	// Set the address of the packet area for the top screen
-	GsSetWorkBase((PACKET*)Packet_Memory[currentBuffer]);
+	// Set the camera view
+	GsSetRefView2(&Camera[0]);
 	
-	// Clear the ordering table for the top screen
-	GsClearOt(0, 0, &OTable_Header[currentBuffer]);
-
-	// Draw the world for player 1
+	// Render the world for player 1
 	RenderWorldPlayer1(currentBuffer);
 	
-	// Draw the world for player 2
+	// If two player mode, render the world for player 2
 	if (NumberOfPlayers == 2) {
 		RenderWorldPlayer2(currentBuffer);
-	}
-	
-	// Wait for end of drawing
-	DrawSync(0);
-	
-	// Wait for V_BLANK interrupt
-	vsyncInterval = VSync(0);
-	
-	// Print the vSync interval
-	//FntPrint(fontID_1, "\nVSync Interval: %d.\n", vsyncInterval);
-	
-	// Swap The Buffers
-	GsSwapDispBuff();
-	
-	// Register clear-command: clear to black
-	GsSortClear(0, 0, 0, &OTable_Header[currentBuffer]);
-	
-	// Set up top half for drawing
-	PutDrawEnv(&SplitScreenInfo[currentBuffer]);        
-	
-	// Draw the commands in queue
-	GsDrawOt(&OTable_Header[currentBuffer]);
-	
-	FntFlush(fontID_1);
-	//FntFlush(fontID_2);
-	
-	// If 2 player mode
-	if (NumberOfPlayers == 2) {
-		// Set up bottom half for drawing
-		PutDrawEnv(&SplitScreenInfo[currentBuffer+2]);      
-	  
-		// Draw the commands in queue
-		GsDrawOt(&OTable_Header[currentBuffer+2]);   
 	}
 }

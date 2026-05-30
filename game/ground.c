@@ -1,6 +1,6 @@
 #include <libps.h>
 #include "ground.h"
-#include "graphics.h"
+#include "../engine/graphics.h"
 #include "game.h"
 
 char groundDataTrack1[GROUND_MAX_Z][GROUND_MAX_X] = {
@@ -353,7 +353,7 @@ void DrawGround(GroundStruct *theGround, PlayerStruct *currentPlayer, GsOT *ot) 
     }
 
 	/* Draw brake lights for any player that is braking */
-	otIdx = (int)(ot - OTable_Header);
+	otIdx = (int)(ot - WorldOrderingTable);
 	if (player1_isBraking) {
 		DrawBrakeLights(&player1, ot, otIdx);
 	}

@@ -1,10 +1,10 @@
-
 local load main.exe
 
+local dload data\engine\icon\icon1.tim  80110000
+local dload data\engine\icon\icon2.tim  80111000
+local dload data\engine\icon\icon3.tim  80112000
 
-
-
-
+local dload data\engine\font\8dotfont.tim 80108000
 
 local dload data\game\track\line\line.tmd 80090000
 local dload data\game\track\line\line.tim 80091000
@@ -61,11 +61,10 @@ local dload data\game\build2\build2.tmd 800E312C
 local dload data\game\build2\build2.tim 800D32BC
 
 local dload data\game\car3\car3.tmd 800F5000
-local dload data\game\ferar\ferar.tmd 80104000
+local dload data\game\ferar\ferar.tmd 80113000
 
-local dload data\game\car3\car3.tim 80118000
+local dload data\game\car3\car3.tim 80122000
 
 local dload data\game\skybox\skybox.tim 801A4000
-
 
 go

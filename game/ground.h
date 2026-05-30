@@ -43,6 +43,8 @@ void DrawGround(GroundStruct *theGround, PlayerStruct* currentPlayer, GsOT *ot);
 /*****************************************************/
 #define LINE_L_MEM_ADDR                     (0x80090000)
 #define LINE_L_TEX_MEM_ADDR                 (0x80091000)
+#define LINE_R_MEM_ADDR                     LINE_L_MEM_ADDR
+#define LINE_R_TEX_MEM_ADDR                 LINE_L_TEX_MEM_ADDR
 
 #define STRAIGHT_L_1_MEM_ADDR               (0x80092000)
 #define STRAIGHT_L_1_TEX_MEM_ADDR           (0x80093000)
