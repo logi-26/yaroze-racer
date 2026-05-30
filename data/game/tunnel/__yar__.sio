@@ -1,3 +1,0 @@
-local dload  __tmp__.pck 80100000 
-local load  c:\psx\psx\bin\rsdview 
-go 
