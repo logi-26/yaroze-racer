@@ -2,5 +2,5 @@
 PLY=stand.ply
 MAT=stand.mat
 NTEX=2
-TEX[0]=crowd.tim
-TEX[1]=wood.tim
+TEX[0]=wood.tim
+TEX[1]=crowd.tim

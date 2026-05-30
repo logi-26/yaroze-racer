@@ -1,0 +1,5 @@
+@RSD940102
+PLY=car3Y00.ply
+MAT=car3Y00.mat
+NTEX=1
+TEX[0]=car3_yel.tim

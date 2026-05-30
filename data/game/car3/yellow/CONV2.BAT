@@ -1,0 +1,1 @@
+rsdlink -v -o car3Y.tmd car3Y00.rsd
