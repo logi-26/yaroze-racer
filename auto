@@ -54,6 +54,15 @@ local dload data\game\tunnel\tunnel.tmd 800AD000
 local dload data\game\sign1\sign1.tmd 800AE000
 local dload data\game\sign1\sign1.tim 800AF000
 
+local dload data\game\car5\black\CAR5B.TMD 800B0000
+local dload data\game\car5\black\black.tim 800B4000
+
+local dload data\game\car5\green\CAR5G.TMD 800B9000
+local dload data\game\car5\green\green.tim 800BD000
+
+local dload data\game\car5\red\CAR5.TMD 800C2000
+local dload data\game\car5\red\car5.tim 800C6000
+
 local dload data\game\build1\build1.tmd 800E004C
 local dload data\game\build1\build1.tim 800E01DC
 

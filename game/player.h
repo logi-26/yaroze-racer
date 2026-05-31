@@ -52,6 +52,13 @@ int IsObjectNearPlayer(PlayerStruct* player, GsCOORDINATE2* objectCoord);
 
 #define CAR_2R_MEM_ADDR         (0x8012D000)  // car2 red TMD
 #define CAR_2R_TEX_MEM_ADDR     (0x80130000)  // car2 red TIM
+
+#define CAR_5B_MEM_ADDR         (0x800B0000)  // car5 black TMD
+#define CAR_5B_TEX_MEM_ADDR     (0x800B4000)  // car5 black TIM
+#define CAR_5G_MEM_ADDR         (0x800B9000)  // car5 green TMD
+#define CAR_5G_TEX_MEM_ADDR     (0x800BD000)  // car5 green TIM
+#define CAR_5_MEM_ADDR          (0x800C2000)  // car5 red TMD
+#define CAR_5_TEX_MEM_ADDR      (0x800C6000)  // car5 red TIM
 /*****************************************************/
 
 #endif // PLAYER_H

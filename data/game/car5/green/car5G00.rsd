@@ -1,0 +1,5 @@
+@RSD940102
+PLY=car5G00.ply
+MAT=car5G00.mat
+NTEX=1
+TEX[0]=green.tim

@@ -17,9 +17,9 @@ typedef struct {
     int turnRadiusFactor;   // Cornering momentum scale (lower = more oversteer)
 } VehicleAttributes;
 
-// Define two vehicles
 extern VehicleAttributes car3Attribs;
 extern VehicleAttributes car2Attribs;
+extern VehicleAttributes car5Attribs;
 extern VehicleAttributes *activeVehicle;
 
 #endif // VEHICLE_ATTRIBS_H

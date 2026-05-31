@@ -10,29 +10,36 @@
 #include "../game/world.h"
 #include "../engine/model.h"
 #include "../engine/ui.h"
+#include "../engine/lang.h"
 
-#define NUM_MODELS 2
+#define NUM_MODELS 3
 #define NUM_VARIANTS 3
 
 // Models for the vehicles
 static const long carTmdAddr[NUM_MODELS][NUM_VARIANTS] = {
     { CAR_3_MEM_ADDR,   CAR_3R_MEM_ADDR,  CAR_3Y_MEM_ADDR  },
     { CAR_2BL_MEM_ADDR, CAR_2B_MEM_ADDR,  CAR_2R_MEM_ADDR  },
+    { CAR_5B_MEM_ADDR,  CAR_5G_MEM_ADDR,  CAR_5_MEM_ADDR   },
 };
 
 // Textures for the vehicles
 static const long carTexAddr[NUM_MODELS][NUM_VARIANTS] = {
     { CAR_3_TEX_MEM_ADDR,   CAR_3R_TEX_MEM_ADDR,  CAR_3Y_TEX_MEM_ADDR  },
     { CAR_2BL_TEX_MEM_ADDR, CAR_2B_TEX_MEM_ADDR,  CAR_2R_TEX_MEM_ADDR  },
+    { CAR_5B_TEX_MEM_ADDR,  CAR_5G_TEX_MEM_ADDR,  CAR_5_TEX_MEM_ADDR   },
 };
 
-// Two vehicle models to select
-static const char *modelName[NUM_MODELS] = { "Hatchback", "Sports" };
+static const TextID modelNameID[NUM_MODELS] = {
+    TXT_VEHICLE_HATCHBACK,
+    TXT_VEHICLE_SALOON,
+    TXT_VEHICLE_AMERICAN,
+};
 
 // Colour variants for the two vehicles
 static const char *variantName[NUM_MODELS][NUM_VARIANTS] = {
     { "GREEN", "RED",  "YELLOW" },
     { "BLACK", "BLUE", "RED"   },
+    { "BLACK", "GREEN", "RED"  },
 };
 
 static int stateInitialised     = 0;
@@ -142,7 +149,9 @@ static void UpdateMenuVehicleSelect(void)
 static void RenderMenuVehicleSelect(void)
 {
 	// Get the attributes for the currently selected vehicle
-    VehicleAttributes *attribs = (selectedModelIndex == 0) ? &car3Attribs : &car2Attribs;
+    VehicleAttributes *attribs = (selectedModelIndex == 0) ? &car3Attribs
+                               : (selectedModelIndex == 1) ? &car2Attribs
+                               :                            &car5Attribs;
 
 	// Setup the camera/projection
     GsSetProjection(250);
@@ -166,7 +175,7 @@ static void RenderMenuVehicleSelect(void)
     FontFX_SetColour(COL_DARKGREEN);
     FontFX_SetOutline(COL_WHITE);
     FontFX_SetCenter(SCREEN_X_OFFSET, gScreenWidth);
-    FontFX_Print(20, 20, "SELECT VEHICLE", &WorldOrderingTable[activeBuffer], OT_UI);
+    FontFX_Print(20, 20, (char*)TXT(TXT_VEHICLE_SELECT_TITLE), &WorldOrderingTable[activeBuffer], OT_UI);
     FontFX_SetSize(1);
     FontFX_FontEnd();
 
@@ -174,20 +183,20 @@ static void RenderMenuVehicleSelect(void)
     FontFX_SetColour(COL_WHITE);
 	
 	// Display the vehicle attributes
-    FontFX_Print(20, 180, "Model:",  &WorldOrderingTable[activeBuffer], OT_UI);
-    FontFX_Print(80, 180, (char*)modelName[selectedModelIndex], &WorldOrderingTable[activeBuffer], OT_UI);
+    FontFX_Print(20, 180, (char*)TXT(TXT_VEHICLE_MODEL),  &WorldOrderingTable[activeBuffer], OT_UI);
+    FontFX_Print(90, 180, (char*)TXT(modelNameID[selectedModelIndex]), &WorldOrderingTable[activeBuffer], OT_UI);
 
-    FontFX_Print(20, 195, "Speed:", &WorldOrderingTable[activeBuffer], OT_UI);
-    FontFX_Print(20, 205, "Accel:", &WorldOrderingTable[activeBuffer], OT_UI);
-    FontFX_Print(20, 215, "Brake:", &WorldOrderingTable[activeBuffer], OT_UI);
-    FontFX_Print(20, 225, "Grip: ", &WorldOrderingTable[activeBuffer], OT_UI);
+    FontFX_Print(20, 195, (char*)TXT(TXT_VEHICLE_SPEED),        &WorldOrderingTable[activeBuffer], OT_UI);
+    FontFX_Print(20, 205, (char*)TXT(TXT_VEHICLE_ACCELERATION),  &WorldOrderingTable[activeBuffer], OT_UI);
+    FontFX_Print(20, 215, (char*)TXT(TXT_VEHICLE_BRAKES),        &WorldOrderingTable[activeBuffer], OT_UI);
+    FontFX_Print(20, 225, (char*)TXT(TXT_VEHICLE_GRIP),          &WorldOrderingTable[activeBuffer], OT_UI);
     FontFX_FontEnd();
 	
 	// Draw segemnted bars to represent the vehicle attributes
-    DrawBarSegmented(80, 196, 120, 6, attribs->maxSpeed,          400, 10, 2, 0, 180, 0, 40, 40, 40, &WorldOrderingTable[activeBuffer], OT_UI);
-    DrawBarSegmented(80, 206, 120, 6, attribs->acceleration,      10, 10, 2, 0, 180, 0, 40, 40, 40, &WorldOrderingTable[activeBuffer], OT_UI);
-    DrawBarSegmented(80, 216, 120, 6, attribs->brakeDeceleration,  15, 10, 2, 0, 180, 0, 40, 40, 40, &WorldOrderingTable[activeBuffer], OT_UI);
-    DrawBarSegmented(80, 226, 120, 6, attribs->maxGrip,           250, 10, 2, 0, 180, 0, 40, 40, 40, &WorldOrderingTable[activeBuffer], OT_UI);
+    DrawBarSegmented(90, 196, 120, 6, attribs->maxSpeed,          400, 10, 2, 0, 180, 0, 40, 40, 40, &WorldOrderingTable[activeBuffer], OT_UI);
+    DrawBarSegmented(90, 206, 120, 6, attribs->acceleration,      10, 10, 2, 0, 180, 0, 40, 40, 40, &WorldOrderingTable[activeBuffer], OT_UI);
+    DrawBarSegmented(90, 216, 120, 6, attribs->brakeDeceleration,  15, 10, 2, 0, 180, 0, 40, 40, 40, &WorldOrderingTable[activeBuffer], OT_UI);
+    DrawBarSegmented(90, 226, 120, 6, attribs->maxGrip,           250, 10, 2, 0, 180, 0, 40, 40, 40, &WorldOrderingTable[activeBuffer], OT_UI);
 }
 
 

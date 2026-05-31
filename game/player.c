@@ -5,7 +5,7 @@
 
 int selectedVehicleIndex = 0;
 
-// Hatchback (car3)
+// Hatchback car (car3)
 VehicleAttributes car3Attribs = {
     240,   // maxSpeed           
     3,     // acceleration       
@@ -21,20 +21,36 @@ VehicleAttributes car3Attribs = {
     2048   // turnRadiusFactor   
 };
 
-// Sports car (car2)
+// Saloon car (car2)
 VehicleAttributes car2Attribs = {
-    340,   // maxSpeed           higher top speed   
-    5,     // acceleration       quicker off the line
+    340,   // maxSpeed     
+    5,     // acceleration       
     2,     // deceleration                           
-    10,    // brakeDeceleration  stronger brakes     
-    -60,   // maxReverseSpeed    limited reverse     
-    150,   // steeringResponse   sharper steering    
+    10,    // brakeDeceleration    
+    -60,   // maxReverseSpeed    
+    150,   // steeringResponse   
     100,   // minSteeringResponse                    
-    140,   // maxGrip            breaks loose sooner 
-    30,    // minGrip            little grip at speed
-    750,   // slidingFriction    longer slides       
-    880,   // lateralFriction    less lateral grip   
-    1600   // turnRadiusFactor   more aggressive     
+    140,   // maxGrip            
+    30,    // minGrip            
+    750,   // slidingFriction    
+    880,   // lateralFriction   
+    1600   // turnRadiusFactor  
+};
+
+// American car (car5)
+VehicleAttributes car5Attribs = {
+    400,   // maxSpeed
+    6,     // acceleration
+    2,     // deceleration
+    12,    // brakeDeceleration
+    -50,   // maxReverseSpeed
+    160,   // steeringResponse
+    110,   // minSteeringResponse
+    100,   // maxGrip            
+    20,    // minGrip            
+    700,   // slidingFriction    
+    850,   // lateralFriction    
+    1400   // turnRadiusFactor
 };
 
 VehicleAttributes *activeVehicle = &car3Attribs;

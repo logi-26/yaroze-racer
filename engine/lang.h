@@ -46,6 +46,19 @@ typedef enum
     TXT_SFX_VOLUME,
 	TXT_LOAD_GAME,
 
+    /*****************************************************
+    VEHICLE SELECT MENU
+    *****************************************************/
+    TXT_VEHICLE_SELECT_TITLE,
+	TXT_VEHICLE_MODEL,
+	TXT_VEHICLE_SPEED,
+	TXT_VEHICLE_ACCELERATION,
+	TXT_VEHICLE_BRAKES,
+	TXT_VEHICLE_GRIP,
+	TXT_VEHICLE_HATCHBACK,
+	TXT_VEHICLE_SALOON,
+	TXT_VEHICLE_AMERICAN,
+
     TXT_COUNT
 
 } TextID;

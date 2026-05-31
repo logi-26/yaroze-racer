@@ -1,0 +1,5 @@
+@RSD940102
+PLY=car5B00.ply
+MAT=car5B00.mat
+NTEX=1
+TEX[0]=black.tim

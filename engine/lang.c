@@ -50,7 +50,20 @@ static const char* strings_english[TXT_COUNT] =
 	"LANGUAGE",
     "MUSIC VOLUME",
     "SFX VOLUME",
-	"LOAD GAME"
+	"LOAD GAME",
+	
+	/*****************************************************
+    VEHICLE SELECT MENU
+    *****************************************************/
+    "SELECT VEHICLE",
+	"MODEL",
+	"SPEED",
+	"ACCEL",
+	"BRAKE",
+	"GRIP",
+	"HATCHBACK",
+	"SALOON",
+	"AMERICAN"
 };
 
 
@@ -99,7 +112,21 @@ static const char* strings_french[TXT_COUNT] =
 	"LANGUE",
     "VOLUME MUSIQUE",
     "VOLUME EFFETS",
-	"CHARGER"
+	"CHARGER",
+	
+	/*****************************************************
+    VEHICLE SELECT MENU
+    *****************************************************/
+    "SELECTIONNER UN VEHICULE",
+	"MODELE",
+	"VITESSE",
+	"ACCEL",
+	"FREIN",
+	"GRIP",
+	"COMPACTE",
+	"BERLINE",
+	"AMERICAINE"
+
 };
 
 
@@ -148,7 +175,21 @@ static const char* strings_dutch[TXT_COUNT] =
     "TAAL",
     "MUZIEK VOLUME",
     "SFX VOLUME",
-	"LADEN"
+	"LADEN",
+	
+	/*****************************************************
+    VEHICLE SELECT MENU
+    *****************************************************/
+    "SELECTEER VOERTUIG",
+	"MODEL",
+	"SNELHEID",
+	"ACCEL",
+	"REM",
+	"GRIP",
+	"HATCHBACK",
+	"SEDAN",
+	"AMERIKAANS"
+
 };
 
 
@@ -197,7 +238,21 @@ static const char* strings_german[TXT_COUNT] =
     "SPRACHE",
     "MUSIK LAUTSTARKE",
     "SFX LAUTSTARKE",
-	"SPIEL LADEN"
+	"SPIEL LADEN",
+	
+	/*****************************************************
+    VEHICLE SELECT MENU
+    *****************************************************/
+    "FAHRZEUG AUSWAHLEN",
+	"MODELL",
+	"TEMPO",
+	"BESCHL.",
+	"BREMSE",
+	"GRIP",
+	"SCHRAGHECK",
+	"LIMOUSINE",
+	"AMERIKANISCH"
+
 };
 
 
