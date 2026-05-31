@@ -15,10 +15,10 @@ extern long player2_lateralSpeed;
 extern int player1_isBraking;
 extern int player2_isBraking;
 
-// Tire grip per frame, out of 1000 (lower = more slide, 920 = grippy, 860 = drifty)
-#define LATERAL_FRICTION 920
 // Controls how quickly lateral speed builds up when turning (higher = less slip)
 #define SLIP_FACTOR 1000
+
+#include "game/vehicle_attribs.h"
 
 /************* FUNCTION PROTOTYPES *******************/
 void InitialiseTopDownView(GsRVIEW2 *view, int nProjDist, int nHeight, int nVPX, int nVPZ);

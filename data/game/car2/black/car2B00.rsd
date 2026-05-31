@@ -2,4 +2,4 @@
 PLY=car2B00.ply
 MAT=car2B00.mat
 NTEX=1
-TEX[0]=car2_bla.tim
+TEX[0]=car2_blk.tim

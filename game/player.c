@@ -5,6 +5,40 @@
 
 int selectedVehicleIndex = 0;
 
+// Hatchback (car3)
+VehicleAttributes car3Attribs = {
+    240,   // maxSpeed           
+    3,     // acceleration       
+    2,     // deceleration       
+    6,     // brakeDeceleration  
+    -100,  // maxReverseSpeed    
+    120,   // steeringResponse   
+    80,    // minSteeringResponse
+    200,   // maxGrip            
+    60,    // minGrip            
+    840,   // slidingFriction    
+    920,   // lateralFriction    
+    2048   // turnRadiusFactor   
+};
+
+// Sports car (car2)
+VehicleAttributes car2Attribs = {
+    340,   // maxSpeed           higher top speed   
+    5,     // acceleration       quicker off the line
+    2,     // deceleration                           
+    10,    // brakeDeceleration  stronger brakes     
+    -60,   // maxReverseSpeed    limited reverse     
+    150,   // steeringResponse   sharper steering    
+    100,   // minSteeringResponse                    
+    140,   // maxGrip            breaks loose sooner 
+    30,    // minGrip            little grip at speed
+    750,   // slidingFriction    longer slides       
+    880,   // lateralFriction    less lateral grip   
+    1600   // turnRadiusFactor   more aggressive     
+};
+
+VehicleAttributes *activeVehicle = &car3Attribs;
+
 
 // This function associates a model with our player datastructure
 // later we will want to add more than one model to the player to implement animation

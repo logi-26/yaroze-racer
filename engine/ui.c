@@ -153,10 +153,11 @@ void DrawBarSegmented(int x, int y, int barW, int barH, int val, int max, int se
         box.x = (short)sx;
         box.w = (unsigned short)segW;
 
-        if (i < filledSegs)
+        if (i < filledSegs) {
             box.r = fillR; box.g = fillG; box.b = fillB;
-        else
+        } else {
             box.r = bgR; box.g = bgG; box.b = bgB;
+        }
 
         GsSortBoxFill(&box, ot, priority);
     }

@@ -19,20 +19,20 @@ PlayerStruct player2;
 static int stateInitialised = 0;
 
 
-static const long playerTmdAddr[3] = {
-    CAR_3_MEM_ADDR,
-    CAR_3R_MEM_ADDR,
-    CAR_3Y_MEM_ADDR,
+static const long playerTmdAddr[6] = {
+    CAR_3_MEM_ADDR,   CAR_3R_MEM_ADDR,  CAR_3Y_MEM_ADDR,
+    CAR_2BL_MEM_ADDR, CAR_2B_MEM_ADDR,  CAR_2R_MEM_ADDR,
 };
-static const long playerTexAddr[3] = {
-    CAR_3_TEX_MEM_ADDR,
-    CAR_3R_TEX_MEM_ADDR,
-    CAR_3Y_TEX_MEM_ADDR,
+static const long playerTexAddr[6] = {
+    CAR_3_TEX_MEM_ADDR,   CAR_3R_TEX_MEM_ADDR,  CAR_3Y_TEX_MEM_ADDR,
+    CAR_2BL_TEX_MEM_ADDR, CAR_2B_TEX_MEM_ADDR,  CAR_2R_TEX_MEM_ADDR,
 };
 
 static void StateInit(void)
 {
     stateInitialised = 1;
+	
+	activeVehicle = (selectedVehicleIndex < 3) ? &car3Attribs : &car2Attribs;
 
 	// Initialise player 1 with the vehicle chosen on the select screen
     InitialisePlayer(&player1, 1, 3605, -200, 9273, (long*)playerTmdAddr[selectedVehicleIndex]);

@@ -169,31 +169,24 @@ void RotateModel(GsCOORDINATE2 *gsObjectCoord, SVECTOR *rotateVector, int nRX, i
     originalNRY = nRY;
 
     if (absSpeed > 0) {
-        // Speed-sensitive steering: full rotation authority at low speed, reduced at high speed
-        steeringResponse = STEERING_RESPONSE - (absSpeed * (STEERING_RESPONSE - MIN_STEERING_RESPONSE) / MAX_SPEED);
-        if (steeringResponse < MIN_STEERING_RESPONSE) steeringResponse = MIN_STEERING_RESPONSE;
+        steeringResponse = activeVehicle->steeringResponse - (absSpeed * (activeVehicle->steeringResponse - activeVehicle->minSteeringResponse) / activeVehicle->maxSpeed);
+        if (steeringResponse < activeVehicle->minSteeringResponse) steeringResponse = activeVehicle->minSteeringResponse;
 
-        // Grip limit decreases with speed: same turn input breaks loose sooner at high speed
-        gripLimit = MAX_GRIP - (absSpeed * (MAX_GRIP - MIN_GRIP) / MAX_SPEED);
-        if (gripLimit < MIN_GRIP) gripLimit = MIN_GRIP;
+        gripLimit = activeVehicle->maxGrip - (absSpeed * (activeVehicle->maxGrip - activeVehicle->minGrip) / activeVehicle->maxSpeed);
+        if (gripLimit < activeVehicle->minGrip) gripLimit = activeVehicle->minGrip;
 
-        // Momentum transfer: rotating the heading while moving converts forward velocity
-        // into lateral velocity — the physical reason why fast corners cause slides.
         if (*speed > 0) {
-            maxLateral = MAX_SPEED / 3;
+            maxLateral = activeVehicle->maxSpeed / 3;
             if (absLateral > gripLimit) {
-                // Traction limit exceeded: oversteer
-                *lateralSpeed -= (*speed * originalNRY * 2) / TURN_RADIUS_FACTOR;
+                *lateralSpeed -= (*speed * originalNRY * 2) / activeVehicle->turnRadiusFactor;
                 nRY = nRY / 3;
             } else {
-                // Gripped: normal momentum transfer from cornering
-                *lateralSpeed -= (*speed * originalNRY) / TURN_RADIUS_FACTOR;
+                *lateralSpeed -= (*speed * originalNRY) / activeVehicle->turnRadiusFactor;
             }
             if (*lateralSpeed > maxLateral) *lateralSpeed = maxLateral;
             if (*lateralSpeed < -maxLateral) *lateralSpeed = -maxLateral;
         }
 
-        // Scale rotation by steering authority and clamp to maximum rotation per frame
         nRX = (nRX * steeringResponse) / 100;
         nRY = (nRY * steeringResponse) / 100;
         nRZ = (nRZ * steeringResponse) / 100;
@@ -226,30 +219,30 @@ void AdvanceModel(GsCOORDINATE2 *gsObjectCoord, SVECTOR *rotateVector, long *spe
     // Accelerating forward
     if (movementDirection > 0) {
         if (*speed < 0) {
-            *speed += BRAKE_DECELERATION * 2;
+            *speed += activeVehicle->brakeDeceleration * 2;
         } else {
-            *speed += ACCELERATION;
-            if (*speed > MAX_SPEED) *speed = MAX_SPEED;
+            *speed += activeVehicle->acceleration;
+            if (*speed > activeVehicle->maxSpeed) *speed = activeVehicle->maxSpeed;
         }
     }
     // Braking or reversing
     else if (movementDirection < 0) {
         if (*speed > 0) {
-            *speed -= BRAKE_DECELERATION * 2;
+            *speed -= activeVehicle->brakeDeceleration * 2;
             if (*speed < 0) *speed = 0;
         } else {
-            *speed -= ACCELERATION / 2;
-            if (*speed < MAX_REVERSE_SPEED) *speed = MAX_REVERSE_SPEED;
+            *speed -= activeVehicle->acceleration / 2;
+            if (*speed < activeVehicle->maxReverseSpeed) *speed = activeVehicle->maxReverseSpeed;
         }
     }
     // No throttle
     else {
         if (*speed > 0) {
-            *speed -= isBraking ? BRAKE_DECELERATION : DECELERATION;
+            *speed -= isBraking ? activeVehicle->brakeDeceleration : activeVehicle->deceleration;
             if (*speed < 0) *speed = 0;
         }
         else if (*speed < 0) {
-            *speed += isBraking ? BRAKE_DECELERATION : DECELERATION;
+            *speed += isBraking ? activeVehicle->brakeDeceleration : activeVehicle->deceleration;
             if (*speed > 0) *speed = 0;
         }
     }
@@ -257,13 +250,13 @@ void AdvanceModel(GsCOORDINATE2 *gsObjectCoord, SVECTOR *rotateVector, long *spe
     // Friction: gripped tires snap back quickly; sliding tires recover slowly
     absLateral = abs(*lateralSpeed);
     absSpeed = abs(*speed);
-    gripLimit = MAX_GRIP - (absSpeed * (MAX_GRIP - MIN_GRIP) / MAX_SPEED);
-    if (gripLimit < MIN_GRIP) gripLimit = MIN_GRIP;
+    gripLimit = activeVehicle->maxGrip - (absSpeed * (activeVehicle->maxGrip - activeVehicle->minGrip) / activeVehicle->maxSpeed);
+    if (gripLimit < activeVehicle->minGrip) gripLimit = activeVehicle->minGrip;
 
     if (absLateral > gripLimit) {
-        *lateralSpeed = (*lateralSpeed * SLIDING_FRICTION) / 1000;
+        *lateralSpeed = (*lateralSpeed * activeVehicle->slidingFriction) / 1000;
     } else {
-        *lateralSpeed = (*lateralSpeed * LATERAL_FRICTION) / 1000;
+        *lateralSpeed = (*lateralSpeed * activeVehicle->lateralFriction) / 1000;
     }
     if (*lateralSpeed > -2 && *lateralSpeed < 2) *lateralSpeed = 0;
 
