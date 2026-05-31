@@ -3,6 +3,8 @@
 #include "player.h"
 #include "game.h"
 
+int selectedVehicleIndex = 0;
+
 
 // This function associates a model with our player datastructure
 // later we will want to add more than one model to the player to implement animation

@@ -33,6 +33,9 @@ typedef struct {
 extern PlayerStruct player1;
 extern PlayerStruct player2;
 
+// Index of the vehicle chosen on the vehicle select screen (0=green, 1=red, 2=yellow)
+extern int selectedVehicleIndex;
+
 
 /************* FUNCTION PROTOTYPES *******************/
 void InitialisePlayer(PlayerStruct *thePlayer, int playerNumber, int nX, int nY, int nZ, unsigned long *lModelAddress);

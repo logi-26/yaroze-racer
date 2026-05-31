@@ -29,7 +29,6 @@ static const long carTexAddr[NUM_VEHICLES] = {
 static const char *carName[NUM_VEHICLES] = {"GREEN", "RED", "YELLOW"};
 
 static int stateInitialised = 0;
-static int selectedVehicle  = 0;
 
 static PlayerStruct showroomCar;
 
@@ -70,8 +69,8 @@ static void StateInit(void)
     GsSetLightMode(0);
 
     // Set up coord hierarchy
-    InitialisePlayer(&showroomCar, 1, 0, 0, 0, (unsigned long*)carTmdAddr[selectedVehicle]);
-    LoadTexture(carTexAddr[selectedVehicle]);
+    InitialisePlayer(&showroomCar, 1, 0, 0, 0, (unsigned long*)carTmdAddr[selectedVehicleIndex]);
+    LoadTexture(carTexAddr[selectedVehicleIndex]);
     ApplyShowroomOrientation();
 }
 
@@ -84,16 +83,16 @@ static void UpdateMenuVehicleSelect(void)
 	// Up and sown button switch the vehicle colour
     if (BTN_PRESSED(PADLup))
     {
-        selectedVehicle = (selectedVehicle + NUM_VEHICLES - 1) % NUM_VEHICLES;
-        LoadTexture(carTexAddr[selectedVehicle]);
-        SwapTMD((unsigned long*)carTmdAddr[selectedVehicle]);
+        selectedVehicleIndex = (selectedVehicleIndex + NUM_VEHICLES - 1) % NUM_VEHICLES;
+        LoadTexture(carTexAddr[selectedVehicleIndex]);
+        SwapTMD((unsigned long*)carTmdAddr[selectedVehicleIndex]);
         ApplyShowroomOrientation();
     }
     else if (BTN_PRESSED(PADLdown))
     {
-        selectedVehicle = (selectedVehicle + 1) % NUM_VEHICLES;
-        LoadTexture(carTexAddr[selectedVehicle]);
-        SwapTMD((unsigned long*)carTmdAddr[selectedVehicle]);
+        selectedVehicleIndex = (selectedVehicleIndex + 1) % NUM_VEHICLES;
+        LoadTexture(carTexAddr[selectedVehicleIndex]);
+        SwapTMD((unsigned long*)carTmdAddr[selectedVehicleIndex]);
         ApplyShowroomOrientation();
     }
 
@@ -103,6 +102,10 @@ static void UpdateMenuVehicleSelect(void)
 	// Return to the main menu
     if (BTN_PRESSED(PADcircle))
         gameState = STATE_MENU_MAIN;
+	
+	// Start the game
+    if (BTN_PRESSED(PADstart))
+        gameState = STATE_GAMEPLAY;
 }
 
 
@@ -128,12 +131,25 @@ static void RenderMenuVehicleSelect(void)
     FontFX_SetStyle(FONT_STYLE_2);
     FontFX_SetSize(2);
     FontFX_SetColour(COL_DARKGREEN);
+	FontFX_SetOutline(COL_WHITE);
     FontFX_SetCenter(SCREEN_X_OFFSET, gScreenWidth);
     FontFX_Print(20, 20, "SELECT VEHICLE", &WorldOrderingTable[activeBuffer], OT_UI);
-    FontFX_SetColour(COL_WHITE);
-    FontFX_Print(20, 200, (char*)carName[selectedVehicle], &WorldOrderingTable[activeBuffer], OT_UI);
-    FontFX_SetSize(1);
+	FontFX_SetSize(1);
+	FontFX_FontEnd();
+    
+	
+	FontFX_FontBegin();
+	FontFX_SetColour(COL_WHITE);
+	
+	FontFX_Print(20, 170, "Model: Hatchback", &WorldOrderingTable[activeBuffer], OT_UI);
+	
+	FontFX_Print(20, 180, "Colour:", &WorldOrderingTable[activeBuffer], OT_UI);
+	
+    FontFX_Print(80, 180, (char*)carName[selectedVehicleIndex], &WorldOrderingTable[activeBuffer], OT_UI);
     FontFX_FontEnd();
+    
+	
+
 }
 
 

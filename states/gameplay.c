@@ -19,19 +19,27 @@ PlayerStruct player2;
 static int stateInitialised = 0;
 
 
+static const long playerTmdAddr[3] = {
+    CAR_3_MEM_ADDR,
+    CAR_3R_MEM_ADDR,
+    CAR_3Y_MEM_ADDR,
+};
+static const long playerTexAddr[3] = {
+    CAR_3_TEX_MEM_ADDR,
+    CAR_3R_TEX_MEM_ADDR,
+    CAR_3Y_TEX_MEM_ADDR,
+};
+
 static void StateInit(void)
 {
     stateInitialised = 1;
 
-	// Initialise player 1
-    InitialisePlayer(&player1, 1, 3605, -200, 9273, (long*)CAR_3_MEM_ADDR);
+	// Initialise player 1 with the vehicle chosen on the select screen
+    InitialisePlayer(&player1, 1, 3605, -200, 9273, (long*)playerTmdAddr[selectedVehicleIndex]);
     {
         SVECTOR modelRot = {0, 0, 0, 0};
         RotModel(&player1.gsModelCoord, &modelRot, 3072, 2048, 0);
     }
-
-	// Initialise player 2
-    //InitialisePlayer(&player2, 2, 2448, -200, 9273, (long*)CAR_2_MEM_ADDR);
 
 	// Initialise the view for player 1
     InitialiseTrackerViewPlayer1(&Camera[0], 250, 0, 0, -500, -1500, 0, -200, 0);
@@ -42,8 +50,12 @@ static void StateInit(void)
     GsSetAmbient(0, 0, 0);
     GsSetLightMode(0);
 
-	// initialise the world
+	// Initialise the world (this initialises the vehicle and textures)
 	InitialiseWorld();
+
+	// Override the car texture with the selected variant
+    if (selectedVehicleIndex != 0)
+        LoadTexture(playerTexAddr[selectedVehicleIndex]);
 }
 
 
