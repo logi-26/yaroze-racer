@@ -12,6 +12,7 @@ int  player2_isBraking    = 0;
 long player1_pitch        = 0;
 long player1_roll         = 0;
 
+
 // Scale all vertices in a TMD by dividing by 'divisor' (must be called after InitialisePlayer)
 void ScaleTmdVertices(unsigned long *tmdAddr, int divisor) {
 	unsigned long vert_p_abs;
@@ -272,6 +273,12 @@ void AdvanceModel(GsCOORDINATE2 *gsObjectCoord, SVECTOR *rotateVector, long *spe
         if (massedAccel < 1L) massedAccel = 1L;
     }
 
+    // Gear acceleration: apply torque curve and power band for current gear
+    if (movementDirection > 0) {
+        long fwdSpeed = (*speed > 0L) ? *speed : 0L;
+        ApplyGearAccel(&massedAccel, fwdSpeed, (long)activeVehicle->maxSpeed);
+    }
+
     // Accelerating forward
     if (movementDirection > 0) {
         if (*speed < 0) {
@@ -315,9 +322,15 @@ void AdvanceModel(GsCOORDINATE2 *gsObjectCoord, SVECTOR *rotateVector, long *spe
         }
     }
 
+    // Gear speed ceiling: engine cannot rev past the current gears redline
+    if (movementDirection > 0 && *speed > 0L) {
+        long gearCeiling = GetGearTopSpeed((long)activeVehicle->maxSpeed);
+        if (*speed > gearCeiling) *speed = gearCeiling;
+    }
+
     // Weight transfer: update nose pitch based on throttle/brake state
     if (movementDirection > 0 && *speed > 0) {
-        
+
 		// Acceleration squat fades as speed builds: peak is 75% of pitchFactor, falling to 0 at maxSpeed
         long targetPitch = ((long)activeSuspension->pitchFactor * 3L * (activeVehicle->maxSpeed - *speed)) / (4L * (long)activeVehicle->maxSpeed);
         if (targetPitch < 0L) targetPitch = 0L;

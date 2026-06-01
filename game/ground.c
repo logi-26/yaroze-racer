@@ -381,8 +381,9 @@ void DrawGround(GroundStruct *theGround, PlayerStruct *currentPlayer, GsOT *ot) 
 	if (player1_isBraking) {
 		DrawBrakeLights(&player1, ot, otIdx);
 	}
-	
+
 	if (NumberOfPlayers == 2 && player2_isBraking) {
 		DrawBrakeLights(&player2, ot, otIdx);
 	}
+
 }

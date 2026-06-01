@@ -10,8 +10,7 @@
 #include "../engine/light.h"
 #include "../game/game.h"
 #include "../game/world.h"
-#include "../engine/font.h"
-#include "../engine/colours.h"
+#include "../game/hud.h"
 
 PlayerStruct player1;
 PlayerStruct player2;
@@ -89,25 +88,8 @@ static void UpdateGameplay(void)
 
 static void RenderGameplay(void)
 {
-	char hudStr[32];
-
-	// Render the world
-    RenderWorld();
-
-	FontFX_FontBegin();
-	FontFX_SetStyle(FONT_STYLE_2);
-	FontFX_SetColour(COL_DARKRED);
-
-	sprintf(hudStr, "SPEED:%d MPH", (int)player1.speed / 2);
-	FontFX_Print(20, 20, hudStr, &WorldOrderingTable[activeBuffer], OT_UI);
-
-	sprintf(hudStr, "X:%d Y:%d Z:%d",
-		(int)player1.gsObjectCoord.coord.t[0],
-		(int)player1.gsObjectCoord.coord.t[1],
-		(int)player1.gsObjectCoord.coord.t[2]);
-	FontFX_Print(20, 200, hudStr, &WorldOrderingTable[activeBuffer], OT_UI);
-
-	FontFX_FontEnd();
+	RenderWorld();
+	DrawGameplayHUD(&WorldOrderingTable[activeBuffer]);
 }
 
 

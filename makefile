@@ -2,7 +2,7 @@ CFLAGS = -O3 -g -I/path/to/your/pad/
 LINKER = -Xlinker -Ttext -Xlinker 80140000
 
 PROG = main
-OBJS = main.o state_manager.o graphics.o controller.o memcard.o audio.o font.o timer.o lang.o ui.o sincos.o asset_manager.o profiler.o menu_main.o menu_memcard.o menu_memcard_load.o menu_memcard_save.o menu_options.o menu_lobby.o menu_vehicle_select.o menu_pause.o gameplay.o gameover.o memcard_context.o message.o keyboard.o world.o light.o player.o model.o game.o suspension.o ground.o calculations.o car_controls.o
+OBJS = main.o state_manager.o graphics.o controller.o memcard.o audio.o font.o timer.o lang.o ui.o sincos.o asset_manager.o profiler.o menu_main.o menu_memcard.o menu_memcard_load.o menu_memcard_save.o menu_options.o menu_lobby.o menu_vehicle_select.o menu_pause.o gameplay.o gameover.o memcard_context.o message.o keyboard.o world.o light.o player.o model.o game.o suspension.o gear.o hud.o ground.o calculations.o car_controls.o
 
 all: $(PROG)
 
@@ -89,7 +89,7 @@ menu_vehicle_select.o: states/menu_vehicle_select.c engine/state_manager.h engin
 menu_pause.o: states/menu_pause.c engine/state_manager.h engine/font.h engine/colours.h engine/controller.h engine/audio.h engine/graphics.h
 	$(CC) $(CFLAGS) -c states/menu_pause.c
 
-gameplay.o: states/gameplay.c engine/state_manager.h engine/controller.h engine/graphics.h engine/model.h engine/light.h game/car_controls.h game/player.h game/game.h game/world.h
+gameplay.o: states/gameplay.c engine/state_manager.h engine/controller.h engine/graphics.h engine/model.h engine/light.h game/car_controls.h game/player.h game/game.h game/world.h game/hud.h
 	$(CC) $(CFLAGS) -I. -c states/gameplay.c
 
 gameover.o: states/gameover.c engine/state_manager.h engine/font.h engine/colours.h engine/controller.h engine/audio.h engine/graphics.h
@@ -113,6 +113,12 @@ game.o: game/game.c game/game.h engine/graphics.h engine/calculations.h game/pla
 
 suspension.o: game/suspension.c game/suspension.h
 	$(CC) $(CFLAGS) -I. -c game/suspension.c
+
+gear.o: game/gear.c game/gear.h
+	$(CC) $(CFLAGS) -I. -c game/gear.c
+
+hud.o: game/hud.c game/hud.h game/gear.h engine/font.h engine/colours.h
+	$(CC) $(CFLAGS) -I. -c game/hud.c
 
 ground.o: game/ground.c game/ground.h
 	$(CC) $(CFLAGS) -I. -c game/ground.c

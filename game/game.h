@@ -6,6 +6,7 @@
 #include "game/player.h"
 #include "game/vehicle_attribs.h"
 #include "game/suspension.h"
+#include "game/gear.h"
 
 // Controls how quickly lateral speed builds up when turning (higher = less slip)
 #define SLIP_FACTOR 1000
