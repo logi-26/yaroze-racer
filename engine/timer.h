@@ -2,21 +2,23 @@
 #define TIMER_H
 
 #include "state_manager.h"
+#include "graphics.h"
 
-// Stopwatch timer
+
+// Stopwatch
 extern int timerRunning;
 extern int timerPaused;
-extern int timerStartFrame;
-extern int timerPausedAccum;
-extern int timerElapsedFrames;
 
-// Countdown timer
+// Countdown
 extern int countdownRunning;
 extern int countdownPaused;
 extern int countdownTotalFrames;
 extern int countdownRemainingFrames;
 
+
 /************* FUNCTION PROTOTYPES *******************/
+void TimerHardwarePoll(void);
+
 void TimerStart(void);
 void TimerStop(void);
 void TimerPause(void);

@@ -1,16 +1,25 @@
 #include "timer.h"
 
-// Stopwatch
-int timerRunning = 0;
-int timerPaused = 0;
-int timerStartFrame = 0;
-int timerPausedAccum = 0;
-int timerElapsedFrames = 0;
 
-// Countdown
-int countdownRunning = 0;
-int countdownPaused = 0;
-int countdownTotalFrames = 0;
+/*****************************************************
+Stopwatch — stores and compares pure milliseconds via gameMs
+gameMs is updated in GameUpdate() from the hardware VSync count
+returned by UpdateGraphicsSystem(), so it tracks real elapsed time
+*****************************************************/
+int timerRunning = 0;
+int timerPaused  = 0;
+
+// Milisecond timers
+static int timerStartMs  = 0;
+static int timerPausedMs = 0;
+static int timerFrozenMs = 0;
+
+void TimerHardwarePoll(void) {}
+
+// Countdown (frame-based)
+int countdownRunning         = 0;
+int countdownPaused          = 0;
+int countdownTotalFrames     = 0;
 int countdownRemainingFrames = 0;
 
 
@@ -18,12 +27,12 @@ void TimerStart(void)
 {
     if (timerRunning || timerPaused) return;
 
-    timerStartFrame = frameNumber;
-    timerPausedAccum = 0;
-    timerElapsedFrames = 0;
+    timerStartMs  = gameMs;
+    timerPausedMs = 0;
+    timerFrozenMs = 0;
 
     timerRunning = 1;
-    timerPaused = 0;
+    timerPaused  = 0;
 }
 
 
@@ -31,11 +40,10 @@ void TimerStop(void)
 {
     if (!timerRunning && !timerPaused) return;
 
-    timerElapsedFrames =
-        (frameNumber - timerStartFrame) + timerPausedAccum;
+    timerFrozenMs = gameMs - timerStartMs + timerPausedMs;
 
     timerRunning = 0;
-    timerPaused = 0;
+    timerPaused  = 0;
 }
 
 
@@ -43,11 +51,10 @@ void TimerPause(void)
 {
     if (!timerRunning) return;
 
-    timerPausedAccum =
-        (frameNumber - timerStartFrame) + timerPausedAccum;
+    timerPausedMs += gameMs - timerStartMs;
 
     timerRunning = 0;
-    timerPaused = 1;
+    timerPaused  = 1;
 }
 
 
@@ -55,60 +62,55 @@ void TimerResume(void)
 {
     if (!timerPaused) return;
 
-    timerStartFrame = frameNumber;
+    timerStartMs = gameMs;
 
     timerRunning = 1;
-    timerPaused = 0;
+    timerPaused  = 0;
 }
 
 
 void TimerReset(void)
 {
-    timerStartFrame = frameNumber;
-    timerPausedAccum = 0;
-    timerElapsedFrames = 0;
+    timerStartMs  = gameMs;
+    timerPausedMs = 0;
+    timerFrozenMs = 0;
 
     timerRunning = 0;
-    timerPaused = 0;
+    timerPaused  = 0;
 }
 
 
-void TimerUpdate(void)
-{
-    if (timerRunning)
-    {
-        timerElapsedFrames =
-            (frameNumber - timerStartFrame) + timerPausedAccum;
-    }
-}
+void TimerUpdate(void) {}
 
 
 int TimerGetElapsedFrames(void)
 {
-    return timerElapsedFrames;
+    return TimerGetElapsedMs() * FRAME_RATE / 1000;
 }
 
 
 int TimerGetElapsedMs(void)
 {
-    return (timerElapsedFrames * 1000) / FRAME_RATE;
+    return timerRunning
+        ? (gameMs - timerStartMs + timerPausedMs)
+        : timerFrozenMs;
 }
 
 
 void CountdownStart(int frames)
 {
-    countdownTotalFrames = frames;
+    countdownTotalFrames     = frames;
     countdownRemainingFrames = frames;
 
     countdownRunning = 1;
-    countdownPaused = 0;
+    countdownPaused  = 0;
 }
 
 
 void CountdownStop(void)
 {
     countdownRunning = 0;
-    countdownPaused = 0;
+    countdownPaused  = 0;
 }
 
 
@@ -117,7 +119,7 @@ void CountdownPause(void)
     if (!countdownRunning) return;
 
     countdownRunning = 0;
-    countdownPaused = 1;
+    countdownPaused  = 1;
 }
 
 
@@ -126,7 +128,7 @@ void CountdownResume(void)
     if (!countdownPaused) return;
 
     countdownRunning = 1;
-    countdownPaused = 0;
+    countdownPaused  = 0;
 }
 
 
@@ -135,7 +137,7 @@ void CountdownReset(void)
     countdownRemainingFrames = countdownTotalFrames;
 
     countdownRunning = 0;
-    countdownPaused = 0;
+    countdownPaused  = 0;
 }
 
 

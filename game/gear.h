@@ -16,6 +16,7 @@ extern GearboxMode gearboxMode;
 void UpdateGearbox(long speed, long maxSpeed, int movementDirection);
 void ApplyGearAccel(long *massedAccel, long speed, long maxSpeed);
 long GetGearTopSpeed(long maxSpeed);
+int  GetGearRevPct(long speed, long maxSpeed);
 /*****************************************************/
 
 #endif // GEAR_H

@@ -48,6 +48,7 @@ void RotateGround180(GroundStruct *theGround);
 void RotateGround270(GroundStruct *theGround);
 void RotateGround(GsCOORDINATE2 *gsObjectCoord, SVECTOR *rotateVector, int nRX, int nRY, int nRZ);
 void DrawGround(GroundStruct *theGround, PlayerStruct* currentPlayer, GsOT *ot);
+int IsOnStartLine(long worldX, long worldZ);
 TerrainType GetTerrainType(long worldX, long worldZ);
 /*****************************************************/
 

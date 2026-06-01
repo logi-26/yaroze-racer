@@ -227,12 +227,13 @@ UpdateGraphicsSystem
 Fullscreen:  flips buffers and draws the single OT.
 Splitscreen: uses GsDrawOt directly because Yaroze does not have PutDrawEnv
 *****************************************************/ 
-void UpdateGraphicsSystem(int activeBuffer) {
-	
+int UpdateGraphicsSystem(int activeBuffer) {
+
+	int vsyncCount;
 	int r, g, b;
-	
+
     DrawSync(0);
-    VSync(0);
+    vsyncCount = VSync(0);
  
     GsSwapDispBuff();
  
@@ -260,6 +261,7 @@ void UpdateGraphicsSystem(int activeBuffer) {
 #if ENABLE_SPLITSCREEN
     }
 #endif
+    return vsyncCount;
 }
 
 

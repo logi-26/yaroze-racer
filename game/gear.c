@@ -56,6 +56,22 @@ long GetGearTopSpeed(long maxSpeed) {
 }
 
 
+int GetGearRevPct(long speed, long maxSpeed) {
+    long gearBottom, gearTop, gearRange, posInGear;
+    if (currentGear < 1 || currentGear > 5 || maxSpeed <= 0L) return 0;
+    gearBottom = (currentGear > 1)
+               ? ((long)maxSpeed * gearTopSpeedPct[currentGear - 2] / 100L)
+               : 0L;
+    gearTop    = (long)maxSpeed * gearTopSpeedPct[currentGear - 1] / 100L;
+    gearRange  = gearTop - gearBottom;
+    if (gearRange <= 0L) return 0;
+    posInGear  = speed - gearBottom;
+    if (posInGear < 0L)        posInGear = 0L;
+    if (posInGear > gearRange) posInGear = gearRange;
+    return (int)(posInGear * 100L / gearRange);
+}
+
+
 void ApplyGearAccel(long *massedAccel, long speed, long maxSpeed) {
     long gearBottom, gearTop, gearRange, posInGear, powerBand, baseAccel;
 

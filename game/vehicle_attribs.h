@@ -15,6 +15,7 @@ typedef struct {
     int slidingFriction;    // Lateral damping while sliding (/1000)
     int lateralFriction;    // Lateral damping while gripped (/1000)
     int turnRadiusFactor;   // Cornering momentum scale (lower = more oversteer)
+    int understeerBias;     // >0 = understeer tendency (FWD), <0 = oversteer tendency (RWD)
 } VehicleAttributes;
 
 extern VehicleAttributes car3Attribs;

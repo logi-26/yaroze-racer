@@ -199,24 +199,47 @@ void RotateModel(GsCOORDINATE2 *gsObjectCoord, SVECTOR *rotateVector, int nRX, i
             }
         }
 
-        // Weight transfer: pitch and roll both reduce effective lateral grip
+        /* Axle-split grip via weight transfer (slip-angle model).
+           Positive pitch = nose up (acceleration) = rear-heavy = less front grip → understeer.
+           Negative pitch = nose down (braking)    = front-heavy = less rear grip → oversteer.
+           understeerBias permanently shifts the balance to reflect drive layout (FWD/RWD). */
         {
-            long pitchAbs = player1_pitch < 0L ? -player1_pitch : player1_pitch;
-            long rollAbs  = player1_roll  < 0L ? -player1_roll  : player1_roll;
-            gripLimit -= (pitchAbs + rollAbs) / 8L;
-            if (gripLimit < activeVehicle->minGrip) gripLimit = activeVehicle->minGrip;
-        }
+            long rollAbs    = player1_roll < 0L ? -player1_roll : player1_roll;
+            long pitchShift = player1_pitch / 4L + (long)activeVehicle->understeerBias;
+            long frontGrip  = gripLimit - pitchShift - rollAbs / 10L;
+            long rearGrip   = gripLimit + pitchShift - rollAbs / 10L;
+            if (frontGrip < activeVehicle->minGrip) frontGrip = activeVehicle->minGrip;
+            if (rearGrip  < activeVehicle->minGrip) rearGrip  = activeVehicle->minGrip;
 
-        if (*speed > 0) {
-            maxLateral = activeVehicle->maxSpeed / 3;
-            if (absLateral > gripLimit) {
-                *lateralSpeed -= (*speed * originalNRY * 2) / activeVehicle->turnRadiusFactor;
-                nRY = nRY / 3;
-            } else {
-                *lateralSpeed -= (*speed * originalNRY) / activeVehicle->turnRadiusFactor;
+            if (*speed > 0) {
+                maxLateral = activeVehicle->maxSpeed / 3;
+
+                /* Understeer: front tires saturating → steering progressively washes out.
+                   Onset at 50% of frontGrip, falls to 20% effectiveness at 2× frontGrip. */
+                if (absLateral > frontGrip / 2) {
+                    long excess  = absLateral - frontGrip / 2;
+                    long washout = 100L - (excess * 160L / (frontGrip > 0L ? frontGrip : 1L));
+                    if (washout < 20L) washout = 20L;
+                    nRY = (nRY * washout) / 100L;
+                }
+
+                /* Oversteer: rear grip exceeded → rear swings outward. */
+                if (absLateral > rearGrip) {
+                    long breakaway = absLateral - rearGrip;
+                    if (*lateralSpeed > 0L) *lateralSpeed += breakaway;
+                    else                    *lateralSpeed -= breakaway;
+                }
+
+                /* Lateral centripetal correction; reduced when rear has let go. */
+                if (absLateral > rearGrip) {
+                    *lateralSpeed -= (*speed * originalNRY * 2) / activeVehicle->turnRadiusFactor;
+                } else {
+                    *lateralSpeed -= (*speed * originalNRY) / activeVehicle->turnRadiusFactor;
+                }
+
+                if (*lateralSpeed > maxLateral) *lateralSpeed = maxLateral;
+                if (*lateralSpeed < -maxLateral) *lateralSpeed = -maxLateral;
             }
-            if (*lateralSpeed > maxLateral) *lateralSpeed = maxLateral;
-            if (*lateralSpeed < -maxLateral) *lateralSpeed = -maxLateral;
         }
 
         nRX = (nRX * steeringResponse) / 100;

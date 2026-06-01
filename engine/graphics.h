@@ -95,7 +95,7 @@ extern int fontID_2;
 void InitialiseGraphicsSystem(void);
 void InitialiseFontSystem(void);
 void SetScreenMode(ScreenMode mode);
-void UpdateGraphicsSystem(int activeBuffer);
+int UpdateGraphicsSystem(int activeBuffer);
 int  GetActiveBuffer(void);
 
 void SetBackgroundColor(int r, int g, int b);

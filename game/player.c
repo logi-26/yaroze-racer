@@ -5,39 +5,41 @@
 
 int selectedVehicleIndex = 0;
 
-// Hatchback car (car3)
+// Hatchback car (car3) — FWD, mild understeer
 VehicleAttributes car3Attribs = {
-    240,   // maxSpeed           
-    3,     // acceleration       
-    2,     // deceleration       
-    6,     // brakeDeceleration  
-    -100,  // maxReverseSpeed    
-    120,   // steeringResponse   
+    240,   // maxSpeed
+    3,     // acceleration
+    2,     // deceleration
+    6,     // brakeDeceleration
+    -100,  // maxReverseSpeed
+    120,   // steeringResponse
     80,    // minSteeringResponse
-    200,   // maxGrip            
-    60,    // minGrip            
-    840,   // slidingFriction    
-    920,   // lateralFriction    
-    2048   // turnRadiusFactor   
+    200,   // maxGrip
+    60,    // minGrip
+    840,   // slidingFriction
+    920,   // lateralFriction
+    2048,  // turnRadiusFactor
+    15     // understeerBias (FWD: front loses grip first)
 };
 
-// Saloon car (car2)
+// Saloon car (car2) — neutral balance
 VehicleAttributes car2Attribs = {
-    340,   // maxSpeed     
-    5,     // acceleration       
-    2,     // deceleration                           
-    10,    // brakeDeceleration    
-    -60,   // maxReverseSpeed    
-    150,   // steeringResponse   
-    100,   // minSteeringResponse                    
-    140,   // maxGrip            
-    30,    // minGrip            
-    750,   // slidingFriction    
-    880,   // lateralFriction   
-    1600   // turnRadiusFactor  
+    340,   // maxSpeed
+    5,     // acceleration
+    2,     // deceleration
+    10,    // brakeDeceleration
+    -60,   // maxReverseSpeed
+    150,   // steeringResponse
+    100,   // minSteeringResponse
+    140,   // maxGrip
+    30,    // minGrip
+    750,   // slidingFriction
+    880,   // lateralFriction
+    1600,  // turnRadiusFactor
+    0      // understeerBias (neutral)
 };
 
-// American car (car5)
+// American car (car5) — RWD, oversteer tendency
 VehicleAttributes car5Attribs = {
     400,   // maxSpeed
     6,     // acceleration
@@ -46,11 +48,12 @@ VehicleAttributes car5Attribs = {
     -50,   // maxReverseSpeed
     160,   // steeringResponse
     110,   // minSteeringResponse
-    100,   // maxGrip            
-    20,    // minGrip            
-    700,   // slidingFriction    
-    850,   // lateralFriction    
-    1400   // turnRadiusFactor
+    100,   // maxGrip
+    20,    // minGrip
+    700,   // slidingFriction
+    850,   // lateralFriction
+    1400,  // turnRadiusFactor
+    -25    // understeerBias (RWD: rear loses grip first)
 };
 
 VehicleAttributes *activeVehicle = &car3Attribs;

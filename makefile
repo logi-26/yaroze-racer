@@ -117,7 +117,7 @@ suspension.o: game/suspension.c game/suspension.h
 gear.o: game/gear.c game/gear.h
 	$(CC) $(CFLAGS) -I. -c game/gear.c
 
-hud.o: game/hud.c game/hud.h game/gear.h engine/font.h engine/colours.h
+hud.o: game/hud.c game/hud.h game/gear.h game/player.h game/ground.h engine/font.h engine/colours.h engine/ui.h engine/timer.h
 	$(CC) $(CFLAGS) -I. -c game/hud.c
 
 ground.o: game/ground.c game/ground.h

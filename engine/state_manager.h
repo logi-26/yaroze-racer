@@ -41,6 +41,7 @@ Shared Globals
 
 extern int activeBuffer;
 extern int frameNumber;
+extern int gameMs;
 
 extern GameState gameState;
 extern GameState prevGameState;

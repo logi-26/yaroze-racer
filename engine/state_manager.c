@@ -28,6 +28,7 @@
 // Variables for game engine
 int activeBuffer = 0;
 int frameNumber  = 0;
+int gameMs       = 0;
 
 // Variables for the game sample
 int score = 0;
@@ -205,7 +206,7 @@ void GameUpdate(void)
 	// Profile the graphics flush
     PROFILE_BEGIN(PROF_RENDER);
 	
-	UpdateGraphicsSystem(activeBuffer);
+	gameMs += UpdateGraphicsSystem(activeBuffer) * (1000 / FRAME_RATE);
 	FntFlush(-1);
 
 	PROFILE_END(PROF_RENDER);
