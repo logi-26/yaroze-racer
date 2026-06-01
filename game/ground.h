@@ -33,6 +33,12 @@ typedef struct {
 extern GroundStruct theGround;
 
 
+typedef enum {
+    TERRAIN_TRACK = 0,
+    TERRAIN_GRASS = 1,
+    TERRAIN_SAND  = 2,
+} TerrainType;
+
 /************* FUNCTION PROTOTYPES *******************/
 void InitialiseGroundTextures();
 void InitialiseGround();
@@ -42,6 +48,7 @@ void RotateGround180(GroundStruct *theGround);
 void RotateGround270(GroundStruct *theGround);
 void RotateGround(GsCOORDINATE2 *gsObjectCoord, SVECTOR *rotateVector, int nRX, int nRY, int nRZ);
 void DrawGround(GroundStruct *theGround, PlayerStruct* currentPlayer, GsOT *ot);
+TerrainType GetTerrainType(long worldX, long worldZ);
 /*****************************************************/
 
 

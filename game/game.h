@@ -4,6 +4,11 @@
 #include <libps.h>
 #include "game/world.h"
 #include "game/player.h"
+#include "game/vehicle_attribs.h"
+#include "game/suspension.h"
+
+// Controls how quickly lateral speed builds up when turning (higher = less slip)
+#define SLIP_FACTOR 1000
 
 extern int NumberOfPlayers;
 
@@ -15,10 +20,10 @@ extern long player2_lateralSpeed;
 extern int player1_isBraking;
 extern int player2_isBraking;
 
-// Controls how quickly lateral speed builds up when turning (higher = less slip)
-#define SLIP_FACTOR 1000
+// Suspension body motion state
+extern long player1_pitch;
+extern long player1_roll;
 
-#include "game/vehicle_attribs.h"
 
 /************* FUNCTION PROTOTYPES *******************/
 void InitialiseTopDownView(GsRVIEW2 *view, int nProjDist, int nHeight, int nVPX, int nVPZ);

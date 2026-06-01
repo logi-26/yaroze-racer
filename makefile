@@ -2,7 +2,7 @@ CFLAGS = -O3 -g -I/path/to/your/pad/
 LINKER = -Xlinker -Ttext -Xlinker 80140000
 
 PROG = main
-OBJS = main.o state_manager.o graphics.o controller.o memcard.o audio.o font.o timer.o lang.o ui.o sincos.o asset_manager.o profiler.o menu_main.o menu_memcard.o menu_memcard_load.o menu_memcard_save.o menu_options.o menu_lobby.o menu_vehicle_select.o menu_pause.o gameplay.o gameover.o memcard_context.o message.o keyboard.o world.o light.o player.o model.o game.o ground.o calculations.o car_controls.o
+OBJS = main.o state_manager.o graphics.o controller.o memcard.o audio.o font.o timer.o lang.o ui.o sincos.o asset_manager.o profiler.o menu_main.o menu_memcard.o menu_memcard_load.o menu_memcard_save.o menu_options.o menu_lobby.o menu_vehicle_select.o menu_pause.o gameplay.o gameover.o memcard_context.o message.o keyboard.o world.o light.o player.o model.o game.o suspension.o ground.o calculations.o car_controls.o
 
 all: $(PROG)
 
@@ -108,8 +108,11 @@ player.o: game/player.c game/player.h engine/graphics.h game/game.h
 model.o: engine/model.c engine/model.h engine/calculations.h
 	$(CC) $(CFLAGS) -c engine/model.c
 
-game.o: game/game.c game/game.h engine/graphics.h engine/calculations.h game/player.h game/world.h
+game.o: game/game.c game/game.h engine/graphics.h engine/calculations.h game/player.h game/world.h game/ground.h
 	$(CC) $(CFLAGS) -I. -c game/game.c
+
+suspension.o: game/suspension.c game/suspension.h
+	$(CC) $(CFLAGS) -I. -c game/suspension.c
 
 ground.o: game/ground.c game/ground.h
 	$(CC) $(CFLAGS) -I. -c game/ground.c

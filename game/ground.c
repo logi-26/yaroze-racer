@@ -38,8 +38,25 @@ char groundDataTrack1[GROUND_MAX_Z][GROUND_MAX_X] = {
 };
 
 
+TerrainType GetTerrainType(long worldX, long worldZ) {
+    int tileRow = (int)(worldX / SEPERATION);
+    int tileCol = (int)(worldZ / SEPERATION);
+    char tile;
+
+    if (tileRow < 0) tileRow = 0;
+    if (tileRow >= GROUND_MAX_Z) tileRow = GROUND_MAX_Z - 1;
+    if (tileCol < 0) tileCol = 0;
+    if (tileCol >= GROUND_MAX_X) tileCol = GROUND_MAX_X - 1;
+
+    tile = groundDataTrack1[tileRow][tileCol];
+    if (tile == '3') return TERRAIN_GRASS;
+    if (tile == 'v') return TERRAIN_SAND;
+    return TERRAIN_TRACK;
+}
+
+
 void InitialiseGroundTextures() {
-	
+
 	// Load ground textures into vram
 	LoadTexture(LINE_L_TEX_MEM_ADDR);					
 	LoadTexture(LINE_R_TEX_MEM_ADDR);					
