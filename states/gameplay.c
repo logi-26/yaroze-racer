@@ -11,6 +11,7 @@
 #include "../game/game.h"
 #include "../game/world.h"
 #include "../game/hud.h"
+#include "../game/brakelights.h"
 
 PlayerStruct player1;
 PlayerStruct player2;
@@ -59,17 +60,23 @@ static void StateInit(void)
 	// Override the car texture with the selected variant
     if (selectedVehicleIndex != 0)
         LoadTexture(playerTexAddr[selectedVehicleIndex]);
+
+	// Prepare CLUT swap buffers for brake light effect
+    InitBrakeLightEffect(playerTexAddr[selectedVehicleIndex], selectedVehicleIndex);
 }
 
 
 static void StateDeinitialise(void)
 {
+    SetBrakeLightTexture(0);
     stateInitialised = 0;
 }
 
 
 static void UpdateGameplay(void)
 {
+    static int prevBraking = 0;
+
 	// Initialise the state on first entry
     if (!stateInitialised)
         StateInit();
@@ -79,6 +86,12 @@ static void UpdateGameplay(void)
 
 	// Check player 1 collisions
     CheckWorldCollisions(&player1, &player1_lateralSpeed);
+
+	// Swap brake-light CLUT only on state transition (not every frame)
+    if (player1_isBraking != prevBraking) {
+        SetBrakeLightTexture(player1_isBraking);
+        prevBraking = player1_isBraking;
+    }
 
 	// Pause the game
     if (BTN_PRESSED(PADstart))

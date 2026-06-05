@@ -36,7 +36,6 @@ void RotateModel(GsCOORDINATE2 *gsObjectCoord, SVECTOR *rotateVector, int nRX, i
 void AdvanceModel(GsCOORDINATE2 *gsObjectCoord, SVECTOR *rotateVector, long *speed, long *lateralSpeed, int movementDirection, int isBraking);
 void InitSingleScreen(void);
 void InitSplitScreen(int x1, int y1, int w1, int h1, int x2, int y2, int w2, int h2);
-void DrawBrakeLights(PlayerStruct *player, GsOT *ot, int otIdx);
 void ScaleTmdVertices(unsigned long *tmdAddr, int divisor);
 /*****************************************************/
 

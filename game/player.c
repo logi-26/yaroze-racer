@@ -5,7 +5,7 @@
 
 int selectedVehicleIndex = 0;
 
-// Hatchback car (car3) — FWD, mild understeer
+// Hatchback car (car3) FWD
 VehicleAttributes car3Attribs = {
     240,   // maxSpeed
     3,     // acceleration
@@ -22,7 +22,7 @@ VehicleAttributes car3Attribs = {
     15     // understeerBias (FWD: front loses grip first)
 };
 
-// Saloon car (car2) — neutral balance
+// Saloon car (car2) neutral balance
 VehicleAttributes car2Attribs = {
     340,   // maxSpeed
     5,     // acceleration
@@ -39,7 +39,7 @@ VehicleAttributes car2Attribs = {
     0      // understeerBias (neutral)
 };
 
-// American car (car5) — RWD, oversteer tendency
+// American car (car5) RWD
 VehicleAttributes car5Attribs = {
     400,   // maxSpeed
     6,     // acceleration
@@ -117,33 +117,13 @@ void InitialisePlayer(PlayerStruct *thePlayer, int playerNumber, int nX, int nY,
 }
 
 
-// This function deals with setting up matrices needed for rendering
-// and sends the object to the ordering table so it will be drawn
 void DrawPlayer(PlayerStruct *thePlayer, GsOT *othWorld) {
-	MATRIX  tmpls, tmplw;
-	
-	// Get the local world and screen coordinates, needed for light calculations
-	GsGetLws(thePlayer->gsObjectHandler.coord2, &tmplw, &tmpls);
-	
-	// Set the resulting light source matrix
-	GsSetLightMatrix(&tmplw);
-	
-	// Set the local screen matrix for the GTE (so it works out perspective etc)
-	GsSetLsMatrix(&tmpls);
-	
-	if (thePlayer->playerNumber == 1) {
-		//FntPrint(fontID_1, "POS x: %d, y: %d, z: %d\n", thePlayer->gsObjectCoord.coord.t[0], thePlayer->gsObjectCoord.coord.t[1], thePlayer->gsObjectCoord.coord.t[2]);
-		//FntPrint(fontID_1, "ROT x: %d, y: %d, z: %d\n", (int)thePlayer->rotation.vx, (int)thePlayer->rotation.vy, (int)thePlayer->rotation.vz);
-		//FntPrint(fontID_1, "speed: %d\n", thePlayer->speed);
-	}
-	
-	//if (thePlayer->playerNumber == 2) {
-		//FntPrint(fontID_1, "\nPOS x: %d, y: %d, z: %d\n", thePlayer->gsObjectCoord.coord.t[0], thePlayer->gsObjectCoord.coord.t[1], thePlayer->gsObjectCoord.coord.t[2]);
-		//FntPrint(fontID_1, "ROT x: %d, y: %d, z: %d\n", (int)thePlayer->rotation.vx, (int)thePlayer->rotation.vy, (int)thePlayer->rotation.vz);
-		//FntPrint(fontID_1, "speed: %d\n", thePlayer->speed);
-	//}
+	MATRIX tmpls, tmplw;
 
-	// Send Object To Ordering Table
+	GsGetLws(thePlayer->gsObjectHandler.coord2, &tmplw, &tmpls);
+	GsSetLightMatrix(&tmplw);
+	GsSetLsMatrix(&tmpls);
+
 	GsSortObject4(&thePlayer->gsObjectHandler, othWorld, 3, (u_long *)getScratchAddr(0));
 }
 

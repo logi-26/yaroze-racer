@@ -368,7 +368,6 @@ void RotateGround(GsCOORDINATE2 *gsObjectCoord, SVECTOR *rotateVector, int nRX, 
 void DrawGround(GroundStruct *theGround, PlayerStruct *currentPlayer, GsOT *ot) {
     MATRIX  tmpls, tmplw;
     int nCurrentModel;
-    int otIdx;
     
     //FntPrint(fontID_1, "Ground models: %d\n\n", (theGround->nTotalModels));
 
@@ -390,15 +389,5 @@ void DrawGround(GroundStruct *theGround, PlayerStruct *currentPlayer, GsOT *ot) 
     }
 
 
-	// Draw brake lights for any player that is braking
-	otIdx = (int)(ot - WorldOrderingTable);
-	
-	if (player1_isBraking) {
-		DrawBrakeLights(&player1, ot, otIdx);
-	}
-
-	if (NumberOfPlayers == 2 && player2_isBraking) {
-		DrawBrakeLights(&player2, ot, otIdx);
-	}
 
 }
