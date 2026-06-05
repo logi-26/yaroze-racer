@@ -1,0 +1,18 @@
+# Compiled objects
+*.o
+
+# Executables
+*.exe
+main
+psx.exe
+
+# PSX build outputs
+psx.bin
+psx.cue
+psx.iso
+
+# Backup folder
+backup/
+
+# IDE
+.vscode/
