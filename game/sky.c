@@ -10,6 +10,10 @@ static GsSPRITE skySpr;
 // Two texture pages because the image is 512px wide
 static unsigned short tpageL, tpageR;
 
+// Fixed-point drift accumulator (4 fractional bits, range 0..8191 = 512 pixels * 16)
+// Increments by 2 per frame => 6 pixels/second at 50fps, full cycle 82 seconds
+static long skyDrift = 0;
+
 
 // Initialise the skybox image (currently a 16-bit image)
 void InitialiseSky(void) {
@@ -52,11 +56,12 @@ void DrawSky(GsOT *ot) {
     int u;            // U coordinate within the current texture page (0-255)
     int draw_w;       // Width of the current sprite segment
 
-    // Convert player yaw rotation into a horizontal texture offset
+    // Advance cloud drift (6 pixels/second at 50fps)
+    skyDrift = (skyDrift + 2) & 8191;
+
+    // Combine player yaw with cloud drift
     scroll = (int)((player1.rotation.vy * 512L) / (long)ONE);
-	
-	// Ensure the result stays in the range [0, 511]
-    scroll = ((scroll % 512) + 512) % 512;
+    scroll = ((scroll + (int)(skyDrift >> 4)) % 512 + 512) % 512;
 
 	// Start drawing from the computed texture position
     seg_img = scroll;
