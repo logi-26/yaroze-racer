@@ -2,6 +2,7 @@
 #include "gear.h"
 #include "player.h"
 #include "ground.h"
+#include "../engine/graphics.h"
 #include "../engine/font.h"
 #include "../engine/colours.h"
 #include "../engine/ui.h"
@@ -52,63 +53,83 @@ static void UpdateLapTimer(void) {
 void DrawGameplayHUD(GsOT *ot) {
     char hudStr[32];
     char timeStr[12];
+	char gearStr[32];
+	char transStr[32];
 
     TimerHardwarePoll();
     UpdateLapTimer();
-
-    FontFX_FontBegin();
+	
+	FontFX_FontBegin();
     FontFX_SetStyle(FONT_STYLE_2);
-    FontFX_SetColour(COL_DARKRED);
-
-    sprintf(hudStr, "SPEED:%d MPH", (int)player1.speed / 2);
-    FontFX_Print(20, 20, hudStr, ot, OT_UI);
-
-    if (currentGear == 0)
-        sprintf(hudStr, "GEAR:R %s", (gearboxMode == GEAR_MANUAL) ? "[M]" : "[A]");
-    else
-        sprintf(hudStr, "GEAR:%d %s", currentGear, (gearboxMode == GEAR_MANUAL) ? "[M]" : "[A]");
-    
-	FontFX_Print(20, 30, hudStr, ot, OT_UI);
-
-    if (currentGear >= 1 && currentGear <= 5)
-        FontFX_Print(20, 42, "RPM", ot, OT_UI);
-
-    // Lap timer — current lap
+    FontFX_SetColour(COL_BLACK);
+	
+	// Lap timer — current lap
     FormatLapTime(timeStr, TimerGetElapsedMs());
     sprintf(hudStr, "LAP:%s", timeStr);
-    FontFX_Print(20, 56, hudStr, ot, OT_UI);
+    FontFX_Print(20, 20, hudStr, ot, OT_UI);
+	
+	FontFX_SetColour(COL_DARKGREY);
 
-    // Last and best lap times (shown after the first complete lap)
-    if (lastLapMs > 0) {
-        FormatLapTime(timeStr, lastLapMs);
-        sprintf(hudStr, "LST:%s", timeStr);
-        FontFX_Print(20, 66, hudStr, ot, OT_UI);
+    // Last lap times
+	FormatLapTime(timeStr, lastLapMs);
+	sprintf(hudStr, "LST:%s", timeStr);
+	FontFX_Print(20, 30, hudStr, ot, OT_UI);
+	
+	FontFX_SetColour(COL_DARKGREEN);
 
-        FormatLapTime(timeStr, bestLapMs);
-        sprintf(hudStr, "BST:%s", timeStr);
-        FontFX_Print(20, 76, hudStr, ot, OT_UI);
+	// Best lap times
+	FormatLapTime(timeStr, bestLapMs);
+	sprintf(hudStr, "BST:%s", timeStr);
+	FontFX_Print(20, 40, hudStr, ot, OT_UI);
+	
+	FontFX_SetColour(COL_WHITE);
+
+	// Game speed display
+    sprintf(hudStr, "%d MPH", (int)player1.speed / 2);
+    FontFX_Print(gScreenWidth - 60, gScreenHeight - 60, hudStr, ot, OT_UI);
+	
+	// Gear display
+	if (currentGear == 0)
+		sprintf(gearStr, "GEAR:R");
+	else
+		sprintf(gearStr, "GEAR:%d", currentGear);
+
+	sprintf(transStr, "%s", (gearboxMode == GEAR_MANUAL) ? "MANUAL" : "AUTO");
+
+	FontFX_Print(gScreenWidth - 60, gScreenHeight - 40, gearStr, ot, OT_UI);
+	FontFX_Print(gScreenWidth - 60, gScreenHeight - 30, transStr, ot, OT_UI);
+	
+
+
+
+	// RPM display
+    if (currentGear >= 1 && currentGear <= 5)
+        FontFX_Print(gScreenWidth - 150, gScreenHeight - 20, "RPM", ot, OT_UI);
+	
+	// Rev counter: green zone (0-70%) + red zone (70-100%)
+    if (currentGear >= 1 && currentGear <= 5) {
+        int revPct = GetGearRevPct(player1.speed > 0L ? player1.speed : 0L, (long)activeVehicle->maxSpeed);
+        int greenVal = revPct < 70 ? revPct : 70;
+        int redVal = revPct > 70 ? revPct - 70 : 0;
+        int barX = gScreenWidth - 145 + FONT_CHAR_W * 3 + 2;
+
+        // 7 green segs × 10px + 6 × 1px gap = 76px total
+        DrawBarSegmented(barX, gScreenHeight - 20, 76, 7, greenVal, 70, 7, 1, COL_DARKGREEN, COL_VERYDARKGREY, ot, OT_UI);
+        
+		// 3 red segs × 10px + 2 × 1px gap = 32px total
+        DrawBarSegmented(barX + 78, gScreenHeight - 20, 32, 7, redVal, 30, 3, 1, COL_RED, COL_VERYDARKGREY, ot, OT_UI);
     }
 
+	/*
+	// Print the vehicle position for debugging
     sprintf(hudStr, "X:%d Y:%d Z:%d",
         (int)player1.gsObjectCoord.coord.t[0],
         (int)player1.gsObjectCoord.coord.t[1],
         (int)player1.gsObjectCoord.coord.t[2]);
     FontFX_Print(20, 200, hudStr, ot, OT_UI);
+	*/
+
 
     FontFX_FontEnd();
 
-    // Rev counter: green zone (0-70%) + red zone (70-100%)
-    if (currentGear >= 1 && currentGear <= 5) {
-        int revPct   = GetGearRevPct(player1.speed > 0L ? player1.speed : 0L,
-                                     (long)activeVehicle->maxSpeed);
-        int greenVal = revPct < 70 ? revPct : 70;
-        int redVal   = revPct > 70 ? revPct - 70 : 0;
-        int barX     = 20 + FONT_CHAR_W * 3 + 2;
-
-        // 7 green segs × 10px + 6 × 1px gap = 76px total
-        DrawBarSegmented(barX,      44, 76, 7, greenVal, 70, 7, 1, COL_DARKGREEN, COL_VERYDARKGREY, ot, OT_UI);
-        
-		// 3 red segs × 10px + 2 × 1px gap = 32px total
-        DrawBarSegmented(barX + 78, 44, 32, 7, redVal, 30, 3, 1, COL_RED, COL_VERYDARKGREY, ot, OT_UI);
-    }
 }

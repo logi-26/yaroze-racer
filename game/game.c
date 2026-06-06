@@ -330,8 +330,10 @@ void AdvanceModel(GsCOORDINATE2 *gsObjectCoord, SVECTOR *rotateVector, long *spe
 			}
 
 		} else {
-            *speed -= massedAccel / 2;
-            
+            long revAccel = massedAccel / 2;
+            if (revAccel < 1L) revAccel = 1L;
+            *speed -= revAccel;
+
 			if (*speed < activeVehicle->maxReverseSpeed) {
 				*speed = activeVehicle->maxReverseSpeed;
 			}

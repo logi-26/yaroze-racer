@@ -52,8 +52,8 @@ Ordering table and buffer counts
 
 // Depth layers
 #define OT_BACKGROUND 11
-#define OT_WORLD       8
-#define OT_UI          4
+#define OT_WORLD      8
+#define OT_UI         4
 #define OT_POPUP      0
 
 // Packet buffer size per slot

@@ -87,4 +87,6 @@ local dload data\game\car2\blue\car2.tim 80128000
 local dload data\game\car2\red\CAR2R.TMD 8012D000
 local dload data\game\car2\red\car2_red.tim 80130000
 
+local dload data\game\sky\sky2.tim 80136000
+
 go

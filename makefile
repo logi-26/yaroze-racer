@@ -1,8 +1,8 @@
 CFLAGS = -O3 -g -I/path/to/your/pad/
-LINKER = -Xlinker -Ttext -Xlinker 80140000
+LINKER = -Xlinker -Ttext -Xlinker 80160000
 
 PROG = main
-OBJS = main.o state_manager.o graphics.o controller.o memcard.o audio.o font.o timer.o lang.o ui.o sincos.o asset_manager.o profiler.o menu_main.o menu_memcard.o menu_memcard_load.o menu_memcard_save.o menu_options.o menu_lobby.o menu_vehicle_select.o menu_pause.o gameplay.o gameover.o memcard_context.o message.o keyboard.o world.o light.o player.o model.o game.o suspension.o gear.o hud.o ground.o calculations.o car_controls.o brakelights.o
+OBJS = main.o state_manager.o graphics.o controller.o memcard.o audio.o font.o timer.o lang.o ui.o sincos.o asset_manager.o profiler.o menu_main.o menu_memcard.o menu_memcard_load.o menu_memcard_save.o menu_options.o menu_lobby.o menu_vehicle_select.o menu_pause.o gameplay.o gameover.o memcard_context.o message.o keyboard.o world.o light.o player.o model.o game.o suspension.o gear.o hud.o ground.o calculations.o car_controls.o brakelights.o sky.o
 
 all: $(PROG)
 
@@ -96,7 +96,7 @@ gameover.o: states/gameover.c engine/state_manager.h engine/font.h engine/colour
 	$(CC) $(CFLAGS) -c states/gameover.c
 
 
-world.o: game/world.c game/world.h engine/graphics.h engine/model.h engine/calculations.h game/player.h game/ground.h
+world.o: game/world.c game/world.h game/sky.h engine/graphics.h engine/model.h engine/calculations.h game/player.h game/ground.h
 	$(CC) $(CFLAGS) -I. -c game/world.c
 
 light.o: engine/light.c engine/light.h
@@ -131,6 +131,9 @@ car_controls.o: game/car_controls.c game/car_controls.h game/player.h game/game.
 
 brakelights.o: game/brakelights.c game/brakelights.h
 	$(CC) $(CFLAGS) -I. -c game/brakelights.c
+
+sky.o: game/sky.c game/sky.h game/world.h game/player.h engine/graphics.h
+	$(CC) $(CFLAGS) -I. -c game/sky.c
 
 rebuild:
 	make clean

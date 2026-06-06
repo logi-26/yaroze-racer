@@ -5,7 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <libps.h>
-#include "game/player.h"
+#include "sky.h"
+#include "player.h"
 #include "engine/model.h"
 
 #define MAX_WORLD_OBJECTS (50)
@@ -27,6 +28,7 @@ void RenderWorldPlayer1(int currentBuffer);
 void RenderWorldPlayer2(int currentBuffer);
 /*****************************************************/
 
+
 /*****************************************************/
 // World model and texture memory addresses
 /*****************************************************/
@@ -35,7 +37,6 @@ void RenderWorldPlayer2(int currentBuffer);
 
 #define BARRIER_2_MEM_ADDR                  (0x800A8000)
 #define BARRIER_2_TEX_MEM_ADDR              (0x800A9000)
-
 
 #define STAND_MEM_ADDR                  	(0x800AA000)
 #define CROWD_TEX_MEM_ADDR                  (0x800AB000)

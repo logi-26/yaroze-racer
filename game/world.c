@@ -122,6 +122,9 @@ void InitialiseWorld() {
 
 	// Initialise the models in the world
 	InitialiseWorldModels();
+
+	// Initialise the sky
+	InitialiseSky();
 }
 
 
@@ -445,6 +448,9 @@ void DrawWorld(PlayerStruct *currentPlayer, int currentBuffer) {
 
 	// Draw the world models
 	DrawWorldModels(currentPlayer, currentBuffer);
+
+	// Draw the sky (always draw last)
+	DrawSky(&WorldOrderingTable[currentBuffer]);
 }
 
 
