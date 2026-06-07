@@ -54,38 +54,20 @@ local dload data\game\tunnel\tunnel.tmd 800AD000
 local dload data\game\sign1\sign1.tmd 800AE000
 local dload data\game\sign1\sign1.tim 800AF000
 
-local dload data\game\car5\black\CAR5B.TMD 800B0000
-local dload data\game\car5\black\black.tim 800B4000
-
-local dload data\game\car5\green\CAR5G.TMD 800B9000
-local dload data\game\car5\green\green.tim 800BD000
-
-local dload data\game\car5\red\CAR5.TMD 800C2000
-local dload data\game\car5\red\car5.tim 800C6000
-
 local dload data\game\build1\build1.tmd 800E004C
 local dload data\game\build1\build1.tim 800E01DC
 
 local dload data\game\build2\build2.tmd 800E312C
 local dload data\game\build2\build2.tim 800D32BC
 
-local dload data\game\car3\green\car3.tmd 800F5000
-local dload data\game\car3\green\car3.tim 800FA000
-
-local dload data\game\car3\red\CAR3R.TMD 80103400
-local dload data\game\car3\red\car3_red.tim 800FF000
+local dload data\game\car2\blue\CAR2B.TMD 80125000
+local dload data\game\car2\blue\car2.tim 80128000
 
 local dload data\game\car3\yellow\CAR3Y.TMD 80118000
 local dload data\game\car3\yellow\car3_yel.tim 80113000
 
-local dload data\game\car2\black\CAR2BL.TMD 8011D000
-local dload data\game\car2\black\car2_blk.tim 80120000
-
-local dload data\game\car2\blue\CAR2B.TMD 80125000
-local dload data\game\car2\blue\car2.tim 80128000
-
-local dload data\game\car2\red\CAR2R.TMD 8012D000
-local dload data\game\car2\red\car2_red.tim 80130000
+local dload data\game\car5\green\CAR5G.TMD 800B9000
+local dload data\game\car5\green\green.tim 800BD000
 
 local dload data\game\sky\sky2.tim 80136000
 

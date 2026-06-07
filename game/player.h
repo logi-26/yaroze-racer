@@ -40,25 +40,13 @@ int IsObjectNearPlayer(PlayerStruct* player, GsCOORDINATE2* objectCoord);
 #define CAR_3R_MEM_ADDR         (0x80103400)  // car3 red TMD
 #define CAR_3Y_MEM_ADDR         (0x80118000)  // car3 yellow TMD
 
-#define CAR_3_TEX_MEM_ADDR      (0x800FA000)  // car3 green TIM
-#define CAR_3R_TEX_MEM_ADDR     (0x800FF000)  // car3 red TIM
-#define CAR_3Y_TEX_MEM_ADDR     (0x80113000)  // car3 yellow TIM
-
-#define CAR_2BL_MEM_ADDR        (0x8011D000)  // car2 black TMD
-#define CAR_2BL_TEX_MEM_ADDR    (0x80120000)  // car2 black TIM
+#define CAR_3Y_TEX_MEM_ADDR     (0x80113000)  // car3 base TIM (yellow; all variants derived via CLUT)
 
 #define CAR_2B_MEM_ADDR         (0x80125000)  // car2 blue TMD
 #define CAR_2B_TEX_MEM_ADDR     (0x80128000)  // car2 blue TIM
 
-#define CAR_2R_MEM_ADDR         (0x8012D000)  // car2 red TMD
-#define CAR_2R_TEX_MEM_ADDR     (0x80130000)  // car2 red TIM
-
-#define CAR_5B_MEM_ADDR         (0x800B0000)  // car5 black TMD
-#define CAR_5B_TEX_MEM_ADDR     (0x800B4000)  // car5 black TIM
 #define CAR_5G_MEM_ADDR         (0x800B9000)  // car5 green TMD
 #define CAR_5G_TEX_MEM_ADDR     (0x800BD000)  // car5 green TIM
-#define CAR_5_MEM_ADDR          (0x800C2000)  // car5 red TMD
-#define CAR_5_TEX_MEM_ADDR      (0x800C6000)  // car5 red TIM
 /*****************************************************/
 
 #endif // PLAYER_H

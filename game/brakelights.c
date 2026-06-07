@@ -5,6 +5,7 @@
 // (255,0,0) maps to R=31, G=0, B=0 - 0x001F.
 #define BRAKE_RED ((u_short)0x001F)
 
+
 // CLUT indices per texture variant
 static const int tex0[] = { 4, 86, 87 };             			// car3 green
 static const int tex1[] = { 4, 90, 91, 92 };         			// car3 red
@@ -15,19 +16,23 @@ static const int tex5[] = { 4, 79, 80, 81 };         			// car2 red
 static const int tex6[] = { 4, 53, 54, 55, 56, 57, 58, 59 }; 	// car5 black
 static const int tex7[] = { 4, 77, 78, 79, 80, 81, 82 };     	// car5 green
 static const int tex8[] = { 4, 88, 89 };             			// car5 red
+static const int tex9[]  = { 4, 77, 78, 79, 80, 81, 82 };    	// car5 yellow
+static const int tex10[] = { 4, 77, 78, 79, 80, 81, 82 };    	// car5 white
 
 typedef struct { const int *entries; int count; } TexEntries;
 
-static const TexEntries allEntries[9] = {
-    { tex0, sizeof(tex0) / sizeof(int) },
-    { tex1, sizeof(tex1) / sizeof(int) },
-    { tex2, sizeof(tex2) / sizeof(int) },
-    { tex3, sizeof(tex3) / sizeof(int) },
-    { tex4, sizeof(tex4) / sizeof(int) },
-    { tex5, sizeof(tex5) / sizeof(int) },
-    { tex6, sizeof(tex6) / sizeof(int) },
-    { tex7, sizeof(tex7) / sizeof(int) },
-    { tex8, sizeof(tex8) / sizeof(int) },
+static const TexEntries allEntries[11] = {
+    { tex0,  sizeof(tex0)  / sizeof(int) },
+    { tex1,  sizeof(tex1)  / sizeof(int) },
+    { tex2,  sizeof(tex2)  / sizeof(int) },
+    { tex3,  sizeof(tex3)  / sizeof(int) },
+    { tex4,  sizeof(tex4)  / sizeof(int) },
+    { tex5,  sizeof(tex5)  / sizeof(int) },
+    { tex6,  sizeof(tex6)  / sizeof(int) },
+    { tex7,  sizeof(tex7)  / sizeof(int) },
+    { tex8,  sizeof(tex8)  / sizeof(int) },
+    { tex9,  sizeof(tex9)  / sizeof(int) },
+    { tex10, sizeof(tex10) / sizeof(int) },
 };
 
 // Used to store the original vehicle CLUT
@@ -47,7 +52,8 @@ void InitBrakeLightEffect(long texAddr, int vehicleIndex) {
     int numEntries;
     int i, clutWords;
 
-    if (vehicleIndex < 0 || vehicleIndex > 8) { 
+    if (vehicleIndex < 0 || vehicleIndex > 10) 
+	{
 		ready = 0; 
 		return; 
 	}
@@ -55,7 +61,8 @@ void InitBrakeLightEffect(long texAddr, int vehicleIndex) {
     GsGetTimInfo((u_long *)(texAddr + 4), &tim);
 
     // Requires a CLUT-based texture (4-bit or 8-bit)
-    if (!((tim.pmode >> 3) & 0x01)) { 
+    if (!((tim.pmode >> 3) & 0x01)) 
+	{ 
 		ready = 0; 
 		return; 
 	}
@@ -72,15 +79,17 @@ void InitBrakeLightEffect(long texAddr, int vehicleIndex) {
 
     // Copy to brake version
     clutWords = tim.cw * tim.ch;
-    for (i = 0; i < clutWords; i++) {
+    for (i = 0; i < clutWords; i++) 
+	{
         brakeClut[i] = savedClut[i];
 	}
 
     // Apply red to the tail-light CLUT indices for this specific texture variant
-    entries    = allEntries[vehicleIndex].entries;
+    entries = allEntries[vehicleIndex].entries;
     numEntries = allEntries[vehicleIndex].count;
     
-	for (i = 0; i < numEntries; i++) {
+	for (i = 0; i < numEntries; i++) 
+	{
         brakeClut[entries[i]] = BRAKE_RED;
 	}
 
@@ -90,7 +99,8 @@ void InitBrakeLightEffect(long texAddr, int vehicleIndex) {
 
 // Load the appropriate brake light CLUT
 void SetBrakeLightTexture(int braking) {
-    if (!ready) {
+    if (!ready) 
+	{
 		return;
 	}
 	

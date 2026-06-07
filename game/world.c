@@ -1,10 +1,10 @@
 #include <math.h>
 #include <libps.h>
 #include "world.h"
+#include "ground.h"
 #include "game/player.h"
 #include "../engine/graphics.h"
 #include "../engine/calculations.h"
-#include "ground.h"
 
 // Global variables
 GsRVIEW2 Camera[2];
@@ -140,7 +140,7 @@ void InitialiseWorldTextures() {
 	LoadTexture(STONE_TEX_MEM_ADDR);
 
 	LoadTexture(SIGN_1_TEX_MEM_ADDR);
-	LoadTexture(CAR_3_TEX_MEM_ADDR);
+	LoadTexture(CAR_3Y_TEX_MEM_ADDR);
 }
 
 
