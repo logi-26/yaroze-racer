@@ -35,14 +35,17 @@ static const TexEntries allEntries[11] = {
     { tex10, sizeof(tex10) / sizeof(int) },
 };
 
-// Used to store the original vehicle CLUT
+// Player brake light CLUT buffers
 static u_short savedClut[256];
-
-// Used to store the modified vehicle CLUT
 static u_short brakeClut[256];
-
 static RECT clutRect;
 static int ready = 0;
+
+// AI brake light CLUT buffers (independent from player)
+static u_short aiSavedClut[256];
+static u_short aiBrakeClut[256];
+static RECT aiClutRect;
+static int aiReady = 0;
 
 
 // Initialise the brake light effect
@@ -94,6 +97,61 @@ void InitBrakeLightEffect(long texAddr, int vehicleIndex) {
 	}
 
     ready = 1;
+}
+
+
+void InitAIBrakeLightEffect(long texAddr, int vehicleIndex) {
+    GsIMAGE tim;
+    const int *entries;
+    int numEntries, i, clutWords;
+
+    if (vehicleIndex < 0 || vehicleIndex > 10) 
+	{ 
+		aiReady = 0; 
+		return; 
+	}
+
+    GsGetTimInfo((u_long *)(texAddr + 4), &tim);
+    if (!((tim.pmode >> 3) & 0x01)) 
+	{ 
+		aiReady = 0; 
+		return; 
+	}
+
+    aiClutRect.x = tim.cx;
+    aiClutRect.y = tim.cy;
+    aiClutRect.w = tim.cw;
+    aiClutRect.h = tim.ch;
+
+    StoreImage(&aiClutRect, (u_long *)aiSavedClut);
+    DrawSync(0);
+
+    clutWords = tim.cw * tim.ch;
+    for (i = 0; i < clutWords; i++) 
+	{
+		aiBrakeClut[i] = aiSavedClut[i];
+	}
+
+    entries = allEntries[vehicleIndex].entries;
+    numEntries = allEntries[vehicleIndex].count;
+    
+	for (i = 0; i < numEntries; i++) 
+	{
+		aiBrakeClut[entries[i]] = BRAKE_RED;
+	}
+
+    aiReady = 1;
+}
+
+
+void SetAIBrakeLightTexture(int braking) {
+    if (!aiReady) 
+	{
+		return;
+	}
+	
+    LoadImage(&aiClutRect, (u_long *)(braking ? aiBrakeClut : aiSavedClut));
+    DrawSync(0);
 }
 
 

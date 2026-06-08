@@ -18,6 +18,11 @@ PlayerStruct player2;
 
 static int stateInitialised = 0;
 
+// Waypoints for the AI routes
+long waypointX = 0;
+long waypointZ = 0;
+int waypointDisplayTimer = 0;
+
 
 // indices 0-4: car3 (5 variants), 5-9: car2 (5 variants), 10-14: car5 (5 variants)
 static const long playerTmdAddr[15] = {
@@ -69,60 +74,118 @@ static void StateInit(void)
     LoadTexture(playerTexAddr[selectedVehicleIndex]);
 
 	// Re-colour car3 body (yellow base) to selected variant
-    if (selectedVehicleIndex < 5) {
+    if (selectedVehicleIndex < 5) 
+	{
         ApplyVehicleColour(playerTexAddr[selectedVehicleIndex], CAR3_BODY_CLUT_START, CAR3_BODY_CLUT_END, car3Colours[selectedVehicleIndex]);
 	}
 
 	// Re-colour car2 body (blue base) to selected variant
-    if (selectedVehicleIndex >= 5 && selectedVehicleIndex < 10) {
+    if (selectedVehicleIndex >= 5 && selectedVehicleIndex < 10) 
+	{
         int v = selectedVehicleIndex - 5;
         ApplyVehicleColour(playerTexAddr[selectedVehicleIndex], CAR2_BODY_CLUT_START_1, CAR2_BODY_CLUT_END_1, car2Colours[v]);
         ApplyVehicleColour(playerTexAddr[selectedVehicleIndex], CAR2_BODY_CLUT_START_2, CAR2_BODY_CLUT_END_2, car2Colours[v]);
     }
 
 	// Re-colour car5 body (green base) to selected variant
-    if (selectedVehicleIndex >= 10) {
+    if (selectedVehicleIndex >= 10) 
+	{
         int v = selectedVehicleIndex - 10;
         ApplyVehicleColour(playerTexAddr[selectedVehicleIndex], CAR5_BODY_CLUT_START_1, CAR5_BODY_CLUT_END_1, car5Colours[v]);
         ApplyVehicleColour(playerTexAddr[selectedVehicleIndex], CAR5_BODY_CLUT_START_2, CAR5_BODY_CLUT_END_2, car5Colours[v]);
         ApplyVehicleColour(playerTexAddr[selectedVehicleIndex], CAR5_BODY_CLUT_START_3, CAR5_BODY_CLUT_END_3, car5Colours[v]);
     }
 
-	// Prepare CLUT swap buffers for brake light effect
+	// Prepare CLUT swap buffers for player brake light effect
     InitBrakeLightEffect(playerTexAddr[selectedVehicleIndex], brakeLightIdx[selectedVehicleIndex]);
+
+	// Load textures for all three AI vehicles (skip whichever the player already loaded)
+    if (selectedVehicleIndex >= 5) 
+	{
+		LoadTexture(CAR_3Y_TEX_MEM_ADDR);
+	}
+    
+	if (selectedVehicleIndex < 5  || selectedVehicleIndex >= 10)
+	{		
+		LoadTexture(CAR_2B_TEX_MEM_ADDR);
+	}
+    
+	if (selectedVehicleIndex < 10)                                       
+	{
+		LoadTexture(CAR_5G_TEX_MEM_ADDR);
+	}
+	
+	// Enable the brake light effect for the AI racers
+    InitAIBrakeLightEffect(CAR_3Y_TEX_MEM_ADDR, 2);
+
+	// Initialise the AI racers
+    InitialiseAIRacers();
 }
 
 
 static void StateDeinitialise(void)
 {
     SetBrakeLightTexture(0);
+    SetAIBrakeLightTexture(0);
     stateInitialised = 0;
 }
 
 
 static void UpdateGameplay(void)
 {
-    static int prevBraking = 0;
+    static int prevBraking   = 0;
+    static int prevAIBraking = 0;
 
 	// Initialise the state on first entry
-    if (!stateInitialised) {
+    if (!stateInitialised) 
+	{
         StateInit();
+	}
+
+	// L1: record current position as a waypoint (for craeting AI route)
+    if (BTN_PRESSED(PADL1)) 
+	{
+        waypointX = player1.gsObjectCoord.coord.t[0];
+        waypointZ = player1.gsObjectCoord.coord.t[2];
+        waypointDisplayTimer = 180;
+        printf("{ %ld, %ld },\n", waypointX, waypointZ);
+    }
+	
+	
+    if (waypointDisplayTimer > 0)
+	{
+        waypointDisplayTimer--;
 	}
 
 	// Update the player 1 controls
     UpdateControlPlayer1();
 
+	// Update AI racers
+    UpdateAIRacers();
+
 	// Check player 1 collisions
     CheckWorldCollisions(&player1, &player1_lateralSpeed);
 
-	// Swap brake-light CLUT only on state transition (not every frame)
-    if (player1_isBraking != prevBraking) {
+	// Player brake lights
+    if (player1_isBraking != prevBraking) 
+	{
         SetBrakeLightTexture(player1_isBraking);
         prevBraking = player1_isBraking;
     }
 
+	// AI brake lights — only active when player uses car2/car5 (different CLUT from AI car3 texture)
+    if (selectedVehicleIndex >= 5) 
+	{
+        if (aiRacerBraking != prevAIBraking) 
+		{
+            SetAIBrakeLightTexture(aiRacerBraking);
+            prevAIBraking = aiRacerBraking;
+        }
+    }
+
 	// Pause the game
-    if (BTN_PRESSED(PADstart)) {
+    if (BTN_PRESSED(PADstart)) 
+	{
         gameState = STATE_MENU_PAUSE;
 	}
 }

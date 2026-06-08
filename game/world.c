@@ -5,6 +5,7 @@
 #include "game/player.h"
 #include "../engine/graphics.h"
 #include "../engine/calculations.h"
+#include "ai_racer.h"
 
 // Global variables
 GsRVIEW2 Camera[2];
@@ -462,6 +463,9 @@ void RenderWorldPlayer1(int currentBuffer) {
 
 	// Draw player 1
 	DrawPlayer(&player1, &WorldOrderingTable[currentBuffer]);
+
+	// Draw AI racers
+	DrawAIRacers(&player1, &WorldOrderingTable[currentBuffer]);
 
 	// If it is 2 player mode, draw the second player vehicle
 	if (NumberOfPlayers == 2) {

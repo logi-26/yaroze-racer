@@ -2,7 +2,7 @@ CFLAGS = -O3 -g -I/path/to/your/pad/
 LINKER = -Xlinker -Ttext -Xlinker 80160000
 
 PROG = main
-OBJS = main.o state_manager.o graphics.o controller.o memcard.o audio.o font.o timer.o lang.o ui.o sincos.o asset_manager.o profiler.o menu_main.o menu_memcard.o menu_memcard_load.o menu_memcard_save.o menu_options.o menu_lobby.o menu_vehicle_select.o menu_pause.o gameplay.o gameover.o memcard_context.o message.o keyboard.o world.o light.o player.o model.o game.o suspension.o gear.o hud.o ground.o calculations.o car_controls.o brakelights.o vehicle_colour.o sky.o
+OBJS = main.o state_manager.o graphics.o controller.o memcard.o audio.o font.o timer.o lang.o ui.o sincos.o asset_manager.o profiler.o menu_main.o menu_memcard.o menu_memcard_load.o menu_memcard_save.o menu_options.o menu_lobby.o menu_vehicle_select.o menu_pause.o gameplay.o gameover.o memcard_context.o message.o keyboard.o world.o light.o player.o model.o game.o suspension.o gear.o hud.o ground.o calculations.o car_controls.o brakelights.o vehicle_colour.o sky.o ai_racer.o
 
 all: $(PROG)
 
@@ -137,6 +137,9 @@ vehicle_colour.o: game/vehicle_colour.c game/vehicle_colour.h
 
 sky.o: game/sky.c game/sky.h game/world.h game/player.h engine/graphics.h
 	$(CC) $(CFLAGS) -I. -c game/sky.c
+
+ai_racer.o: game/ai_racer.c game/ai_racer.h game/player.h game/vehicle_attribs.h game/suspension.h game/game.h game/gear.h game/world.h
+	$(CC) $(CFLAGS) -I. -c game/ai_racer.c
 
 rebuild:
 	make clean

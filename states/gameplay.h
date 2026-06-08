@@ -4,6 +4,10 @@
 extern int lives;
 extern int score;
 
+extern long waypointX;
+extern long waypointZ;
+extern int  waypointDisplayTimer;
+
 /************* FUNCTION PROTOTYPES *******************/
 void StateGameplay(void);
 /*****************************************************/
