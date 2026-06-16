@@ -30,17 +30,15 @@ void InitialisePlayer(PlayerStruct *thePlayer, int playerNumber, int nX, int nY,
 void AddModelToPlayer(PlayerStruct *thePlayer, int nX, int nY, int nZ, unsigned long *lModelAddress);
 void DrawPlayer(PlayerStruct *thePlayer, GsOT *othWorld);
 int IsObjectNearPlayer(PlayerStruct* player, GsCOORDINATE2* objectCoord);
+int IsObjectWithinDist(PlayerStruct* player, GsCOORDINATE2* objectCoord, long thresholdSq);
 /*****************************************************/
 
 
 /*****************************************************/
 // Player model and texture memory addresses
 /*****************************************************/
-#define CAR_3_MEM_ADDR          (0x800F5000)  // car3 green TMD
-#define CAR_3R_MEM_ADDR         (0x80103400)  // car3 red TMD
 #define CAR_3Y_MEM_ADDR         (0x80118000)  // car3 yellow TMD
-
-#define CAR_3Y_TEX_MEM_ADDR     (0x80113000)  // car3 base TIM (yellow; all variants derived via CLUT)
+#define CAR_3Y_TEX_MEM_ADDR     (0x80113000)  // car3 base TIM
 
 #define CAR_2B_MEM_ADDR         (0x80125000)  // car2 blue TMD
 #define CAR_2B_TEX_MEM_ADDR     (0x80128000)  // car2 blue TIM

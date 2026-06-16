@@ -5,64 +5,63 @@
 
 int selectedVehicleIndex = 0;
 
-// Hatchback car (car3) FWD
+// Hatchback car (car3)
 VehicleAttributes car3Attribs = {
-    240,   // maxSpeed
-    3,     // acceleration
-    2,     // deceleration
-    6,     // brakeDeceleration
-    -100,  // maxReverseSpeed
-    120,   // steeringResponse
-    80,    // minSteeringResponse
-    200,   // maxGrip
-    60,    // minGrip
-    840,   // slidingFriction
-    920,   // lateralFriction
-    2048,  // turnRadiusFactor
-    15     // understeerBias (FWD: front loses grip first)
-};
-
-// Saloon car (car2) neutral balance
-VehicleAttributes car2Attribs = {
-    340,   // maxSpeed
+    300,   // maxSpeed
     5,     // acceleration
     2,     // deceleration
-    10,    // brakeDeceleration
-    -60,   // maxReverseSpeed
+    3,     // brakeDeceleration
+    -100,  // maxReverseSpeed
+    160,   // steeringResponse
+    110,   // minSteeringResponse
+    150,   // maxGrip
+    50,    // minGrip
+    780,   // slidingFriction
+    900,   // lateralFriction
+    2048,  // turnRadiusFactor
+    20     // understeerBias
+};
+
+// Saloon car (car2)
+VehicleAttributes car2Attribs = {
+    310,   // maxSpeed
+    6,     // acceleration
+    2,     // deceleration
+    3,     // brakeDeceleration
+    -90,   // maxReverseSpeed
     150,   // steeringResponse
     100,   // minSteeringResponse
-    140,   // maxGrip
+    130,   // maxGrip
     30,    // minGrip
     750,   // slidingFriction
     880,   // lateralFriction
-    1600,  // turnRadiusFactor
-    0      // understeerBias (neutral)
+    1800,  // turnRadiusFactor
+    -20    // understeerBias
 };
 
-// American car (car5) RWD
+// American car (car5)
 VehicleAttributes car5Attribs = {
-    400,   // maxSpeed
-    6,     // acceleration
+    340,   // maxSpeed
+    4,     // acceleration
     2,     // deceleration
-    12,    // brakeDeceleration
-    -50,   // maxReverseSpeed
-    160,   // steeringResponse
-    110,   // minSteeringResponse
+    2,     // brakeDeceleration
+    -80,   // maxReverseSpeed
+    110,   // steeringResponse
+    90,    // minSteeringResponse
     100,   // maxGrip
     20,    // minGrip
     700,   // slidingFriction
     850,   // lateralFriction
-    1400,  // turnRadiusFactor
-    -25    // understeerBias (RWD: rear loses grip first)
+    1600,  // turnRadiusFactor
+    -25    // understeerBias
 };
 
 VehicleAttributes *activeVehicle = &car3Attribs;
 
 
 // This function associates a model with our player datastructure
-// later we will want to add more than one model to the player to implement animation
 void AddModelToPlayer(PlayerStruct *thePlayer, int nX, int nY, int nZ, unsigned long *lModelAddress) {
-	// Increment the pointer to move past the model id. (weird huh?)
+	// Increment the pointer to move past the model id
 	lModelAddress++;
 	
 	// Map tmd data to its actual address
@@ -138,4 +137,17 @@ int IsObjectNearPlayer(PlayerStruct* player, GsCOORDINATE2* objectCoord) {
         objectCoord->coord.t[2]
     );
     return (distanceSq <= DISTANCE_THRESHOLD_SQUARED);
+}
+
+int IsObjectWithinDist(PlayerStruct* player, GsCOORDINATE2* objectCoord, long thresholdSq) {
+    long distanceSq = CalculateDistanceSquared(
+        player->gsObjectCoord.coord.t[0],
+        player->gsObjectCoord.coord.t[1],
+        player->gsObjectCoord.coord.t[2],
+        objectCoord->coord.t[0],
+        objectCoord->coord.t[1],
+        objectCoord->coord.t[2]
+    );
+	
+    return (distanceSq <= thresholdSq);
 }

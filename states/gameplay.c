@@ -12,6 +12,7 @@
 #include "../game/hud.h"
 #include "../game/brakelights.h"
 #include "../game/vehicle_colour.h"
+#include "../game/ai_racer.h"
 
 PlayerStruct player1;
 PlayerStruct player2;
@@ -47,9 +48,8 @@ static void StateInit(void)
 {
     stateInitialised = 1;
 	
-	activeVehicle = (selectedVehicleIndex <  5) ? &car3Attribs
-	              : (selectedVehicleIndex < 10) ? &car2Attribs
-	              :                               &car5Attribs;
+	activeVehicle    = (selectedVehicleIndex <  5) ? &car3Attribs    : (selectedVehicleIndex < 10) ? &car2Attribs    : &car5Attribs;
+	activeSuspension = (selectedVehicleIndex <  5) ? &car3Suspension : (selectedVehicleIndex < 10) ? &car2Suspension : &car5Suspension;
 
 	// Initialise player 1 with the vehicle chosen on the select screen
     InitialisePlayer(&player1, 1, 3605, -200, 9273, (long*)playerTmdAddr[selectedVehicleIndex]);
@@ -120,6 +120,9 @@ static void StateInit(void)
 
 	// Initialise the AI racers
     InitialiseAIRacers();
+
+	// Initialise player race-progress tracking to match their grid position
+    InitialisePlayerRaceProgress(3605, 9273);
 }
 
 
@@ -162,6 +165,10 @@ static void UpdateGameplay(void)
 
 	// Update AI racers
     UpdateAIRacers();
+
+	// Update race progress and positions
+    UpdatePlayerRaceProgress();
+    UpdateRacePositions();
 
 	// Check player 1 collisions
     CheckWorldCollisions(&player1, &player1_lateralSpeed);

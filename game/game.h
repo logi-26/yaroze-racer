@@ -32,8 +32,8 @@ void InitialiseTrackerView(GsRVIEW2 *view, int nProjDist, int nRZ, int nVPX, int
 void InitialiseTrackerViewPlayer1(GsRVIEW2 *view, int nProjDist, int nRZ, int nVPX, int nVPY, int nVPZ, int nVRX, int nVRY, int nVRZ);
 void InitialiseTrackerViewPlayer2(GsRVIEW2 *view, int nProjDist, int nRZ, int nVPX, int nVPY, int nVPZ, int nVRX, int nVRY, int nVRZ);
 void InitialiseStaticView(GsRVIEW2 *view, int nProjDist, int nRZ, int nVPX, int nVPY, int nVPZ, int nVRX, int nVRY, int nVRZ);
-void RotateModel(GsCOORDINATE2 *gsObjectCoord, SVECTOR *rotateVector, int nRX, int nRY, int nRZ, long *speed, long *lateralSpeed);
-void AdvanceModel(GsCOORDINATE2 *gsObjectCoord, SVECTOR *rotateVector, long *speed, long *lateralSpeed, int movementDirection, int isBraking);
+void RotateModel(GsCOORDINATE2 *gsObjectCoord, SVECTOR *rotateVector, int nRX, int nRY, int nRZ, long *speed, long *lateralSpeed, VehicleAttributes *vehicle, SuspensionConfig *suspension);
+void AdvanceModel(GsCOORDINATE2 *gsObjectCoord, SVECTOR *rotateVector, long *speed, long *lateralSpeed, int movementDirection, int isBraking, VehicleAttributes *vehicle, SuspensionConfig *suspension);
 void InitSingleScreen(void);
 void InitSplitScreen(int x1, int y1, int w1, int h1, int x2, int y2, int w2, int h2);
 void ScaleTmdVertices(unsigned long *tmdAddr, int divisor);

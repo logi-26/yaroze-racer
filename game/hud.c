@@ -2,6 +2,7 @@
 #include "gear.h"
 #include "player.h"
 #include "ground.h"
+#include "ai_racer.h"
 #include "../engine/graphics.h"
 #include "../engine/font.h"
 #include "../engine/colours.h"
@@ -35,7 +36,8 @@ static void UpdateLapTimer(void) {
             TimerReset();
             TimerStart();
             lapStarted = 1;
-        } else 
+        } 
+		else 
 		{
             // Completed a lap: record time and restart
             lastLapMs = TimerGetElapsedMs();
@@ -66,7 +68,7 @@ void DrawGameplayHUD(GsOT *ot) {
     FontFX_SetStyle(FONT_STYLE_2);
     FontFX_SetColour(COL_BLACK);
 	
-	// Lap timer — current lap
+	// Lap timer (current lap)
     FormatLapTime(timeStr, TimerGetElapsedMs());
     sprintf(hudStr, "LAP:%s", timeStr);
     FontFX_Print(20, 20, hudStr, ot, OT_UI);
@@ -77,7 +79,7 @@ void DrawGameplayHUD(GsOT *ot) {
 	FormatLapTime(timeStr, lastLapMs);
 	sprintf(hudStr, "LST:%s", timeStr);
 	FontFX_Print(20, 30, hudStr, ot, OT_UI);
-	
+
 	FontFX_SetColour(COL_DARKGREEN);
 
 	// Best lap times
@@ -85,8 +87,20 @@ void DrawGameplayHUD(GsOT *ot) {
 	sprintf(hudStr, "BST:%s", timeStr);
 	FontFX_Print(20, 40, hudStr, ot, OT_UI);
 	
-	FontFX_SetColour(COL_WHITE);
+	// Player position and lap number
+	FontFX_SetSize(2);
+	FontFX_SetColour(COL_AMBER);
 
+    sprintf(hudStr, "%d/6", playerRacePosition);
+    FontFX_Print(gScreenWidth - 55, 20, hudStr, ot, OT_UI);
+
+	FontFX_SetSize(1);
+	
+	sprintf(hudStr, "LAP:%d/%d", playerRaceLapCount + 1, NUM_RACE_LAPS);
+    FontFX_Print(gScreenWidth - 65, 40, hudStr, ot, OT_UI);
+	
+	FontFX_SetColour(COL_WHITE);
+	
 	// Game speed display
     sprintf(hudStr, "%d MPH", (int)player1.speed / 2);
     FontFX_Print(gScreenWidth - 60, gScreenHeight - 60, hudStr, ot, OT_UI);

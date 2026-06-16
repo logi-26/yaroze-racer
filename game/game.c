@@ -7,10 +7,10 @@
 
 long player1_lateralSpeed = 0;
 long player2_lateralSpeed = 0;
-int  player1_isBraking    = 0;
-int  player2_isBraking    = 0;
-long player1_pitch        = 0;
-long player1_roll         = 0;
+int  player1_isBraking = 0;
+int  player2_isBraking = 0;
+long player1_pitch = 0;
+long player1_roll = 0;
 
 
 // Scale all vertices in a TMD by dividing by 'divisor' (must be called after InitialisePlayer)
@@ -24,7 +24,8 @@ void ScaleTmdVertices(unsigned long *tmdAddr, int divisor) {
 	vert_p_abs = tmdAddr[5];
 	n_vert = tmdAddr[6];
 	v = (short *)vert_p_abs;
-	for (i = 0; i < (int)n_vert; i++) {
+	for (i = 0; i < (int)n_vert; i++) 
+	{
 		v[0] = (short)(v[0] / divisor); // vx
 		v[1] = (short)(v[1] / divisor); // vy
 		v[2] = (short)(v[2] / divisor); // vz
@@ -91,12 +92,12 @@ void InitialiseFrontViewPlayer1(GsRVIEW2 *view, int nProjDist, int nRZ, int nVPX
 	GsSetProjection(nProjDist);
 
 	// Set the eye position or center of projection
-	view->vpx = 0;  // dont touch
+	view->vpx = 0;
 	view->vpy = -400;
 	view->vpz = -600;
 
 	// Set the look at position
-	view->vrx = 0; // dont touch
+	view->vrx = 0;
 	view->vry = -500;
 	view->vrz = 100;
 
@@ -118,13 +119,13 @@ void InitialiseTopDownView(GsRVIEW2 *view, int nProjDist, int nHeight, int nVPX,
     // Set the eye position (camera position)
     // Place the camera directly above the car at a specified height
     view->vpx = 0;
-	view->vpy = -3000; // height
+	view->vpy = -3000;
 	view->vpz = -1000;
 
-    // Set the look-at position (car's position)
+    // Set the look-at position (cars position)
     iew->vrx = 12000;
 	view->vry = 800;
-	view->vrz = 0; // angle
+	view->vrz = 0;
 
     // Set which way is up
     view->rz = -1000;
@@ -143,13 +144,13 @@ void InitialiseStaticView(GsRVIEW2 *view, int nProjDist, int nRZ, int nVPX, int 
 
 	// Set the eye position or center of projection
 	view->vpx = 0;
-	view->vpy = -32000; // height
+	view->vpy = -32000;
 	view->vpz = -1000;
 
 	// Set the look at position
 	view->vrx = 12000;
 	view->vry = 800;
-	view->vrz = 18000; // angle
+	view->vrz = 18000;
 
 	// Set which way is up
 	view->rz =- nRZ;
@@ -162,7 +163,7 @@ void InitialiseStaticView(GsRVIEW2 *view, int nProjDist, int nRZ, int nVPX, int 
 }
 
 
-void RotateModel(GsCOORDINATE2 *gsObjectCoord, SVECTOR *rotateVector, int nRX, int nRY, int nRZ, long *speed, long *lateralSpeed) {
+void RotateModel(GsCOORDINATE2 *gsObjectCoord, SVECTOR *rotateVector, int nRX, int nRY, int nRZ, long *speed, long *lateralSpeed, VehicleAttributes *vehicle, SuspensionConfig *suspension) {
     MATRIX matTmp;
     long absSpeed;
     long absLateral;
@@ -177,46 +178,88 @@ void RotateModel(GsCOORDINATE2 *gsObjectCoord, SVECTOR *rotateVector, int nRX, i
     absLateral = abs(*lateralSpeed);
     originalNRY = nRY;
 
-    if (absSpeed > 0) {
-        steeringResponse = activeVehicle->steeringResponse - (absSpeed * (activeVehicle->steeringResponse - activeVehicle->minSteeringResponse) / activeVehicle->maxSpeed);
-        if (steeringResponse < activeVehicle->minSteeringResponse) steeringResponse = activeVehicle->minSteeringResponse;
+    if (absSpeed > 0) 
+	{
+        steeringResponse = vehicle->steeringResponse - (absSpeed * (vehicle->steeringResponse - vehicle->minSteeringResponse) / vehicle->maxSpeed);
+        
+		if (steeringResponse < vehicle->minSteeringResponse) 
+		{
+			steeringResponse = vehicle->minSteeringResponse;
+		}
 
-        gripLimit = activeVehicle->maxGrip - (absSpeed * (activeVehicle->maxGrip - activeVehicle->minGrip) / activeVehicle->maxSpeed);
-        if (gripLimit < activeVehicle->minGrip) gripLimit = activeVehicle->minGrip;
+        gripLimit = vehicle->maxGrip - (absSpeed * (vehicle->maxGrip - vehicle->minGrip) / vehicle->maxSpeed);
+        
+		if (gripLimit < vehicle->minGrip) 
+		{
+			gripLimit = vehicle->minGrip;
+		}
 
         // Body roll: follows lateral velocity
         {
-            long maxLat = (long)(activeVehicle->maxSpeed / 3) + 1L;
-            long targetRoll = (*lateralSpeed * (long)activeSuspension->rollFactor) / maxLat;
-            if (targetRoll >  (long)activeSuspension->rollFactor) targetRoll =  (long)activeSuspension->rollFactor;
-            if (targetRoll < -(long)activeSuspension->rollFactor) targetRoll = -(long)activeSuspension->rollFactor;
-            if (player1_roll < targetRoll) {
-                player1_roll += activeSuspension->suspensionRate;
-                if (player1_roll > targetRoll) player1_roll = targetRoll;
-            } else if (player1_roll > targetRoll) {
-                player1_roll -= activeSuspension->suspensionRate;
-                if (player1_roll < targetRoll) player1_roll = targetRoll;
+            long maxLat = (long)(vehicle->maxSpeed / 3) + 1L;
+            long targetRoll = (*lateralSpeed * (long)suspension->rollFactor) / maxLat;
+            
+			if (targetRoll > (long)suspension->rollFactor) 
+			{
+				targetRoll = (long)suspension->rollFactor;
+			}
+			
+			if (targetRoll < -(long)suspension->rollFactor) 
+			{
+				targetRoll = -(long)suspension->rollFactor;
+			}
+
+			if (player1_roll < targetRoll) 
+			{
+                player1_roll += suspension->suspensionRate;
+                
+				if (player1_roll > targetRoll) 
+				{
+					player1_roll = targetRoll;
+				}
+				
+			} 
+			else if (player1_roll > targetRoll) 
+			{
+                player1_roll -= suspension->suspensionRate;
+				
+                if (player1_roll < targetRoll) 
+				{
+					player1_roll = targetRoll;
+				}
             }
         }
 
         // Axle-split grip via weight transfer (slip-angle model)
         {
-            long rollAbs    = player1_roll < 0L ? -player1_roll : player1_roll;
-            long pitchShift = player1_pitch / 4L + (long)activeVehicle->understeerBias;
-            long frontGrip  = gripLimit - pitchShift - rollAbs / 10L;
-            long rearGrip   = gripLimit + pitchShift - rollAbs / 10L;
-            if (frontGrip < activeVehicle->minGrip) frontGrip = activeVehicle->minGrip;
-            if (rearGrip  < activeVehicle->minGrip) rearGrip = activeVehicle->minGrip;
+            long rollAbs = player1_roll < 0L ? -player1_roll : player1_roll;
+            long pitchShift = player1_pitch / 4L + (long)vehicle->understeerBias;
+            long frontGrip = gripLimit - pitchShift - rollAbs / 10L;
+            long rearGrip = gripLimit + pitchShift - rollAbs / 10L;
+            
+			
+			if (frontGrip < vehicle->minGrip) 
+			{
+				frontGrip = vehicle->minGrip;
+			}
+            
+			if (rearGrip < vehicle->minGrip) 
+			{
+				rearGrip = vehicle->minGrip;
+			}
 
-            if (*speed > 0) {
-                maxLateral = activeVehicle->maxSpeed / 3;
+            if (*speed > 0) 
+			{
+                maxLateral = vehicle->maxSpeed / 3;
 
                 // Understeer
-                if (absLateral > frontGrip / 2) {
-                    long excess  = absLateral - frontGrip / 2;
+                if (absLateral > frontGrip / 2) 
+				{
+                    long excess = absLateral - frontGrip / 2;
                     long washout = 100L - (excess * 160L / (frontGrip > 0L ? frontGrip : 1L));
                     
-					if (washout < 20L) {
+					if (washout < 20L) 
+					{
 						washout = 20L;
                     }
 					
@@ -224,26 +267,38 @@ void RotateModel(GsCOORDINATE2 *gsObjectCoord, SVECTOR *rotateVector, int nRX, i
                 }
 
                 // Oversteer: if rear grip exceeded, rear swings outward
-                if (absLateral > rearGrip) {
+                if (absLateral > rearGrip) 
+				{
                     long breakaway = absLateral - rearGrip;
-                    if (*lateralSpeed > 0L) {
+                    if (*lateralSpeed > 0L) 
+					{
 						*lateralSpeed += breakaway;
                     }
-					
-					else {
+					else 
+					{
 						*lateralSpeed -= breakaway;
 					}
 				}
 
                 // Lateral centripetal correction
-                if (absLateral > rearGrip) {
-                    *lateralSpeed -= (*speed * originalNRY * 2) / activeVehicle->turnRadiusFactor;
-                } else {
-                    *lateralSpeed -= (*speed * originalNRY) / activeVehicle->turnRadiusFactor;
+                if (absLateral > rearGrip) 
+				{
+                    *lateralSpeed -= (*speed * originalNRY * 2) / vehicle->turnRadiusFactor;
+                } 
+				else 
+				{
+                    *lateralSpeed -= (*speed * originalNRY) / vehicle->turnRadiusFactor;
                 }
 
-                if (*lateralSpeed > maxLateral) *lateralSpeed = maxLateral;
-                if (*lateralSpeed < -maxLateral) *lateralSpeed = -maxLateral;
+                if (*lateralSpeed > maxLateral) 
+				{
+					*lateralSpeed = maxLateral;
+				}
+				
+                if (*lateralSpeed < -maxLateral) 
+				{
+					*lateralSpeed = -maxLateral;
+				}
             }
         }
 
@@ -267,7 +322,7 @@ void RotateModel(GsCOORDINATE2 *gsObjectCoord, SVECTOR *rotateVector, int nRX, i
 
 
 // Handle acceleration/deceleration
-void AdvanceModel(GsCOORDINATE2 *gsObjectCoord, SVECTOR *rotateVector, long *speed, long *lateralSpeed, int movementDirection, int isBraking) {
+void AdvanceModel(GsCOORDINATE2 *gsObjectCoord, SVECTOR *rotateVector, long *speed, long *lateralSpeed, int movementDirection, int isBraking, VehicleAttributes *vehicle, SuspensionConfig *suspension) {
     MATRIX matTmp;
     SVECTOR forwardBasis = {0, 0, ONE};
     SVECTOR rightBasis = {ONE, 0, 0};
@@ -281,198 +336,262 @@ void AdvanceModel(GsCOORDINATE2 *gsObjectCoord, SVECTOR *rotateVector, long *spe
     long massedDecel;
     TerrainType terrain;
 
-    // Keep suspension config in sync with the selected vehicle
-    activeSuspension = (selectedVehicleIndex < 3) ? &car3Suspension : (selectedVehicleIndex < 6) ? &car2Suspension : &car5Suspension;
-
     // Mass-adjusted forces: heavier vehicles accelerate and brake more slowly
-    massedAccel = ((long)activeVehicle->acceleration * 100L) / activeSuspension->mass;
-    massedBrake = ((long)activeVehicle->brakeDeceleration * 100L) / activeSuspension->mass;
-    massedDecel = ((long)activeVehicle->deceleration * 100L) / activeSuspension->mass;
+    massedAccel = ((long)vehicle->acceleration * 100L) / suspension->mass;
+    massedBrake = ((long)vehicle->brakeDeceleration * 100L) / suspension->mass;
+    massedDecel = ((long)vehicle->deceleration * 100L) / suspension->mass;
     
-	if (massedAccel < 1L) massedAccel = 1L;
-    if (massedBrake < 1L) massedBrake = 1L;
-    if (massedDecel < 1L) massedDecel = 1L;
+	if (massedAccel < 1L) 
+	{
+		massedAccel = 1L;
+	}
+    
+	if (massedBrake < 1L) 
+	{
+		massedBrake = 1L;
+	}
+	
+    if (massedDecel < 1L) 
+	{
+		massedDecel = 1L;
+	}
 
     // Terrain detection: reduce acceleration on grass/sand
     terrain = GetTerrainType(gsObjectCoord->coord.t[0], gsObjectCoord->coord.t[2]);
-    if (terrain != TERRAIN_TRACK) {
+    if (terrain != TERRAIN_TRACK) 
+	{
         massedAccel = massedAccel / 3;
-        if (massedAccel < 1L) massedAccel = 1L;
+		
+        if (massedAccel < 1L) 
+		{
+			massedAccel = 1L;
+		}
     }
 
     // Gear acceleration: apply torque curve and power band for current gear
-    if (movementDirection > 0) {
+    if (movementDirection > 0) 
+	{
         long fwdSpeed = (*speed > 0L) ? *speed : 0L;
-        ApplyGearAccel(&massedAccel, fwdSpeed, (long)activeVehicle->maxSpeed);
+        ApplyGearAccel(&massedAccel, fwdSpeed, (long)vehicle->maxSpeed);
     }
 
     // Accelerating forward
-    if (movementDirection > 0) {
-        if (*speed < 0) {
+    if (movementDirection > 0) 
+	{
+        if (*speed < 0) 
+		{
             *speed += massedBrake * 2;
-        } else {
+        } else 
+		{
             *speed += massedAccel;
             
-			if (*speed > activeVehicle->maxSpeed) {
-				*speed = activeVehicle->maxSpeed;
+			if (*speed > vehicle->maxSpeed) 
+			{
+				*speed = vehicle->maxSpeed;
 			}
         }
     }
 	
     // Braking or reversing
-    else if (movementDirection < 0) {
+    else if (movementDirection < 0) 
+	{
         
-		if (*speed > 0) {
+		if (*speed > 0) 
+		{
             *speed -= massedBrake * 2;
             
-			if (*speed < 0) {
+			if (*speed < 0) 
+			{
 				*speed = 0;
 			}
 
-		} else {
+		} 
+		else 
+		{
             long revAccel = massedAccel / 2;
-            if (revAccel < 1L) revAccel = 1L;
+			
+            if (revAccel < 1L) 
+			{
+				revAccel = 1L;
+			}
+			
             *speed -= revAccel;
 
-			if (*speed < activeVehicle->maxReverseSpeed) {
-				*speed = activeVehicle->maxReverseSpeed;
+			if (*speed < vehicle->maxReverseSpeed) 
+			{
+				*speed = vehicle->maxReverseSpeed;
 			}
 		}
     }
     // No throttle
-    else {
-        if (*speed > 0) {
+    else 
+	{
+        if (*speed > 0) 
+		{
             *speed -= isBraking ? massedBrake : massedDecel;
             
-			if (*speed < 0) {
+			if (*speed < 0) 
+			{
 				*speed = 0;
 			}
 		}
-        else if (*speed < 0) {
+        else if (*speed < 0) 
+		{
             *speed += isBraking ? massedBrake : massedDecel;
             
-			if (*speed > 0) {
+			if (*speed > 0) 
+			{
 				*speed = 0;
 			}
 		}
     }
 
     // Off-road speed cap
-    if (terrain != TERRAIN_TRACK && *speed > 0) {
-        long offRoadCap = (terrain == TERRAIN_SAND) ? (long)activeVehicle->maxSpeed / 4 : (long)activeVehicle->maxSpeed / 3;
+    if (terrain != TERRAIN_TRACK && *speed > 0) 
+	{
+        long offRoadCap = (terrain == TERRAIN_SAND) ? (long)vehicle->maxSpeed / 4 : (long)vehicle->maxSpeed / 3;
         
-		if (*speed > offRoadCap) {
+		if (*speed > offRoadCap) 
+		{
             *speed -= massedDecel * 3;
 
-			if (*speed < offRoadCap) {
+			if (*speed < offRoadCap) 
+			{
 				*speed = offRoadCap;
 			}
 		}
     }
 
     // Gear speed ceiling: engine cannot rev past the current gears redline
-    if (movementDirection > 0 && *speed > 0L) {
-        long gearCeiling = GetGearTopSpeed((long)activeVehicle->maxSpeed);
+    if (movementDirection > 0 && *speed > 0L) 
+	{
+        long gearCeiling = GetGearTopSpeed((long)vehicle->maxSpeed);
         
-		if (*speed > gearCeiling) {
+		if (*speed > gearCeiling) 
+		{
 			*speed = gearCeiling;
 		}
 	}
 
     // Weight transfer: update nose pitch based on throttle/brake state
-    if (movementDirection > 0 && *speed > 0) {
-
+    if (movementDirection > 0 && *speed > 0) 
+	{
 		// Acceleration squat fades as speed builds: peak is 75% of pitchFactor, falling to 0 at maxSpeed
-        long targetPitch = ((long)activeSuspension->pitchFactor * 3L * (activeVehicle->maxSpeed - *speed)) / (4L * (long)activeVehicle->maxSpeed);
+        long targetPitch = ((long)suspension->pitchFactor * 3L * (vehicle->maxSpeed - *speed)) / (4L * (long)vehicle->maxSpeed);
         
-		if (targetPitch < 0L) {
+		if (targetPitch < 0L) 
+		{
 			targetPitch = 0L;
 		}
         
-		if (player1_pitch < targetPitch) {
-            player1_pitch += activeSuspension->suspensionRate;
+		if (player1_pitch < targetPitch) 
+		{
+            player1_pitch += suspension->suspensionRate;
             
-			if (player1_pitch > targetPitch) {
+			if (player1_pitch > targetPitch) 
+			{
 				player1_pitch = targetPitch;
 			}
-		} else if (player1_pitch > targetPitch) {
-            player1_pitch -= activeSuspension->suspensionRate;
+		} 
+		else if (player1_pitch > targetPitch) {
+            player1_pitch -= suspension->suspensionRate;
 			
-            if (player1_pitch < targetPitch) {
+            if (player1_pitch < targetPitch) 
+			{
 				player1_pitch = targetPitch;
 			}
         }
-    } else if ((movementDirection < 0 || isBraking) && *speed > 0) {
-        
+    } 
+	else if ((movementDirection < 0 || isBraking) && *speed > 0) 
+	{
 		// Brake dive fades as speed drops: peak is 75% of pitchFactor at maxSpeed, falling to 0 at rest
-        long targetPitch = -((long)activeSuspension->pitchFactor * 3L * *speed) / (4L * (long)activeVehicle->maxSpeed);
-        if (targetPitch > 0L) {
+        long targetPitch = -((long)suspension->pitchFactor * 3L * *speed) / (4L * (long)vehicle->maxSpeed);
+        if (targetPitch > 0L) 
+		{
 			targetPitch = 0L;
 		}
 
-		if (player1_pitch > targetPitch) {
-            player1_pitch -= activeSuspension->suspensionRate;
+		if (player1_pitch > targetPitch) 
+		{
+            player1_pitch -= suspension->suspensionRate;
             
-			if (player1_pitch < targetPitch) {
+			if (player1_pitch < targetPitch) 
+			{
 				player1_pitch = targetPitch;
 			}
-		} else if (player1_pitch < targetPitch) {
-            player1_pitch += activeSuspension->suspensionRate;
+		} 
+		else if (player1_pitch < targetPitch) 
+		{
+            player1_pitch += suspension->suspensionRate;
 			
-            if (player1_pitch > targetPitch) {
+            if (player1_pitch > targetPitch) 
+			{
 				player1_pitch = targetPitch;
 			}
         }
-    } else if (player1_pitch > 0L) {
-        
+    } 
+	else if (player1_pitch > 0L) 
+	{
 		// Recovering toward level
-        player1_pitch -= activeSuspension->suspensionRate;
-        if (player1_pitch < 0L) {
+        player1_pitch -= suspension->suspensionRate;
+        if (player1_pitch < 0L) 
+		{
 			player1_pitch = 0L;
 		}
 		
-	} else if (player1_pitch < 0L) {
-        player1_pitch += activeSuspension->suspensionRate;
+	} 
+	else if (player1_pitch < 0L) 
+	{
+        player1_pitch += suspension->suspensionRate;
         
-		if (player1_pitch > 0L) {
+		if (player1_pitch > 0L) 
+		{
 			player1_pitch = 0L;
 		}
 	}
 
     // Off-road suspension bump: oscillate pitch to simulate rough terrain
-    if (terrain != TERRAIN_TRACK && *speed > 0) {
+    if (terrain != TERRAIN_TRACK && *speed > 0) 
+	{
         static int bumpPhase = 0;
         long bumpAmp;
         
-		if (++bumpPhase >= 6) {
+		if (++bumpPhase >= 6) 
+		{
 			bumpPhase = 0;
 		}
 
-		bumpAmp = (long)activeSuspension->suspensionRate * 2L * (*speed) / (long)activeVehicle->maxSpeed;
+		bumpAmp = (long)suspension->suspensionRate * 2L * (*speed) / (long)vehicle->maxSpeed;
         player1_pitch += (bumpPhase < 3) ? bumpAmp : -bumpAmp;
     }
 
     // Friction: grippy tires snap back quickly, sliding tires recover slowly
     absLateral = abs(*lateralSpeed);
     absSpeed = abs(*speed);
-    gripLimit = activeVehicle->maxGrip - (absSpeed * (activeVehicle->maxGrip - activeVehicle->minGrip) / activeVehicle->maxSpeed);
+    gripLimit = vehicle->maxGrip - (absSpeed * (vehicle->maxGrip - vehicle->minGrip) / vehicle->maxSpeed);
     
-	if (gripLimit < activeVehicle->minGrip) {
-		gripLimit = activeVehicle->minGrip;
+	if (gripLimit < vehicle->minGrip) 
+	{
+		gripLimit = vehicle->minGrip;
 	}
 
-    if (absLateral > gripLimit) {
-        *lateralSpeed = (*lateralSpeed * activeVehicle->slidingFriction) / 1000;
-    } else {
-        *lateralSpeed = (*lateralSpeed * activeVehicle->lateralFriction) / 1000;
+    if (absLateral > gripLimit) 
+	{
+        *lateralSpeed = (*lateralSpeed * vehicle->slidingFriction) / 1000;
+    } 
+	else 
+	{
+        *lateralSpeed = (*lateralSpeed * vehicle->lateralFriction) / 1000;
     }
 	
-    if (*lateralSpeed > -2 && *lateralSpeed < 2) {
+    if (*lateralSpeed > -2 && *lateralSpeed < 2) 
+	{
 		*lateralSpeed = 0;
 	}
 
     // Move along both forward and lateral axes
-    if (*speed != 0 || *lateralSpeed != 0) {
+    if (*speed != 0 || *lateralSpeed != 0) 
+	{
         RotMatrix(rotateVector, &matTmp);
         ApplyMatrixSV(&matTmp, &forwardBasis, &forwardDir);
         ApplyMatrixSV(&matTmp, &rightBasis, &lateralDir);
@@ -482,15 +601,6 @@ void AdvanceModel(GsCOORDINATE2 *gsObjectCoord, SVECTOR *rotateVector, long *spe
         gsObjectCoord->coord.t[2] += (forwardDir.vz * (*speed) + lateralDir.vz * (*lateralSpeed)) / ONE;
 
         gsObjectCoord->flg = 0;
-    }
-
-    // Apply suspension body tilt to the visual model (pitch = nose dive/squat, roll = cornering lean)
-    {
-        SVECTOR modelTilt;
-        modelTilt.vx = (short)(3072 + (int)player1_pitch);
-        modelTilt.vy = 2048;
-        modelTilt.vz = (short)player1_roll;
-        RotModel(&player1.gsModelCoord, &modelTilt, 0, 0, 0);
     }
 }
 
