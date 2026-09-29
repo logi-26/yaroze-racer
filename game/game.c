@@ -123,7 +123,7 @@ void InitialiseTopDownView(GsRVIEW2 *view, int nProjDist, int nHeight, int nVPX,
 	view->vpz = -1000;
 
     // Set the look-at position (cars position)
-    iew->vrx = 12000;
+    view->vrx = 12000;
 	view->vry = 800;
 	view->vrz = 0;
 
