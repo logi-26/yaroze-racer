@@ -113,7 +113,7 @@ void SetScreenMode(ScreenMode mode) {
         SplitScreenInfo[0].ofs[0] = 0;
         SplitScreenInfo[0].ofs[1] = 0;
         SplitScreenInfo[0].isbg   = 0;
-        SplitScreenInfo[0].r      = 0; SplitScreenInfo[0].g = 0; SplitScreenInfo[0].b = 0;
+        SplitScreenInfo[0].r0      = 0; SplitScreenInfo[0].g0 = 0; SplitScreenInfo[0].b0 = 0;
 
         // Fullscreen - Buffer 1
         SplitScreenInfo[1].clip.x = 0;
@@ -123,7 +123,7 @@ void SetScreenMode(ScreenMode mode) {
         SplitScreenInfo[1].ofs[0] = 0;
         SplitScreenInfo[1].ofs[1] = gScreenHeight;
         SplitScreenInfo[1].isbg   = 0;
-        SplitScreenInfo[1].r      = 0; SplitScreenInfo[1].g = 0; SplitScreenInfo[1].b = 0;
+        SplitScreenInfo[1].r0      = 0; SplitScreenInfo[1].g0 = 0; SplitScreenInfo[1].b0 = 0;
 
         GsSetProjection(250);
 
@@ -153,7 +153,7 @@ void SetScreenMode(ScreenMode mode) {
         SplitScreenInfo[0].ofs[0] = 0;
         SplitScreenInfo[0].ofs[1] = gScreenHeight;
         SplitScreenInfo[0].isbg   = 0; // DISABLE AUTO-CLEAR
-        SplitScreenInfo[0].r      = 0; SplitScreenInfo[0].g = 0; SplitScreenInfo[0].b = 0;
+        SplitScreenInfo[0].r0      = 0; SplitScreenInfo[0].g0 = 0; SplitScreenInfo[0].b0 = 0;
  
         // Splitscreen Top half - buffer 1
         SplitScreenInfo[1].clip.x = 0;
@@ -163,7 +163,7 @@ void SetScreenMode(ScreenMode mode) {
         SplitScreenInfo[1].ofs[0] = 0;
         SplitScreenInfo[1].ofs[1] = 0;
         SplitScreenInfo[1].isbg   = 0; // DISABLE AUTO-CLEAR
-        SplitScreenInfo[1].r      = 0; SplitScreenInfo[1].g = 0; SplitScreenInfo[1].b = 0;
+        SplitScreenInfo[1].r0      = 0; SplitScreenInfo[1].g0 = 0; SplitScreenInfo[1].b0 = 0;
  
         // Splitscreen Bottom half - buffer 2
         SplitScreenInfo[2].clip.x = 0;
@@ -173,7 +173,7 @@ void SetScreenMode(ScreenMode mode) {
         SplitScreenInfo[2].ofs[0] = 0;
         SplitScreenInfo[2].ofs[1] = gScreenHeight + halfH;
         SplitScreenInfo[2].isbg   = 0;
-        SplitScreenInfo[2].r      = 0; SplitScreenInfo[2].g = 0; SplitScreenInfo[2].b = 0;
+        SplitScreenInfo[2].r0      = 0; SplitScreenInfo[2].g0 = 0; SplitScreenInfo[2].b0 = 0;
  
         // Splitscreen Bottom half - buffer 3
         SplitScreenInfo[3].clip.x = 0;
@@ -183,7 +183,7 @@ void SetScreenMode(ScreenMode mode) {
         SplitScreenInfo[3].ofs[0] = 0;
         SplitScreenInfo[3].ofs[1] = halfH;
         SplitScreenInfo[3].isbg   = 0;
-        SplitScreenInfo[3].r      = 0; SplitScreenInfo[3].g = 0; SplitScreenInfo[3].b = 0;
+        SplitScreenInfo[3].r0      = 0; SplitScreenInfo[3].g0 = 0; SplitScreenInfo[3].b0 = 0;
  
         GsSetProjection(200);
 
