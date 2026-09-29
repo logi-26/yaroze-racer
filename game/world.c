@@ -1,4 +1,3 @@
-#include <math.h>
 #include <libps.h>
 #include "world.h"
 #include "ground.h"
