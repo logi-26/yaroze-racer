@@ -103,7 +103,7 @@ void CardSave(int card)
 
 	// Print verification results
 	printf("loaded used=%d\n", saveData.slots[0].used);
-	printf("loaded value=%d\n", saveData.slots[0].value);
+	printf("loaded value=%d\n", saveData.slots[0].value1);
 }
 
 
@@ -192,7 +192,7 @@ int CardReadSlot(int card, int slot)
         return -1;
 
 	// Return the stored value from the requested slot
-    return saveData.slots[slot].value;
+    return saveData.slots[slot].value1;
 }
 
 
@@ -577,5 +577,5 @@ void PrintSlot(int slot)
 	if (s->used != 1)
         return;
 
-    FntPrint(-1, "~c007SLOT %d  TITLE : %s  VALUE : %d\n\n", s->slotNumber, s->title, s->value);
+    FntPrint(-1, "~c007SLOT %d  TITLE : %s  VALUE : %d\n\n", s->slotNumber, s->title, s->value1);
 }
