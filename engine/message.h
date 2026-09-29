@@ -32,8 +32,8 @@
 #define MSG_PROMPT_H     	 70   				// popup height for yes/no prompt
 #define MSG_ANIM_FRAMES  	 10    				// number of frames for open animation
 #define MSG_HOLD_FRAMES  	 70   				// frames a simple message stays visible
-#define MSG_SCREEN_CX    	 SCREEN_WIDTH /2   	// horizontal centre of screen
-#define MSG_SCREEN_CY    	 SCREEN_HEIGHT /2   // vertical centre of screen
+#define MSG_SCREEN_CX    	 (gScreenWidth / 2)  	// horizontal centre of screen
+#define MSG_SCREEN_CY    	 (gScreenHeight / 2) // vertical centre of screen
 #define MSG_TEXT_PADDING 	 8
 #define MSG_BUTTON_PADDING 	 12
 
