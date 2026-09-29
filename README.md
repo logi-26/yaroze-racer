@@ -94,7 +94,9 @@ yaroze-racer/
 │   └── gameover         Results screen
 │
 └── tools/
-    └── map_editor.py    Track layout editor
+    ├── map_editor.py    Track layout editor
+    ├── png2tim.py       PNG to TIM texture converter
+    └── blender-rsd/     Blender 4.x RSD model exporter
 ```
 
 ---
@@ -120,6 +122,19 @@ Set the target region in [engine/state_manager.h](engine/state_manager.h):
 ```
 
 
+### Link play
+
+The Link Game lobby ([states/menu_lobby.c](states/menu_lobby.c)) connects two consoles over the link cable with [YarIO](https://github.com/logi-26/YarIO), which uses the tty on the serial port ([engine/link.c](engine/link.c) does the handshake and decides who is player 1).
+
+In an emulator the Net Yaroze monitor's tty driver isn't installed, so WSL builds include YarIO's emulator driver (`LINK_EMU=1`, the default there). To test link play, run the game in two PCSX-Redux linked through their serial ports:
+
+```sh
+make link
+```
+
+For a real Net Yaroze, build with `make LINK_EMU=0`.
+
+
 ---
 
 ## Track Editor
@@ -132,6 +147,16 @@ python tools/map_editor.py
 ```
 
 The editor shows a 30×30 tile grid. Left-click to paint tiles, right-click to erase. Press **S** to save the layout as a C header file.
+
+---
+
+## Asset Tools
+
+| Tool | Does | Guide |
+|---|---|---|
+| Blender RSD exporter | Exports models from Blender 4.x as `.rsd`/`.ply`/`.mat` | [tools/blender-rsd/README.md](tools/blender-rsd/README.md) |
+| `rsdlink` | Converts `.rsd` models to `.tmd` (`make models` rebuilds them all) | [toolchain/rsdlink.md](toolchain/rsdlink.md) |
+| `png2tim` | Converts `.png` images to `.tim` textures | [tools/png2tim.md](tools/png2tim.md) |
 
 ---
 
