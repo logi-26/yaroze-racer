@@ -1,4 +1,4 @@
-#include "../menu_main.h"
+#include "menu_main.h"
 
 #include "../engine/state_manager.h"
 #include "../engine/font.h"

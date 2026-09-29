@@ -1,4 +1,4 @@
-#include "../menu_options.h"
+#include "menu_options.h"
 
 #include "../engine/memcard_context.h"
 #include "../engine/memcard.h"
@@ -204,7 +204,7 @@ static void RenderMenuMemcard(void)
 			FontFX_FontBegin();
             FontFX_SetColour(COL_DARKGREEN);
 			FontFX_SetAlpha(alpha);
-            FontFX_Print(menuMemcardItemsX[i], menuMemcardItemsY[i], TXT(menuMemcardItems[i]), &WorldOrderingTable[activeBuffer], GOT_UI);
+            FontFX_Print(menuMemcardItemsX[i], menuMemcardItemsY[i], TXT(menuMemcardItems[i]), &WorldOrderingTable[activeBuffer], OT_UI);
 			FontFX_SetAlpha(1);
             FontFX_FontEnd();	
         }

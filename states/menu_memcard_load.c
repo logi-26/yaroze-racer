@@ -1,4 +1,4 @@
-#include "../menu_memcard_load.h"
+#include "menu_memcard_load.h"
 
 #include "../engine/memcard_context.h"
 #include "../engine/state_manager.h"
@@ -14,6 +14,8 @@
 
 #define MENU_ITEM_COUNT 6
 #define MAX_MENU_ITEMS SAVE_SLOT_COUNT
+
+static void LoadSaveSlots(void);
 
 static int stateInitialised = 0;
 static int selectedItem;

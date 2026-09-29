@@ -1,4 +1,4 @@
-#include "../gameover.h"
+#include "gameover.h"
 
 #include "../engine/state_manager.h"
 #include "../engine/font.h"
