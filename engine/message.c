@@ -416,7 +416,7 @@ void Message_Render(GsOT *ot, int priority)
 
         int yesLen = strlen(yesText);
         int noLen  = strlen(noText);
-        int charW = FONT_CHAR_W * fontScale;
+        int charW = FONT_CHAR_W * FontFX_GetSize();
         int yesTextW = yesLen * charW;
         int noTextW  = noLen  * charW;
         int buttonW = (yesTextW > noTextW ? yesTextW : noTextW) + (MSG_BUTTON_PADDING * 2);
@@ -472,7 +472,7 @@ void Message_Render(GsOT *ot, int priority)
         const char *okText = "OK";
         const char *cancelText = "CANCEL";
 
-        int charW = FONT_CHAR_W * fontScale;
+        int charW = FONT_CHAR_W * FontFX_GetSize();
         int okW = strlen(okText) * charW;
         int cancelW = strlen(cancelText) * charW;
         int buttonW = (okW > cancelW ? okW : cancelW) + (MSG_BUTTON_PADDING * 2);
@@ -522,7 +522,7 @@ void Message_Render(GsOT *ot, int priority)
     {
         const char *okText = "OK";
 
-        int charW = FONT_CHAR_W * fontScale;
+        int charW = FONT_CHAR_W * FontFX_GetSize();
         int buttonW = strlen(okText) * charW + (MSG_BUTTON_PADDING * 2);
         int buttonH = 16;
 

@@ -170,6 +170,13 @@ void FontFX_SetSize(int size)
 }
 
 
+// Get the font size
+int FontFX_GetSize(void)
+{
+    return fontScale;
+}
+
+
 // Set the font colour
 void FontFX_SetColour(unsigned char r, unsigned char g, unsigned char b)
 {

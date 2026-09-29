@@ -48,6 +48,7 @@ void FontFX_LoadFont(void);
 void FontFX_FontBegin(void);
 void FontFX_FontEnd(void);
 void FontFX_SetSize(int size);
+int FontFX_GetSize(void);
 void FontFX_SetColour(unsigned char r, unsigned char g, unsigned char b);
 void FontFX_SetAlpha(int alfa);
 void FontFX_SetStyle(int offset);
