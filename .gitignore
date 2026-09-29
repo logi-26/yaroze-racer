@@ -18,23 +18,11 @@ backup/
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 .vscode/
+# PCSX-Redux crash reporting (created when run from here)
+.sentry-native/
+
+# Debug symbols made by the VS Code extension (yaroze_debuginfo)
+*.elf
+.link_emu_*
+.pcsx-link/

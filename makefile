@@ -1,13 +1,35 @@
 CFLAGS = -O3 -g -I/path/to/your/pad/
 LINKER = -Xlinker -Ttext -Xlinker 80160000
 
-PROG = main
-OBJS = main.o state_manager.o graphics.o controller.o memcard.o audio.o font.o timer.o lang.o ui.o sincos.o asset_manager.o profiler.o menu_main.o menu_memcard.o menu_memcard_load.o menu_memcard_save.o menu_options.o menu_lobby.o menu_vehicle_select.o menu_pause.o gameplay.o gameover.o memcard_context.o message.o keyboard.o world.o light.o player.o model.o game.o suspension.o gear.o hud.o ground.o calculations.o car_controls.o brakelights.o vehicle_colour.o sky.o ai_racer.o
+# Windows (PSX3 in the VM) uses the tools on its PATH. Anywhere else (WSL)
+# uses the toolchain from toolchain/, installed in /opt/yaroze.
+ifneq ($(OS),Windows_NT)
+CC = mipsel-unknown-ecoff-gcc
+export PATH := /opt/yaroze/bin:$(PATH)
+PCSX_REDUX ?= /mnt/c/pcsx-redux-23726-20260420-7/pcsx-redux.exe
 
-all: $(PROG)
+# Files the auto script loads, so psx.exe is rebuilt when an asset changes.
+ASSETS := $(shell tr -d '\r' < auto | tr '\\' '/' | sed -n 's/^local dload *\([^ \t]*\).*/\1/p')
+
+# Link play: in an emulator the Net Yaroze monitor's tty driver isn't
+# installed, so YarIO brings its own (engine/yario_emu.c) when built with
+# LINK_EMU=1. On by default here, where the game runs in PCSX-Redux; build
+# for a real Net Yaroze with: make LINK_EMU=0
+LINK_EMU ?= 1
+ifeq ($(LINK_EMU),1)
+LINK_CFLAGS = -DYARIO_EMU
+endif
+# yario.o is rebuilt when LINK_EMU changes
+LINK_STAMP := .link_emu_$(LINK_EMU)
+endif
+
+PROG = main.exe
+OBJS = main.o state_manager.o graphics.o controller.o memcard.o audio.o font.o timer.o lang.o ui.o sincos.o asset_manager.o profiler.o menu_main.o menu_memcard.o menu_memcard_load.o menu_memcard_save.o menu_options.o menu_lobby.o menu_vehicle_select.o menu_pause.o gameplay.o gameover.o memcard_context.o message.o keyboard.o world.o light.o player.o model.o game.o suspension.o gear.o hud.o ground.o calculations.o car_controls.o brakelights.o vehicle_colour.o sky.o ai_racer.o link.o yario.o yario_emu.o
+
+all: $(PROG) psx.exe
 
 $(PROG): $(OBJS)
-	$(CC) $(LINKER) -o $@ $? -lps
+	$(CC) $(LINKER) -o $@ $^ -lps
 
 main.o: main.c main.h engine/state_manager.h engine/graphics.h engine/controller.h engine/memcard.h engine/audio.h engine/font.h engine/timer.h
 	$(CC) $(CFLAGS) -c main.c
@@ -60,6 +82,16 @@ profiler.o: engine/profiler.c engine/profiler.h
 
 
 
+link.o: engine/link.c engine/link.h engine/yario.h engine/state_manager.h engine/graphics.h
+	$(CC) $(CFLAGS) -c engine/link.c
+
+yario.o: engine/yario.c engine/yario.h engine/yario_emu.h $(LINK_STAMP)
+	$(CC) $(CFLAGS) $(LINK_CFLAGS) -c engine/yario.c
+
+# The BIOS calls this tty driver's functions: don't rely on $$gp there
+yario_emu.o: engine/yario_emu.c engine/yario_emu.h
+	$(CC) $(CFLAGS) -G 0 -c engine/yario_emu.c
+
 state_manager.o: engine/state_manager.c engine/state_manager.h engine/ui.h
 	$(CC) $(CFLAGS) -c engine/state_manager.c
 
@@ -79,7 +111,7 @@ menu_options.o: states/menu_options.c engine/state_manager.h engine/font.h engin
 	$(CC) $(CFLAGS) -c states/menu_options.c
 
 
-menu_lobby.o: states/menu_lobby.c engine/state_manager.h engine/font.h engine/colours.h engine/controller.h engine/audio.h engine/graphics.h engine/ui.h
+menu_lobby.o: states/menu_lobby.c engine/link.h engine/state_manager.h engine/font.h engine/colours.h engine/controller.h engine/audio.h engine/graphics.h engine/ui.h
 	$(CC) $(CFLAGS) -c states/menu_lobby.c
 
 
@@ -142,15 +174,41 @@ ai_racer.o: game/ai_racer.c game/ai_racer.h game/player.h game/vehicle_attribs.h
 	$(CC) $(CFLAGS) -I. -c game/ai_racer.c
 
 rebuild:
-	make clean
+	$(MAKE) clean
 	echo ---------- building ------
-	make all
+	$(MAKE) all
 
-psx.exe: $(PROG) main.exe
-	yarexe AUTO
+psx.exe: $(PROG) auto $(ASSETS)
+	yarexe auto
 
+ifneq ($(OS),Windows_NT)
+# Rebuilds the TMD models from their RSD sources, like data/game/CONV_ALL.BAT:
+# runs the rsdlink line of each CONV2.BAT it calls, in that folder
+# (rsdlink from toolchain/).
+.PHONY: models
+models:
+	@for bat in $$(tr -d '\r' < data/game/CONV_ALL.BAT | sed -n 's/^call  *//p' | tr '\\' '/'); do \
+		echo "== data/game/$$(dirname $$bat)"; \
+		(cd data/game/$$(dirname $$bat) && tr -d '\r' < $$(basename $$bat) | grep -i '^rsdlink' | sh) || exit 1; \
+	done
+endif
+
+ifeq ($(OS),Windows_NT)
 run: psx.exe
 	nopsx psx.exe
+else
+run: psx.exe
+	"$(PCSX_REDUX)" -run -loadexe psx.exe
+
+# Link play in two PCSX-Redux linked through their serial ports (SIO1)
+link: psx.exe
+	powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$$(wslpath -w tools/run-linked.ps1)" \
+		-Emulator "$$(wslpath -w '$(PCSX_REDUX)')" -Exe psx.exe
+
+$(LINK_STAMP):
+	rm -f .link_emu_*
+	touch $@
+endif
 
 pcsxr: $(PROG)
 	"C:\emulators\pcsxr\pcsxr.exe" -yaroze "C:\code\yaroze_engine\AUTO"
@@ -178,8 +236,12 @@ PLAYISO_NOPSX: psx.iso
 	call nopsx psx.iso
 
 clean:
+ifeq ($(OS),Windows_NT)
 	$(RM) $(PROG)
 	$(RM) $(OBJS)
 	@if exist psx.exe del psx.exe
 	@if exist main.exe del main.exe
 	@if exist psx.iso del psx.iso
+else
+	rm -f $(PROG) main *.o psx.exe psx.iso combine.tmp combEco.exe .link_emu_*
+endif
