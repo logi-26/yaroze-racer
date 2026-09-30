@@ -20,6 +20,7 @@
 #include "../states/menu_options.h"
 #include "../states/menu_lobby.h"
 #include "../states/menu_vehicle_select.h"
+#include "../states/menu_track_select.h"
 #include "../states/menu_pause.h"
 #include "../states/gameplay.h"
 
@@ -188,6 +189,7 @@ void GameUpdate(void)
 		case STATE_MENU_OPTIONS:       		StateMenuOptions();     	break;
 		case STATE_MENU_LOBBY:    	   		StateMenuLobby();			break;
 		case STATE_MENU_VEHICLE_SELECT: 	StateMenuVehicleSelect();	break;
+		case STATE_MENU_TRACK_SELECT:   	StateMenuTrackSelect();		break;
 		case STATE_MENU_PAUSE:    	   		StateMenuPause();    		break;
 		case STATE_GAMEOVER: 		   		StateGameOver(); 			break;
 		case STATE_GAMEPLAY: 				StateGameplay(); 			break;

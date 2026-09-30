@@ -197,10 +197,10 @@ static void UpdateMenuVehicleSelect(void)
         gameState = STATE_MENU_MAIN;
 	}
     
-	// Start the game
-	if (BTN_PRESSED(PADstart)) 
+	// Advance to track selection
+	if (BTN_PRESSED(PADstart))
 	{
-        gameState = STATE_GAMEPLAY;
+        gameState = STATE_MENU_TRACK_SELECT;
 	}
 }
 
