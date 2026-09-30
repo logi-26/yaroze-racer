@@ -11,6 +11,19 @@ Yaroze Racer is a 3D racing game written in C targeting the original PlayStation
 
 ---
 
+## Screenshots
+
+<p align="center">
+  <img src="screenshots/1.png" alt="Link race: two cars leaving the start line, second of two, lap 1 of 3" width="49%">
+  <img src="screenshots/2.png" alt="Racing through a corner past the buildings, leading the link race" width="49%">
+</p>
+<p align="center">
+  <img src="screenshots/3.png" alt="Vehicle select screen: the yellow hatchback with its speed, acceleration, brake and grip ratings" width="49%">
+  <img src="screenshots/4.png" alt="The map editor: the tile palette and the 30 by 30 track layout of map_1.h" width="49%">
+</p>
+
+---
+
 ## Features
 
 - **Three vehicles** with auto/manual gearbox
