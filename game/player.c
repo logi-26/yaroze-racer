@@ -4,6 +4,7 @@
 #include "game.h"
 
 int selectedVehicleIndex = 0;
+int remoteVehicleIndex = -1;    // The other player's vehicle in a link game (-1: none)
 
 // Hatchback car (car3)
 VehicleAttributes car3Attribs = {
