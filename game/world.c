@@ -4,6 +4,7 @@
 #include "ground.h"
 #include "game/player.h"
 #include "ai_racer.h"
+#include "link_race.h"
 #include "../engine/graphics.h"
 #include "../engine/calculations.h"
 
@@ -684,11 +685,14 @@ void RenderWorldPlayer1(int currentBuffer) {
 	// Draw player 1
 	DrawPlayer(&player1, &WorldOrderingTable[currentBuffer]);
 
-	// Draw AI racers
-	DrawAIRacers(&player1, &WorldOrderingTable[currentBuffer]);
+	// Draw AI racers (none in a link race)
+	if (!LinkRace_IsActive())
+	{
+		DrawAIRacers(&player1, &WorldOrderingTable[currentBuffer]);
+	}
 
-	// If it is 2 player mode, draw the second player vehicle
-	if (NumberOfPlayers == 2) 
+	// If it is 2 player mode or a link race, draw the second player vehicle
+	if (NumberOfPlayers == 2 || LinkRace_IsActive()) 
 	{
 		DrawPlayer(&player2, &WorldOrderingTable[currentBuffer]);
 	}
