@@ -62,6 +62,8 @@ yaroze-racer/
 │   ├── audio            VAB/SEQ music and SFX
 │   ├── font             Bitmap font rendering
 │   ├── ui               UI primitives
+│   ├── keyboard         On-screen keyboard
+│   ├── message          Popup messages/prompts
 │   ├── timer            Hardware timer
 │   ├── memcard          Memory card save/load
 │   ├── asset_manager    Asset loading
