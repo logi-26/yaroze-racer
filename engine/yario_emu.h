@@ -11,8 +11,6 @@
  * to their log). YarioEmuInstall() replaces it with a small tty driver that
  * uses the serial port (SIO1) directly, so two emulators linked through
  * their SIO1 (PCSX-Redux: SIO1 server/client) exchange the tty data.
- *
- * Not for real hardware: there the monitor's driver is already installed.
  */
 
 /************* FUNCTION PROTOTYPES *******************/

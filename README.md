@@ -78,6 +78,7 @@ yaroze-racer/
 │   ├── player           PlayerStruct
 │   ├── car_controls     Player input
 │   ├── ai_racer         AI, pos, lap count
+│   ├── link_race        Link race (2 consoles)
 │   ├── vehicle_attribs  Per-vehicle tuning
 │   ├── suspension       Suspension/body sim
 │   ├── gear             Gearbox sim
@@ -132,13 +133,15 @@ Set the target region in [engine/state_manager.h](engine/state_manager.h):
 
 The Link Game lobby ([states/menu_lobby.c](states/menu_lobby.c)) connects two consoles over the link cable with [YarIO](https://github.com/logi-26/YarIO), which uses the tty on the serial port ([engine/link.c](engine/link.c) does the handshake and decides who is player 1).
 
-In an emulator the Net Yaroze monitor's tty driver isn't installed, so WSL builds include YarIO's emulator driver (`LINK_EMU=1`, the default there). To test link play, run the game in two PCSX-Redux linked through their serial ports:
+After connecting, both players choose their vehicles and get ready, player 1 chooses the track, and both race head to head without AI racers ([game/link_race.c](game/link_race.c)). Each console drives its own car and sends its position and heading every frame; the other console draws that car there.
+
+The Net Yaroze monitor's tty driver (the serial port) is only installed when the game is started from the Net Yaroze boot disc. A `psx.exe` that has been packaged by Yarexe doesn't have the tty driver. So WSL builds include YarIO's own serial port tty driver (`LINK_OWN_DRIVER=1`, the default there). To test link play, run the game in two PCSX-Redux linked through their serial ports:
 
 ```sh
 make link
 ```
 
-For a real Net Yaroze, build with `make LINK_EMU=0`.
+If the game is launched using a Net Yaroze boot disc (the game uploaded with siocons), build with `make LINK_OWN_DRIVER=0`.
 
 
 ---

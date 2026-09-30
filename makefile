@@ -11,20 +11,22 @@ PCSX_REDUX ?= /mnt/c/pcsx-redux-23726-20260420-7/pcsx-redux.exe
 # Files the auto script loads, so psx.exe is rebuilt when an asset changes.
 ASSETS := $(shell tr -d '\r' < auto | tr '\\' '/' | sed -n 's/^local dload *\([^ \t]*\).*/\1/p')
 
-# Link play: in an emulator the Net Yaroze monitor's tty driver isn't
-# installed, so YarIO brings its own (engine/yario_emu.c) when built with
-# LINK_EMU=1. On by default here, where the game runs in PCSX-Redux; build
-# for a real Net Yaroze with: make LINK_EMU=0
-LINK_EMU ?= 1
-ifeq ($(LINK_EMU),1)
+# Link play: the Net Yaroze monitor's tty driver (the serial port) is only
+# installed when the game is started from the Net Yaroze boot disc. A psx.exe
+# that has been packaged by Yarexe doesn't have the tty driver, so YarIO brings its
+# own (engine/yario_emu.c) when built with LINK_OWN_DRIVER=1. On by default.
+# Build for a Net Yaroze started from its boot disc with:
+#   make LINK_OWN_DRIVER=0
+LINK_OWN_DRIVER ?= 1
+ifeq ($(LINK_OWN_DRIVER),1)
 LINK_CFLAGS = -DYARIO_EMU
 endif
-# yario.o is rebuilt when LINK_EMU changes
-LINK_STAMP := .link_emu_$(LINK_EMU)
+# yario.o is rebuilt when LINK_OWN_DRIVER changes
+LINK_STAMP := .link_own_driver_$(LINK_OWN_DRIVER)
 endif
 
 PROG = main.exe
-OBJS = main.o state_manager.o graphics.o controller.o memcard.o audio.o font.o timer.o lang.o ui.o sincos.o asset_manager.o profiler.o menu_main.o menu_memcard.o menu_memcard_load.o menu_memcard_save.o menu_options.o menu_lobby.o menu_vehicle_select.o menu_track_select.o menu_pause.o gameplay.o gameover.o memcard_context.o message.o keyboard.o world.o light.o player.o model.o game.o suspension.o gear.o hud.o ground.o calculations.o car_controls.o brakelights.o vehicle_colour.o sky.o ai_racer.o link.o yario.o yario_emu.o
+OBJS = main.o state_manager.o graphics.o controller.o memcard.o audio.o font.o timer.o lang.o ui.o sincos.o asset_manager.o profiler.o menu_main.o menu_memcard.o menu_memcard_load.o menu_memcard_save.o menu_options.o menu_lobby.o menu_vehicle_select.o menu_track_select.o menu_pause.o gameplay.o gameover.o memcard_context.o message.o keyboard.o world.o light.o player.o model.o game.o suspension.o gear.o hud.o ground.o calculations.o car_controls.o brakelights.o vehicle_colour.o sky.o ai_racer.o link.o yario.o yario_emu.o link_race.o
 
 all: $(PROG) psx.exe
 
@@ -92,7 +94,7 @@ yario.o: engine/yario.c engine/yario.h engine/yario_emu.h $(LINK_STAMP)
 yario_emu.o: engine/yario_emu.c engine/yario_emu.h
 	$(CC) $(CFLAGS) -G 0 -c engine/yario_emu.c
 
-state_manager.o: engine/state_manager.c engine/state_manager.h engine/ui.h
+state_manager.o: engine/state_manager.c engine/state_manager.h engine/link.h engine/ui.h
 	$(CC) $(CFLAGS) -c engine/state_manager.c
 
 menu_main.o: states/menu_main.c engine/state_manager.h engine/font.h engine/colours.h engine/controller.h engine/audio.h engine/graphics.h
@@ -115,23 +117,23 @@ menu_lobby.o: states/menu_lobby.c engine/link.h engine/state_manager.h engine/fo
 	$(CC) $(CFLAGS) -c states/menu_lobby.c
 
 
-menu_vehicle_select.o: states/menu_vehicle_select.c engine/state_manager.h engine/font.h engine/colours.h engine/controller.h engine/graphics.h engine/light.h engine/model.h game/player.h game/world.h
+menu_vehicle_select.o: states/menu_vehicle_select.c engine/state_manager.h engine/link.h engine/font.h engine/colours.h engine/controller.h engine/graphics.h engine/light.h engine/model.h game/player.h game/world.h
 	$(CC) $(CFLAGS) -I. -c states/menu_vehicle_select.c
 
-menu_track_select.o: states/menu_track_select.c states/menu_track_select.h engine/state_manager.h engine/font.h engine/colours.h engine/controller.h engine/graphics.h game/ground.h
+menu_track_select.o: states/menu_track_select.c states/menu_track_select.h engine/link.h engine/state_manager.h engine/font.h engine/colours.h engine/controller.h engine/graphics.h game/ground.h
 	$(CC) $(CFLAGS) -I. -c states/menu_track_select.c
 
 menu_pause.o: states/menu_pause.c engine/state_manager.h engine/font.h engine/colours.h engine/controller.h engine/audio.h engine/graphics.h
 	$(CC) $(CFLAGS) -c states/menu_pause.c
 
-gameplay.o: states/gameplay.c engine/state_manager.h engine/controller.h engine/graphics.h engine/model.h engine/light.h game/car_controls.h game/player.h game/game.h game/world.h game/hud.h game/brakelights.h
+gameplay.o: states/gameplay.c game/link_race.h engine/audio.h engine/state_manager.h engine/controller.h engine/graphics.h engine/model.h engine/light.h game/car_controls.h game/player.h game/game.h game/world.h game/hud.h game/brakelights.h
 	$(CC) $(CFLAGS) -I. -c states/gameplay.c
 
 gameover.o: states/gameover.c engine/state_manager.h engine/font.h engine/colours.h engine/controller.h engine/audio.h engine/graphics.h
 	$(CC) $(CFLAGS) -c states/gameover.c
 
 
-world.o: game/world.c game/world.h game/sky.h engine/graphics.h engine/model.h engine/calculations.h game/player.h game/ground.h
+world.o: game/world.c game/link_race.h game/world.h game/sky.h engine/graphics.h engine/model.h engine/calculations.h game/player.h game/ground.h
 	$(CC) $(CFLAGS) -I. -c game/world.c
 
 light.o: engine/light.c engine/light.h
@@ -152,7 +154,7 @@ suspension.o: game/suspension.c game/suspension.h
 gear.o: game/gear.c game/gear.h
 	$(CC) $(CFLAGS) -I. -c game/gear.c
 
-hud.o: game/hud.c game/hud.h game/gear.h game/player.h game/ground.h engine/font.h engine/colours.h engine/ui.h engine/timer.h
+hud.o: game/hud.c game/link_race.h game/hud.h game/gear.h game/player.h game/ground.h engine/font.h engine/colours.h engine/ui.h engine/timer.h
 	$(CC) $(CFLAGS) -I. -c game/hud.c
 
 ground.o: game/ground.c game/ground.h
@@ -175,6 +177,9 @@ sky.o: game/sky.c game/sky.h game/world.h game/player.h engine/graphics.h
 
 ai_racer.o: game/ai_racer.c game/ai_racer.h game/player.h game/vehicle_attribs.h game/suspension.h game/game.h game/gear.h game/world.h
 	$(CC) $(CFLAGS) -I. -c game/ai_racer.c
+
+link_race.o: game/link_race.c game/link_race.h engine/link.h engine/font.h engine/colours.h engine/graphics.h engine/calculations.h engine/model.h game/player.h game/game.h game/ground.h game/ai_racer.h
+	$(CC) $(CFLAGS) -I. -c game/link_race.c
 
 rebuild:
 	$(MAKE) clean
@@ -209,7 +214,7 @@ link: psx.exe
 		-Emulator "$$(wslpath -w '$(PCSX_REDUX)')" -Exe psx.exe
 
 $(LINK_STAMP):
-	rm -f .link_emu_*
+	rm -f .link_own_driver_*
 	touch $@
 endif
 
@@ -246,5 +251,5 @@ ifeq ($(OS),Windows_NT)
 	@if exist main.exe del main.exe
 	@if exist psx.iso del psx.iso
 else
-	rm -f $(PROG) main *.o psx.exe psx.iso combine.tmp combEco.exe .link_emu_*
+	rm -f $(PROG) main *.o psx.exe psx.iso combine.tmp combEco.exe .link_own_driver_*
 endif
