@@ -1321,3 +1321,38 @@ void DrawAIRacers(PlayerStruct *cameraPlayer, GsOT *ot) {
         }
     }
 }
+
+
+/*****************************************************
+Link race: the other player's car (driven on the other
+console) is tracked like the player's, and the two
+players are ranked against each other (no AI racers)
+*****************************************************/
+static int opponentRaceSegIdx;
+static int opponentRaceLapCount;
+static int opponentRaceSegDistSinceLap;
+
+
+void InitialiseOpponentRaceProgress(long startX, long startZ)
+{
+    opponentRaceSegIdx = FindNearestWaypoint(startX, startZ);
+    opponentRaceLapCount = 0;
+    opponentRaceSegDistSinceLap = 0;
+}
+
+
+// Call once per frame with the other player's car position
+void UpdateOpponentRaceProgress(long x, long z)
+{
+    UpdateRaceSegTracker(x, z, &opponentRaceSegIdx, &opponentRaceLapCount, &opponentRaceSegDistSinceLap);
+}
+
+
+// Link race positions: 1 or 2 (call after UpdatePlayerRaceProgress and UpdateOpponentRaceProgress)
+void UpdateLinkRacePositions(long opponentX, long opponentZ)
+{
+    long playerProgress = ComputeRaceProgress(player1.gsObjectCoord.coord.t[0], player1.gsObjectCoord.coord.t[2], playerRaceSegIdx, playerRaceLapCount);
+    long opponentProgress = ComputeRaceProgress(opponentX, opponentZ, opponentRaceSegIdx, opponentRaceLapCount);
+
+    playerRacePosition = (opponentProgress > playerProgress) ? 2 : 1;
+}

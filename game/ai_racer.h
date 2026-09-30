@@ -43,7 +43,7 @@ extern AIRacer aiRacers[NUM_AI_RACERS];
 // 1 if any AI racer is currently braking
 extern int aiRacerBraking;
 
-// Player race-progress tracking (mirrors the per-field equivalents on AIRacer)
+// Player race-progress tracking
 extern int playerWaypointIndex;
 extern int playerLapCount;
 extern int playerRacePosition;
@@ -57,6 +57,9 @@ void UpdateAIRacers(void);
 void UpdatePlayerRaceProgress(void);
 void UpdateRacePositions(void);
 void DrawAIRacers(PlayerStruct *cameraPlayer, GsOT *ot);
+void InitialiseOpponentRaceProgress(long startX, long startZ);
+void UpdateOpponentRaceProgress(long x, long z);
+void UpdateLinkRacePositions(long opponentX, long opponentZ);
 /*****************************************************/
 
 
