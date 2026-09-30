@@ -62,3 +62,24 @@ void DrawModel(ModelStruct *theModel, GsOT *othWorld) {
     GsSetLsMatrix(&tmpls);
     GsSortObject4(&theModel->gsObjectHandler, othWorld, 3, (u_long *)getScratchAddr(0));
 }
+
+
+// Sets an object's polygon subdivision for its distance (dx, dz) from the camera
+void SetDivisionByDistance(GsDOBJ2 *obj, long dx, long dz, const DivisionStep *steps) {
+    u_long division = 0;
+
+    if (dx < 0) dx = -dx;
+    if (dz < 0) dz = -dz;
+
+    // Far away (no division, and no squares that could overflow)
+    if (dx < 32000 && dz < 32000) {
+        long distSq = dx * dx + dz * dz;
+        for (; steps->distance; steps++) {
+            if (distSq < steps->distance * steps->distance) {
+                division = steps->division;
+                break;
+            }
+        }
+    }
+    obj->attribute = (obj->attribute & ~(7 << 9)) | division;    // bits 9-11: the division
+}

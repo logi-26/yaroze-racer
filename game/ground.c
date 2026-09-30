@@ -4,6 +4,7 @@
 #include "map_2.h"
 #include "game.h"
 #include "../engine/graphics.h"
+#include "../engine/model.h"
 
 int selectedTrackIndex = 0;
 
@@ -340,6 +341,12 @@ void RotateGround(GsCOORDINATE2 *gsObjectCoord, SVECTOR *rotateVector, int nRX, 
 }
 
 
+// Polygon subdivision of the ground tiles by distance from the camera
+static const DivisionStep groundDivision[] = {
+	{ 1800, GsDIV2 }, { 3600, GsDIV1 }, { 0, 0 }
+};
+
+
 void DrawGround(GroundStruct *theGround, PlayerStruct *currentPlayer, GsOT *ot) {
     MATRIX  tmpls, tmplw;
     int nCurrentModel;
@@ -358,6 +365,12 @@ void DrawGround(GroundStruct *theGround, PlayerStruct *currentPlayer, GsOT *ot) 
             GsSetLightMatrix(&tmplw);
             GsSetLsMatrix(&tmpls);
             
+            // Subdivide the tiles near the camera
+            SetDivisionByDistance(&theGround->gsObjectHandler[nCurrentModel],
+                theGround->gsObjectCoord[nCurrentModel].coord.t[0] - currentPlayer->gsObjectCoord.coord.t[0],
+                theGround->gsObjectCoord[nCurrentModel].coord.t[2] - currentPlayer->gsObjectCoord.coord.t[2],
+                groundDivision);
+
             // Send Object To Ordering Table
             GsSortObject4(&theGround->gsObjectHandler[nCurrentModel], ot, 2, (u_long *)getScratchAddr(0));
         }

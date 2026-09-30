@@ -611,17 +611,32 @@ void CheckWorldCollisions(PlayerStruct *player, long *lateralSpeed) {
 
 #define BUILDING_DRAW_DIST_SQ (16000L * 16000L)
 
-static void DrawModelCulled(PlayerStruct *currentPlayer, ModelStruct *model, int currentBuffer) {
+// Polygon subdivision by distance from the camera (the big buildings and stands, and the barriers)
+static const DivisionStep buildingDivision[] = {
+	{ 10000, GsDIV2 }, { 15000, GsDIV1 }, { 0, 0 }        // (the track is 7700+ from them; 8x8 would fill the packet area)
+};
+static const DivisionStep barrierDivision[] = {
+	{ 2500, GsDIV2 }, { 5000, GsDIV1 }, { 0, 0 }
+};
+
+static void DrawDivided(PlayerStruct *currentPlayer, ModelStruct *model, const DivisionStep *division, int currentBuffer) {
+	SetDivisionByDistance(&model->gsObjectHandler,
+		model->gsObjectCoord.coord.t[0] - currentPlayer->gsObjectCoord.coord.t[0],
+		model->gsObjectCoord.coord.t[2] - currentPlayer->gsObjectCoord.coord.t[2], division);
+	DrawModel(model, &WorldOrderingTable[currentBuffer]);
+}
+
+static void DrawModelCulled(PlayerStruct *currentPlayer, ModelStruct *model, const DivisionStep *division, int currentBuffer) {
 	if (model && IsObjectNearPlayer(currentPlayer, &model->gsObjectCoord)) 
 	{
-		DrawModel(model, &WorldOrderingTable[currentBuffer]);
+		DrawDivided(currentPlayer, model, division, currentBuffer);
 	}
 }
 
 static void DrawBuildingCulled(PlayerStruct *currentPlayer, ModelStruct *model, int currentBuffer) {
 	if (model && IsObjectWithinDist(currentPlayer, &model->gsObjectCoord, BUILDING_DRAW_DIST_SQ)) 
 	{
-		DrawModel(model, &WorldOrderingTable[currentBuffer]);
+		DrawDivided(currentPlayer, model, buildingDivision, currentBuffer);
 	}
 }
 
@@ -638,15 +653,15 @@ void DrawWorldModels(PlayerStruct *currentPlayer, int currentBuffer) {
 	}
 
 	// Draw the stands
-	DrawModelCulled(currentPlayer, &stand1, currentBuffer);
-	DrawModelCulled(currentPlayer, &stand2, currentBuffer);
+	DrawModelCulled(currentPlayer, &stand1, buildingDivision, currentBuffer);
+	DrawModelCulled(currentPlayer, &stand2, buildingDivision, currentBuffer);
 
 	// Draw outer (perimeter) barriers
 	{
 		int i;
 		for (i = 0; i < NUM_OUTER_BARRIERS; i++)
 		{
-			DrawModelCulled(currentPlayer, &outerBarrierModels[i], currentBuffer);
+			DrawModelCulled(currentPlayer, &outerBarrierModels[i], barrierDivision, currentBuffer);
 		}
 	}
 
@@ -655,7 +670,7 @@ void DrawWorldModels(PlayerStruct *currentPlayer, int currentBuffer) {
 		int i;
 		for (i = 0; i < numActiveInnerBarriers; i++)
 		{
-			DrawModelCulled(currentPlayer, &innerBarrierModels[i], currentBuffer);
+			DrawModelCulled(currentPlayer, &innerBarrierModels[i], barrierDivision, currentBuffer);
 		}
 	}
 

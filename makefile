@@ -142,7 +142,7 @@ gear.o: game/gear.c game/gear.h
 hud.o: game/hud.c game/link_race.h game/hud.h game/gear.h game/player.h game/ground.h engine/font.h engine/colours.h engine/ui.h engine/timer.h
 	$(CC) $(CFLAGS) -I. -c game/hud.c
 
-ground.o: game/ground.c game/ground.h
+ground.o: game/ground.c game/ground.h engine/model.h
 	$(CC) $(CFLAGS) -I. -c game/ground.c
 
 calculations.o: engine/calculations.c engine/calculations.h
