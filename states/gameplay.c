@@ -6,6 +6,8 @@
 #include "../engine/model.h"
 #include "../engine/light.h"
 #include "../engine/audio.h"
+#include "../engine/font.h"
+#include "../engine/colours.h"
 #include "../game/car_controls.h"
 #include "../game/player.h"
 #include "../game/game.h"
@@ -20,6 +22,9 @@ PlayerStruct player1;
 PlayerStruct player2;
 
 static int stateInitialised = 0;
+
+// Single player race: 0 while racing, then the finishing position (1-6)
+static int finishPlace = 0;
 
 // Waypoints for the AI routes
 long waypointX = 0;
@@ -151,6 +156,15 @@ static void StateInit(void)
 
 	// Initialise player race-progress tracking to match their grid position
     InitialisePlayerRaceProgress(startX, startZ);
+
+	// Start the race afresh (these carry over from a previous race)
+	finishPlace = 0;
+	ResetLapTimer();
+	currentGear = 1;
+	player1_lateralSpeed = 0;
+	player1_pitch = 0;
+	player1_roll = 0;
+	player1_isBraking = 0;
 }
 
 
@@ -159,6 +173,35 @@ static void StateDeinitialise(void)
     SetBrakeLightTexture(0);
     SetAIBrakeLightTexture(0);
     stateInitialised = 0;
+}
+
+
+// Leave the race for the main menu (closes the link in a link race)
+static void LeaveRace(void)
+{
+	if (LinkRace_IsActive())
+	{
+		LinkRace_End();
+	}
+	StateDeinitialise();
+	gameState = STATE_MENU_MAIN;
+	RestartMusic();
+	PauseMusic();
+}
+
+
+// Single player race: crossing the line after the last lap finishes the
+// race in the current position, which then stays
+static void UpdateRaceFinish(void)
+{
+	if (!finishPlace && playerRaceLapCount >= NUM_RACE_LAPS)
+	{
+		finishPlace = playerRacePosition;
+	}
+	if (finishPlace)
+	{
+		playerRacePosition = finishPlace;
+	}
 }
 
 
@@ -202,6 +245,7 @@ static void UpdateGameplay(void)
 	if (!LinkRace_IsActive())
 	{
 		UpdateRacePositions();
+		UpdateRaceFinish();
 	}
 
 	// Check player 1 collisions
@@ -233,11 +277,17 @@ static void UpdateGameplay(void)
 	{
 		if (BTN_PRESSED(PADstart) && LinkRace_CanLeave())
 		{
-			LinkRace_End();
-			StateDeinitialise();
-			gameState = STATE_MENU_MAIN;
-			RestartMusic();
-			PauseMusic();
+			LeaveRace();
+		}
+		return;
+	}
+
+	// Race finished: Start returns to the main menu
+	if (finishPlace)
+	{
+		if (BTN_PRESSED(PADstart))
+		{
+			LeaveRace();
 		}
 		return;
 	}
@@ -250,11 +300,45 @@ static void UpdateGameplay(void)
 }
 
 
+// Single player race: the result, once finished
+static void DrawRaceResult(GsOT *ot)
+{
+	static const char *places[] = { "1ST", "2ND", "3RD", "4TH", "5TH", "6TH" };
+	char text[16];
+
+	if (!finishPlace)
+	{
+		return;
+	}
+
+	sprintf(text, "FINISHED %s", places[(finishPlace - 1) % 6]);
+
+	FontFX_FontBegin();
+	FontFX_SetStyle(FONT_STYLE_2);
+	FontFX_SetCenter(SCREEN_X_OFFSET, gScreenWidth);
+	FontFX_SetSize(2);
+	FontFX_SetColour(finishPlace == 1 ? COL_GOLD : COL_WHITE);
+	FontFX_SetOutline(COL_DARKGREY);
+	FontFX_Print(20, 80, text, ot, OT_UI);
+	FontFX_SetSize(1);
+	FontFX_FontEnd();
+
+	FontFX_FontBegin();
+	FontFX_SetCenter(SCREEN_X_OFFSET, gScreenWidth);
+	FontFX_SetColour(COL_WHITE);
+	FontFX_SetOutline(COL_DARKGREY);
+	FontFX_SetPulse(0, 255, 20);
+	FontFX_Print(20, 110, "PRESS START", ot, OT_UI);
+	FontFX_FontEnd();
+}
+
+
 static void RenderGameplay(void)
 {
 	RenderWorld();
 	DrawGameplayHUD(&WorldOrderingTable[activeBuffer]);
 	LinkRace_DrawHUD(&WorldOrderingTable[activeBuffer]);
+	DrawRaceResult(&WorldOrderingTable[activeBuffer]);
 }
 
 

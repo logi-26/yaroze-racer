@@ -24,6 +24,16 @@ static void FormatLapTime(char *buf, int ms) {
 }
 
 
+// Clear the lap times (at the start of a race)
+void ResetLapTimer(void) {
+    lapStarted = 0;
+    lastLapMs = 0;
+    bestLapMs = 0;
+    wasOnStartLine = 0;
+    TimerReset();
+}
+
+
 static void UpdateLapTimer(void) {
 	
     // Require forward motion to prevent backward crossings from triggering
@@ -97,7 +107,8 @@ void DrawGameplayHUD(GsOT *ot) {
 
 	FontFX_SetSize(1);
 	
-	sprintf(hudStr, "LAP:%d/%d", playerRaceLapCount + 1, NUM_RACE_LAPS);
+	// (after the last lap: stays on the last one)
+	sprintf(hudStr, "LAP:%d/%d", playerRaceLapCount < NUM_RACE_LAPS ? playerRaceLapCount + 1 : NUM_RACE_LAPS, NUM_RACE_LAPS);
     FontFX_Print(gScreenWidth - 65, 40, hudStr, ot, OT_UI);
 	
 	FontFX_SetColour(COL_WHITE);

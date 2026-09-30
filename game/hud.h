@@ -6,6 +6,7 @@
 
 /************* FUNCTION PROTOTYPES *******************/
 void DrawGameplayHUD(GsOT *ot);
+void ResetLapTimer(void);
 /*****************************************************/
 
 
