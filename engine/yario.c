@@ -20,26 +20,25 @@ static int InitSerial(void) {
     ioctl(tty, FIOCNBLOCK, 1);              // Non-blocking
     ioctl(tty, TIOCFLUSH, 1);               // Flush
     ioctl(tty, TIOERRRST, 1);               // Reset errors
-	
+
     return tty;
 }
 
-// Send 8-byte packet: 0xAA + 2 bytes pad data + 4 padding bytes + XOR checksum
-static void SendData(int tty, u_long outBuff) {
+// Send 8-byte packet: 0xAA + 6 data bytes + XOR checksum
+static void SendData(int tty, const u_char *data) {
     unsigned char packet[8];
-    packet[0] = 0xAA; 																		// Start byte
-    packet[1] = (outBuff >> 8) & 0xFF;  													// Pad high byte (bits 8–15)
-    packet[2] = outBuff & 0xFF;         													// Pad low byte (bits 0–7)
-    packet[3] = 0;                      													// Padding byte
-    packet[4] = 0;                      													// Padding byte
-    packet[5] = 0;                      													// Padding byte
-    packet[6] = 0;                      													// Padding byte
-    packet[7] = packet[1] ^ packet[2] ^ packet[3] ^ packet[4] ^ packet[5] ^ packet[6]; 		// XOR checksum
+    int i;
+    packet[0] = 0xAA; 						// Start byte
+    packet[7] = 0;
+    for (i = 0; i < YARIO_DATA_SIZE; i++) {
+        packet[1 + i] = data[i];			// Data bytes
+        packet[7] ^= data[i];				// XOR checksum
+    }
     write(tty, packet, 8);
 }
 
-// Receive 8-byte packet
-static int ReceiveData(int tty, u_long* inBuff) {
+// Receive 8-byte packet: copies its 6 data bytes to 'data'
+static int ReceiveData(int tty, u_char *data) {
     static unsigned char buf[8];
     static int index = 0;
     unsigned char temp[8];
@@ -48,7 +47,7 @@ static int ReceiveData(int tty, u_long* inBuff) {
 
     // Try to read up to 8 bytes at once
     bytesRead = read(tty, temp, 8 - index);
-	
+
     if (bytesRead <= 0) return 0;
 
     // Process each byte
@@ -62,13 +61,13 @@ static int ReceiveData(int tty, u_long* inBuff) {
 
         // Process when the full 8-byte packet is received
         if (index == 8) {
-			
+
 			// Perform XOR
             check = buf[1] ^ buf[2] ^ buf[3] ^ buf[4] ^ buf[5] ^ buf[6];
-            
+
 			// If the XOR has passed, put the data in the buffer
 			if (buf[7] == check) {
-                *inBuff = ((u_long)buf[1] << 8) | (u_long)buf[2];
+                memcpy(data, &buf[1], YARIO_DATA_SIZE);
                 index = 0;
                 return 1;
             }
@@ -88,25 +87,56 @@ void YarioInit(void) {
     yarioBuff.RemoteBufferIO = 0xFFFFFFFF;
 }
 
-void YarioUpdate(u_long outBuff) {
-	// Default to last state
-    u_long latestRemoteBuff = yarioBuff.RemoteBufferIO;
-    int receivedSomething = 0;
+// Send 6 data bytes (none if outData is 0), and receive the latest packet
+// from the other console
+void YarioUpdateData(const u_char *outData) {
+    u_char latest[YARIO_DATA_SIZE];
+
+    yarioBuff.remoteReceived = 0;
 
     if (yarioBuff.ttyFD >= 0) {
-        // Read the data
-        while (ReceiveData(yarioBuff.ttyFD, &latestRemoteBuff)) {
-            receivedSomething = 1;
+        // Read the data (keep the latest packet)
+        while (ReceiveData(yarioBuff.ttyFD, latest)) {
+            memcpy(yarioBuff.remoteData, latest, YARIO_DATA_SIZE);
+            yarioBuff.remoteReceived = 1;
         }
 
         // Send the data
+        if (outData) {
+            SendData(yarioBuff.ttyFD, outData);
+            memcpy(yarioBuff.localData, outData, YARIO_DATA_SIZE);
+        }
+    }
+}
+
+// The 6 data bytes last received; returns 1 if they arrived in the last update
+int YarioGetRemoteData(u_char *inData) {
+    memcpy(inData, yarioBuff.remoteData, YARIO_DATA_SIZE);
+    return yarioBuff.remoteReceived;
+}
+
+// Send/receive 16 bits (the first two data bytes, nothing is sent for 0)
+void YarioUpdate(u_long outBuff) {
+	// Default to last state
+    u_long latestRemoteBuff = yarioBuff.RemoteBufferIO;
+    u_char data[YARIO_DATA_SIZE];
+
+    if (yarioBuff.ttyFD >= 0) {
+        memset(data, 0, YARIO_DATA_SIZE);
+        data[0] = (outBuff >> 8) & 0xFF;    // Pad high byte (bits 8–15)
+        data[1] = outBuff & 0xFF;           // Pad low byte (bits 0–7)
+
+        // Read the data, and send the data
 		if (outBuff != 0) {
-            SendData(yarioBuff.ttyFD, outBuff);
+            YarioUpdateData(data);
             yarioBuff.localBufferIO = outBuff;
+        } else {
+            YarioUpdateData(0);
         }
 
-		// If we recieved data, store it in the buffer
-        if (receivedSomething) {
+		// If we received data, store it in the buffer
+        if (yarioBuff.remoteReceived) {
+            latestRemoteBuff = ((u_long)yarioBuff.remoteData[0] << 8) | (u_long)yarioBuff.remoteData[1];
             yarioBuff.RemoteBufferIO = latestRemoteBuff;
         } else {
             yarioBuff.RemoteBufferIO = 0;
