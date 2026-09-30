@@ -11,7 +11,6 @@
 #include "ai_racer.h"
 
 // Grid positions: player 1 at the front, player 2 behind (the first AI slot)
-#define GRID_Y          (-200)
 #define P1_START_X      3605
 #define P1_START_Z      9273
 #define P2_START_X      3000
@@ -147,7 +146,7 @@ void LinkRace_InitOpponent(unsigned long *tmdAddr)
         z = P2_START_Z;
     }
 
-    InitialisePlayer(&player2, 2, x, GRID_Y, z, tmdAddr);
+    InitialisePlayer(&player2, 2, x, CAR_GROUND_Y, z, tmdAddr);
     RotModel(&player2.gsModelCoord, &modelRot, 3072, 2048, 0);
     InitialiseOpponentRaceProgress(x, z);
     SendState();

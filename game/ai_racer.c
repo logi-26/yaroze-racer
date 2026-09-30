@@ -500,7 +500,7 @@ void InitialiseAIRacers(void) {
     for (i = 0; i < NUM_AI_RACERS; i++) 
 	{
 		// Initialise the AI racer using the predefined spawn position and model for this AI vehicle
-        InitialisePlayer(&aiRacers[i].player, 0, spawnX[i], -200, spawnZ[i], (unsigned long *)aiTmdAddr[i]);
+        InitialisePlayer(&aiRacers[i].player, 0, spawnX[i], CAR_GROUND_Y, spawnZ[i], (unsigned long *)aiTmdAddr[i]);
 
 		// Set the models initial orientation so all AI racers start facing the correct direction on the track
         {

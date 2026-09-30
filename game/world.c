@@ -763,7 +763,9 @@ void RenderWorld() {
 	UpdateCameraLag();
 
 	// Set camera mode — all fields written every frame so any mode switch is clean.
-	// Bird's-eye uses world-space coordinates; the other two are car-local.
+	// Bird's-eye uses world-space coordinates; the other two are car-local
+	// (the car sits on the ground at Y CAR_GROUND_Y: the camera heights are
+	// relative to that).
 	if (birdsEyeActive) 
 	{
 		// Fixed overhead view of the whole track.
@@ -788,21 +790,21 @@ void RenderWorld() {
 		if (rearViewActive) 
 		{
 			// Camera at exterior rear bumper looking backward.
-			// vry=200 (below ground) tilts the view downward enough to keep sky out of frame.
+			// vry=6 (at ground level) tilts the view downward enough to keep sky out of frame.
 			Camera[0].vpx = 0;
-			Camera[0].vpy = -500;
+			Camera[0].vpy = -694;
 			Camera[0].vpz = -600;
 			Camera[0].vrx = 0;
-			Camera[0].vry = 200;
+			Camera[0].vry = 6;
 			Camera[0].vrz = -3000;
 		} 
 		else 
 		{
 			// Normal chase camera — vpx is left to UpdateCameraLag for sway
-			Camera[0].vpy = -500;
+			Camera[0].vpy = -694;
 			Camera[0].vpz = -1500;
 			Camera[0].vrx = 0;
-			Camera[0].vry = -200;
+			Camera[0].vry = -394;
 			Camera[0].vrz = 0;
 		}
 	}

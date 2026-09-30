@@ -20,6 +20,11 @@ typedef struct {
 extern PlayerStruct player1;
 extern PlayerStruct player2;
 
+// Height (Y) the cars are placed at: the car models are built up from their
+// origin, with the bottom of the tyres at model Z -4 to -6, so this puts the
+// tyres on the ground (the ground tiles are at Y = 0)
+#define CAR_GROUND_Y (-6)
+
 // Index of the vehicle chosen on the vehicle select screen
 // 0-2 = car3 (green/red/yellow), 3-5 = car2 (black/blue/red)
 extern int selectedVehicleIndex;

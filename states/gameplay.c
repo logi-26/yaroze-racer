@@ -88,14 +88,14 @@ static void StateInit(void)
 	activeSuspension = (selectedVehicleIndex <  5) ? &car3Suspension : (selectedVehicleIndex < 10) ? &car2Suspension : &car5Suspension;
 
 	// Initialise player 1 with the vehicle chosen on the select screen
-    InitialisePlayer(&player1, 1, startX, -200, startZ, (long*)playerTmdAddr[selectedVehicleIndex]);
+    InitialisePlayer(&player1, 1, startX, CAR_GROUND_Y, startZ, (long*)playerTmdAddr[selectedVehicleIndex]);
     {
         SVECTOR modelRot = {0, 0, 0, 0};
         RotModel(&player1.gsModelCoord, &modelRot, 3072, 2048, 0);
     }
 
 	// Initialise the view for player 1
-    InitialiseTrackerViewPlayer1(&Camera[0], 250, 0, 0, -500, -1500, 0, -200, 0);
+    InitialiseTrackerViewPlayer1(&Camera[0], 250, 0, 0, -694, -1500, 0, -394, 0);
 
 	// Initialise the lights
     InitialiseLight(&flLights[0], 0, -100, -100, -100, 0xff, 0xff, 0xff);
