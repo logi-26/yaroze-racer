@@ -17,7 +17,7 @@
     | Icon TIM 1       | 80110000 | 4KB    | Memcard icon frame 1       |
     | Icon TIM 2       | 80111000 | 4KB    | Memcard icon frame 2       |
     | Icon TIM 3       | 80112000 | 4KB    | Memcard icon frame 3       |
-    | Game Assets      | 80113000 | ???    | Sprites, levels, etc       |
+    | Game Assets      | 80113000 | ???    | Models, textures (AUTO)    |
     | Stack            | 801FFF00 | ~32KB  | Grows downward             |
     +------------------+----------+--------+----------------------------+
 
@@ -46,11 +46,6 @@
 #define MEM_ICON2_SIZE      0x00001000   // 4KB
 #define MEM_ICON3_ADDR      0x80112000
 #define MEM_ICON3_SIZE      0x00001000   // 4KB
-
-// Game asset pool — available for level/sprite data
-#define MEM_ASSET_POOL_START 0x80113000
-#define MEM_ASSET_POOL_END   0x801F0000
-#define MEM_ASSET_POOL_SIZE  (MEM_ASSET_POOL_END - MEM_ASSET_POOL_START)
 
 // Stack grows down from top of RAM
 #define MEM_STACK_TOP       0x801FFF00

@@ -10,8 +10,6 @@
 #include "timer.h"
 #include "ui.h"
 #include "message.h"
-#include "profiler.h"
-#include "asset_manager.h"
 #include "link.h"
 
 // Game states
@@ -84,7 +82,6 @@ void CheckMemoryLayout(void)
     printf("SEQ:   %08X - %08X\n", MEM_SEQ_ADDR,   MEM_SEQ_ADDR   + MEM_SEQ_SIZE);
     printf("FONT:  %08X - %08X\n", MEM_FONT_ADDR,  MEM_FONT_ADDR  + MEM_FONT_SIZE);
     printf("ICON1: %08X - %08X\n", MEM_ICON1_ADDR, MEM_ICON1_ADDR + MEM_ICON1_SIZE);
-    printf("POOL:  %08X - %08X\n", MEM_ASSET_POOL_START, MEM_ASSET_POOL_END);
 }
 
 
@@ -106,8 +103,6 @@ void GameInit(void)
 	// Ensure that there are no memory overlaps
 	CheckMemoryLayout();
 	
-	// Initialise the profiler
-	Profiler_Init();
 	
     hiScore = 0;
 
@@ -147,9 +142,6 @@ void GameUpdate(void)
 	
 	
 	
-	// Begin the profiler
-	Profiler_BeginFrame();
-	
 	// Display the FPS
 	//DisplayFPS(260, 5);
 	
@@ -161,27 +153,6 @@ void GameUpdate(void)
 
 	// Send/receive this frame's link packet (while a link game is open)
 	Link_Update();
-	
-	
-	
-	// Toggle profiler on/off
-	if (BTN_HELD(PADselect) && BTN_PRESSED(PADL1))
-		Profiler_Toggle();
-
-	// Cycle pages while profiler is visible
-	if (BTN_HELD(PADselect) && BTN_PRESSED(PADL2))
-	{
-		Profiler_SetPage(prof.page + 1);
-	}
-
-
-
-	// Profile the state update
-    PROFILE_BEGIN(PROF_UPDATE);
-	
-	// Free all game assets when changing state
-	if (gameState != prevGameState)
-		Asset_FreeAll();
 
 	// Game State Manager
     switch (gameState)
@@ -200,26 +171,12 @@ void GameUpdate(void)
         default:             						 					break;
     }
 	
-	// End the state profiler
-	PROFILE_END(PROF_UPDATE);
-	
 	// Store the previous game state
 	prevGameState = gameState;
 	
-	// Render the profiler overlay
-    Profiler_Render(&WorldOrderingTable[activeBuffer], OT_POPUP);
-	
-	// Profile the graphics flush
-    PROFILE_BEGIN(PROF_RENDER);
-	
+	// Draw the frame
 	gameMs += UpdateGraphicsSystem(activeBuffer) * (1000 / FRAME_RATE);
 	FntFlush(-1);
-
-	PROFILE_END(PROF_RENDER);
-	
-	// End the profiler
-	Profiler_TickVSync();
-    Profiler_EndFrame();   
 }
 
 

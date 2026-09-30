@@ -79,8 +79,6 @@ yaroze-racer/
 │   ├── message          Popup messages/prompts
 │   ├── timer            Hardware timer
 │   ├── memcard          Memory card save/load
-│   ├── asset_manager    Asset loading
-│   ├── profiler         Frame-time profiler
 │   ├── lang             Localisation strings
 │   ├── link             Link play connection/handshake
 │   ├── yario            YarIO: link cable data over TTY
