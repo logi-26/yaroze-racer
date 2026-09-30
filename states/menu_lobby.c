@@ -9,7 +9,11 @@
 #include "../engine/memcard.h"
 #include "../engine/link.h"
 
+// How long "CONNECTED" is shown before going to vehicle select
+#define CONNECTED_FRAMES (FRAME_RATE * 3 / 2)
+
 static int stateInitialised = 0;
+static int connectedFrames;
 
 
 /*****************************************************
@@ -19,6 +23,7 @@ static void StateInit(void)
 {
 	// Open the link and start looking for the other console
 	Link_Open();
+	connectedFrames = 0;
 
 	// Mark state as initialised
 	stateInitialised = 1;
@@ -42,8 +47,18 @@ static void UpdateMenuLobby(void) {
 	if (!stateInitialised)
 		StateInit();
 
-	// Send/receive this frame's link packet (the connection handshake)
-	Link_Update();
+	// The handshake runs in Link_Update(), called every frame by the state
+	// manager. Once connected, show the player number, then both consoles
+	// go to vehicle select
+	if (Link_GetStatus() == LINK_CONNECTED) {
+		if (++connectedFrames >= CONNECTED_FRAMES) {
+			StateDeinitialise();
+			StartNewGame();
+			return;
+		}
+	} else {
+		connectedFrames = 0;
+	}
 
 	// If circle is pressed, close the link and return to main menu
 	if (BTN_PRESSED(PADcircle)) {
@@ -69,7 +84,6 @@ static void RenderMenuLobby(void) {
 	FontFX_SetSize(1);
 	FontFX_FontEnd();
 
-
 	FontFX_FontBegin();
 	FontFX_SetColour(COL_DARKGREEN);
 	FontFX_SetOutline(COL_LIGHTGREY);
@@ -94,7 +108,6 @@ static void RenderMenuLobby(void) {
 	}
 
 	FontFX_FontEnd();
-
 }
 
 
