@@ -356,7 +356,7 @@ void DrawGround(GroundStruct *theGround, PlayerStruct *currentPlayer, GsOT *ot) 
     for (nCurrentModel = 0; nCurrentModel < theGround->nTotalModels; nCurrentModel++) {
         
 		// Only render if object is near the current player
-        if (IsObjectNearPlayer(currentPlayer, &theGround->gsObjectCoord[nCurrentModel])) {
+        if (IsObjectInView(currentPlayer, &theGround->gsObjectCoord[nCurrentModel], VIEW_AHEAD, VIEW_BEHIND, VIEW_SIDE)) {
             
 			// Get the local world and screen coordinates
             GsGetLws(theGround->gsObjectHandler[nCurrentModel].coord2, &tmplw, &tmpls);

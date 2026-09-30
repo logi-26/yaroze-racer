@@ -62,6 +62,12 @@ Ordering table and buffer counts
 // Distance threshold for culling
 #define DISTANCE_THRESHOLD_SQUARED (8000*8000)
 
+// Draw distance of the world (IsObjectInView): an oval around the car, longer
+// ahead than to the sides
+#define VIEW_AHEAD  13800
+#define VIEW_BEHIND 3200
+#define VIEW_SIDE   6400
+
 
 /*****************************************************
 Screen mode

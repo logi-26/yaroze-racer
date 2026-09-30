@@ -3,6 +3,7 @@
 #include "player.h"
 #include "game.h"
 #include "gear.h"
+#include "../engine/graphics.h"
 #include "world.h"
 #include "ground.h"
 #include "../engine/model.h"
@@ -1314,7 +1315,7 @@ void DrawAIRacers(PlayerStruct *cameraPlayer, GsOT *ot) {
 	{
 		// Perform proximity check against the camera/player
         // If the racer is close enough, it is considered visible
-        if (IsObjectNearPlayer(cameraPlayer, &aiRacers[i].player.gsObjectCoord)) 
+        if (IsObjectInView(cameraPlayer, &aiRacers[i].player.gsObjectCoord, VIEW_AHEAD, VIEW_BEHIND, VIEW_SIDE)) 
 		{
 			// Submit AI racer for rendering into the ordering table
             DrawPlayer(&aiRacers[i].player, ot);

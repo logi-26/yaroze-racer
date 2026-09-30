@@ -2,6 +2,7 @@
 #include "../engine/graphics.h"
 #include "player.h"
 #include "game.h"
+#include "world.h"
 
 int selectedVehicleIndex = 0;
 int remoteVehicleIndex = -1;    // The other player's vehicle in a link game (-1: none)
@@ -151,4 +152,29 @@ int IsObjectWithinDist(PlayerStruct* player, GsCOORDINATE2* objectCoord, long th
     );
 	
     return (distanceSq <= thresholdSq);
+}
+
+
+// View-shaped culling (the player looks ahead of the car, and needs little to the sides)
+// Objects are kept inside an oval around the car
+int IsObjectInView(PlayerStruct *player, GsCOORDINATE2 *objectCoord, long ahead, long behind, long side) {
+    long dx = objectCoord->coord.t[0] - player->gsObjectCoord.coord.t[0];
+    long dz = objectCoord->coord.t[2] - player->gsObjectCoord.coord.t[2];
+    long reach = ahead > side ? ahead : side;
+    long forward, lateral, f, l;
+    MATRIX *m = &player->gsObjectCoord.coord;
+
+    if (dx > reach || dx < -reach || dz > reach || dz < -reach)
+        return 0;
+
+    // Position relative to the car (its forward (local Z) and right (local X) axes)
+    forward = (dx * m->m[0][2] + dz * m->m[2][2]) >> 12;
+    lateral = (dx * m->m[0][0] + dz * m->m[2][0]) >> 12;
+    if (rearViewActive)
+        forward = -forward;
+
+    // Inside the oval (forward/ahead or behind)^2 + (lateral/side)^2 <= 1
+    f = forward * 256 / (forward >= 0 ? ahead : behind);
+    l = lateral * 256 / side;
+    return f * f + l * l <= 256 * 256;
 }

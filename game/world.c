@@ -609,7 +609,10 @@ void CheckWorldCollisions(PlayerStruct *player, long *lateralSpeed) {
 }
 
 
-#define BUILDING_DRAW_DIST_SQ (16000L * 16000L)
+// The buildings are seen from further away than the rest of the world, so they have a larger view distance for culling
+#define BUILDING_VIEW_AHEAD  18000
+#define BUILDING_VIEW_BEHIND 4000
+#define BUILDING_VIEW_SIDE   12800
 
 // Polygon subdivision by distance from the camera (the big buildings and stands, and the barriers)
 static const DivisionStep buildingDivision[] = {
@@ -627,14 +630,14 @@ static void DrawDivided(PlayerStruct *currentPlayer, ModelStruct *model, const D
 }
 
 static void DrawModelCulled(PlayerStruct *currentPlayer, ModelStruct *model, const DivisionStep *division, int currentBuffer) {
-	if (model && IsObjectNearPlayer(currentPlayer, &model->gsObjectCoord)) 
+	if (model && IsObjectInView(currentPlayer, &model->gsObjectCoord, VIEW_AHEAD, VIEW_BEHIND, VIEW_SIDE)) 
 	{
 		DrawDivided(currentPlayer, model, division, currentBuffer);
 	}
 }
 
 static void DrawBuildingCulled(PlayerStruct *currentPlayer, ModelStruct *model, int currentBuffer) {
-	if (model && IsObjectWithinDist(currentPlayer, &model->gsObjectCoord, BUILDING_DRAW_DIST_SQ)) 
+	if (model && IsObjectInView(currentPlayer, &model->gsObjectCoord, BUILDING_VIEW_AHEAD, BUILDING_VIEW_BEHIND, BUILDING_VIEW_SIDE)) 
 	{
 		DrawDivided(currentPlayer, model, buildingDivision, currentBuffer);
 	}

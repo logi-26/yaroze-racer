@@ -124,7 +124,7 @@ world.o: game/world.c game/link_race.h game/world.h game/sky.h engine/graphics.h
 light.o: engine/light.c engine/light.h
 	$(CC) $(CFLAGS) -c engine/light.c
 
-player.o: game/player.c game/player.h engine/graphics.h game/game.h
+player.o: game/player.c game/player.h engine/graphics.h game/game.h game/world.h
 	$(CC) $(CFLAGS) -I. -c game/player.c
 
 model.o: engine/model.c engine/model.h engine/calculations.h
@@ -160,7 +160,7 @@ vehicle_colour.o: game/vehicle_colour.c game/vehicle_colour.h
 sky.o: game/sky.c game/sky.h game/world.h game/player.h engine/graphics.h
 	$(CC) $(CFLAGS) -I. -c game/sky.c
 
-ai_racer.o: game/ai_racer.c game/ai_racer.h game/player.h game/vehicle_attribs.h game/suspension.h game/game.h game/gear.h game/world.h
+ai_racer.o: game/ai_racer.c engine/graphics.h game/ai_racer.h game/player.h game/vehicle_attribs.h game/suspension.h game/game.h game/gear.h game/world.h
 	$(CC) $(CFLAGS) -I. -c game/ai_racer.c
 
 link_race.o: game/link_race.c game/link_race.h engine/link.h engine/font.h engine/colours.h engine/graphics.h engine/calculations.h engine/model.h game/player.h game/game.h game/ground.h game/ai_racer.h

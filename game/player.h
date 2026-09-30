@@ -37,6 +37,7 @@ void AddModelToPlayer(PlayerStruct *thePlayer, int nX, int nY, int nZ, unsigned 
 void DrawPlayer(PlayerStruct *thePlayer, GsOT *othWorld);
 int IsObjectNearPlayer(PlayerStruct* player, GsCOORDINATE2* objectCoord);
 int IsObjectWithinDist(PlayerStruct* player, GsCOORDINATE2* objectCoord, long thresholdSq);
+int IsObjectInView(PlayerStruct *player, GsCOORDINATE2 *objectCoord, long ahead, long behind, long side);
 /*****************************************************/
 
 
