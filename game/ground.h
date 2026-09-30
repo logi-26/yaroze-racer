@@ -15,8 +15,8 @@
 #define SEPERATION (1200)
 
 
-// Array for the ground tiles
-extern char groundDataTrack1[GROUND_MAX_Z][GROUND_MAX_X];
+// Which track map to use (0 = map_1, 1 = map_2)
+extern int selectedTrackIndex;
 
 
 // Struct to store the ground data 

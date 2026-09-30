@@ -1,5 +1,6 @@
 #include <libps.h>
 #include "world.h"
+#include "sky.h"
 #include "ground.h"
 #include "game/player.h"
 #include "ai_racer.h"
@@ -81,11 +82,10 @@ ModelStruct stand2;
 // model: 0 = BARRIER_1,            1 = BARRIER_2
 typedef struct { int x; int z; int rot; int model; } BarrierDef;
 
-// Map: 30x30 tiles, SEPARATION=1200 (world spans 0-36000 on both axes)
-// Perimeter walls sit 1 tile (1200 units) from each edge
+// Outer (perimeter) barriers — drawn on all maps
 // rot: 0=Z-aligned  1=Z-aligned-180  2=X-aligned-270  3=X-aligned-90
-static const BarrierDef barrierDefs[] = {
-    
+static const BarrierDef outerBarrierDefs[] = {
+
 	// Left wall
     {   200,  1200, 0, 0 }, {  200,  3150, 0, 1 },
     {   200,  5100, 0, 0 }, {  200,  7050, 0, 1 },
@@ -96,7 +96,7 @@ static const BarrierDef barrierDefs[] = {
     {   200, 24600, 0, 0 }, {  200, 26550, 0, 1 },
     {   200, 28500, 0, 0 }, {  200, 30450, 0, 1 },
     {   200, 32400, 0, 0 }, {  200, 34350, 0, 1 },
-    
+
 	// Right wall
     { 35300,  1200, 1, 0 }, { 35300,  3150, 1, 1 },
     { 35300,  5100, 1, 0 }, { 35300,  7050, 1, 1 },
@@ -107,7 +107,7 @@ static const BarrierDef barrierDefs[] = {
     { 35300, 24600, 1, 0 }, { 35300, 26550, 1, 1 },
     { 35300, 28500, 1, 0 }, { 35300, 30450, 1, 1 },
     { 35300, 32400, 1, 0 }, { 35300, 34350, 1, 1 },
-    
+
 	// Bottom wall
     {  1200,   200, 2, 0 }, {  3150,   200, 2, 1 },
     {  5100,   200, 2, 0 }, {  7050,   200, 2, 1 },
@@ -118,7 +118,7 @@ static const BarrierDef barrierDefs[] = {
     { 24600,   200, 2, 0 }, { 26550,   200, 2, 1 },
     { 28500,   200, 2, 0 }, { 30450,   200, 2, 1 },
     { 32400,   200, 2, 0 }, { 34350,   200, 2, 1 },
-    
+
 	// Top wall
     {  1200, 35300, 3, 0 }, {  3150, 35300, 3, 1 },
     {  5100, 35300, 3, 0 }, {  7050, 35300, 3, 1 },
@@ -129,7 +129,16 @@ static const BarrierDef barrierDefs[] = {
     { 24600, 35300, 3, 0 }, { 26550, 35300, 3, 1 },
     { 28500, 35300, 3, 0 }, { 30450, 35300, 3, 1 },
     { 32400, 35300, 3, 0 }, { 34350, 35300, 3, 1 },
-    
+
+};
+#define NUM_OUTER_BARRIERS ((int)(sizeof(outerBarrierDefs) / sizeof(outerBarrierDefs[0])))
+#define MAX_OUTER_BARRIERS 80
+
+static ModelStruct outerBarrierModels[MAX_OUTER_BARRIERS];
+
+// Inner barriers for map_1
+static const BarrierDef innerBarrierDefsMap1[] = {
+
 	// Inner track barriers
     {  5300,  7000, 1, 0 }, {  5300,  8950, 1, 1 },
     {  5300, 10900, 1, 0 }, {  5300, 12850, 1, 1 },
@@ -145,15 +154,14 @@ static const BarrierDef barrierDefs[] = {
 	{ 17990, 29400, 2, 0 }, { 19940, 29400, 2, 1 },
 	{ 21890, 29400, 2, 0 }, { 23840, 29400, 2, 1 },
 	{ 25790, 29400, 2, 0 }, { 27740, 29400, 2, 1 },
-	
-	// Runs paralell with the previous barriers but facing the opposite direction
+
+	// Runs parallel with the previous barriers but facing the opposite direction
 	{  8240, 29395, 3, 1 },
     { 10190, 29395, 3, 0 }, { 12140, 29395, 3, 1 },
 	{ 14090, 29395, 3, 0 }, { 16040, 29395, 3, 1 },
 	{ 17990, 29395, 3, 0 }, { 19940, 29395, 3, 1 },
 	{ 21890, 29395, 3, 0 }, { 23840, 29395, 3, 1 },
 	{ 25790, 29395, 3, 0 }, { 27740, 29395, 3, 1 },
-
 
 	// Inner wall
 	{ 7265, 28420, 0, 0 }, { 7265, 26470, 0, 1 },
@@ -199,10 +207,16 @@ static const BarrierDef barrierDefs[] = {
 	{ 13745, 20718, 1, 0 }, { 13745, 22668, 1, 1 }
 
 };
-#define NUM_BARRIERS ((int)(sizeof(barrierDefs) / sizeof(barrierDefs[0])))
-#define MAX_BARRIERS 200
+#define NUM_INNER_BARRIERS_MAP1 ((int)(sizeof(innerBarrierDefsMap1) / sizeof(innerBarrierDefsMap1[0])))
 
-static ModelStruct barrierModels[MAX_BARRIERS];
+// Inner barriers for map_2 — none currently defined
+#define NUM_INNER_BARRIERS_MAP2 0
+
+#define MAX_INNER_BARRIERS 100
+
+static ModelStruct innerBarrierModels[MAX_INNER_BARRIERS];
+static const BarrierDef *activeInnerDefs = 0;
+static int numActiveInnerBarriers = 0;
 
 // Tunnel (just testing)
 ModelStruct tunnel;
@@ -260,8 +274,8 @@ void InitialiseWorld() {
 	// Initialise the models in the world
 	InitialiseWorldModels();
 
-	// Initialise the sky
-	InitialiseSky();
+	// Initialise the sky — pass SKY_TEX_MEM_ADDR or SKY_ALT_TEX_MEM_ADDR
+	InitialiseSky(SKY_ALT_TEX_MEM_ADDR);
 }
 
 
@@ -307,26 +321,61 @@ void InitialiseWorldModels() {
 	InitialiseModel(&stand2, 7500, -450, 15000, 0, 5000, 5000, (long*)STAND_MEM_ADDR);
 	RotateModel180(&stand2.gsObjectCoord, &stand2.rotation);
 
-	// Initialise all barriers from the data table
+	// Initialise outer (perimeter) barriers — always loaded for all maps
 	{
 		int i;
-		for (i = 0; i < NUM_BARRIERS; i++) 
+		for (i = 0; i < NUM_OUTER_BARRIERS; i++)
 		{
-			const BarrierDef *b = &barrierDefs[i];
+			const BarrierDef *b = &outerBarrierDefs[i];
 			long addr = (b->model == 0) ? (long)BARRIER_1_MEM_ADDR : (long)BARRIER_2_MEM_ADDR;
-			InitialiseModel(&barrierModels[i], b->x, -200, b->z, 0, 0, 0, (long*)addr);
-			
-			if (b->rot == 1) 
+			InitialiseModel(&outerBarrierModels[i], b->x, -200, b->z, 0, 0, 0, (long*)addr);
+
+			if (b->rot == 1)
 			{
-				RotateModel180(&barrierModels[i].gsObjectCoord, &barrierModels[i].rotation);
+				RotateModel180(&outerBarrierModels[i].gsObjectCoord, &outerBarrierModels[i].rotation);
 			}
-			else if (b->rot == 2) 
+			else if (b->rot == 2)
 			{
-				RotateModel270(&barrierModels[i].gsObjectCoord, &barrierModels[i].rotation);
+				RotateModel270(&outerBarrierModels[i].gsObjectCoord, &outerBarrierModels[i].rotation);
 			}
-			else if (b->rot == 3) 
+			else if (b->rot == 3)
 			{
-				RotateModel90 (&barrierModels[i].gsObjectCoord, &barrierModels[i].rotation);
+				RotateModel90 (&outerBarrierModels[i].gsObjectCoord, &outerBarrierModels[i].rotation);
+			}
+		}
+	}
+
+	// Select and initialise inner barriers for the active map
+	if (selectedTrackIndex == 1)
+	{
+		activeInnerDefs = 0;
+		numActiveInnerBarriers = NUM_INNER_BARRIERS_MAP2;
+	}
+	else
+	{
+		activeInnerDefs = innerBarrierDefsMap1;
+		numActiveInnerBarriers = NUM_INNER_BARRIERS_MAP1;
+	}
+
+	{
+		int i;
+		for (i = 0; i < numActiveInnerBarriers; i++)
+		{
+			const BarrierDef *b = &activeInnerDefs[i];
+			long addr = (b->model == 0) ? (long)BARRIER_1_MEM_ADDR : (long)BARRIER_2_MEM_ADDR;
+			InitialiseModel(&innerBarrierModels[i], b->x, -200, b->z, 0, 0, 0, (long*)addr);
+
+			if (b->rot == 1)
+			{
+				RotateModel180(&innerBarrierModels[i].gsObjectCoord, &innerBarrierModels[i].rotation);
+			}
+			else if (b->rot == 2)
+			{
+				RotateModel270(&innerBarrierModels[i].gsObjectCoord, &innerBarrierModels[i].rotation);
+			}
+			else if (b->rot == 3)
+			{
+				RotateModel90 (&innerBarrierModels[i].gsObjectCoord, &innerBarrierModels[i].rotation);
 			}
 		}
 	}
@@ -537,12 +586,22 @@ void CheckWorldCollisions(PlayerStruct *player, long *lateralSpeed) {
 	TestCornerCollision(player, lateralSpeed,   200, 35300, 400);
 	TestCornerCollision(player, lateralSpeed, 35300, 35300, 400);
 
-	// Capsule collision for all barriers from the data table
+	// Capsule collision for outer (perimeter) barriers
 	{
 		int i;
-		for (i = 0; i < NUM_BARRIERS; i++) 
+		for (i = 0; i < NUM_OUTER_BARRIERS; i++)
 		{
-			const BarrierDef *b = &barrierDefs[i];
+			const BarrierDef *b = &outerBarrierDefs[i];
+			TestCapsuleCollision(player, lateralSpeed, b->x, b->z, (b->rot == 2 || b->rot == 3) ? 0 : 1, 975, 100);
+		}
+	}
+
+	// Capsule collision for inner barriers of the active map
+	{
+		int i;
+		for (i = 0; i < numActiveInnerBarriers; i++)
+		{
+			const BarrierDef *b = &activeInnerDefs[i];
 			TestCapsuleCollision(player, lateralSpeed, b->x, b->z, (b->rot == 2 || b->rot == 3) ? 0 : 1, 975, 100);
 		}
 	}
@@ -581,12 +640,21 @@ void DrawWorldModels(PlayerStruct *currentPlayer, int currentBuffer) {
 	DrawModelCulled(currentPlayer, &stand1, currentBuffer);
 	DrawModelCulled(currentPlayer, &stand2, currentBuffer);
 
-	// Draw all barriers from the data table
+	// Draw outer (perimeter) barriers
 	{
 		int i;
-		for (i = 0; i < NUM_BARRIERS; i++)
+		for (i = 0; i < NUM_OUTER_BARRIERS; i++)
 		{
-			DrawModelCulled(currentPlayer, &barrierModels[i], currentBuffer);
+			DrawModelCulled(currentPlayer, &outerBarrierModels[i], currentBuffer);
+		}
+	}
+
+	// Draw inner barriers for the active map
+	{
+		int i;
+		for (i = 0; i < numActiveInnerBarriers; i++)
+		{
+			DrawModelCulled(currentPlayer, &innerBarrierModels[i], currentBuffer);
 		}
 	}
 

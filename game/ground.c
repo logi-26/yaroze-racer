@@ -1,8 +1,13 @@
 #include <libps.h>
 #include "ground.h"
-#include "ground_map.h"
+#include "map_1.h"
+#include "map_2.h"
 #include "game.h"
 #include "../engine/graphics.h"
+
+int selectedTrackIndex = 0;
+
+static char (*activeMap)[GROUND_MAX_X] = groundDataMap1;
 
 
 // Check when the player crosses the start/finish line
@@ -14,7 +19,7 @@ int IsOnStartLine(long worldX, long worldZ) {
     if (tileRow >= GROUND_MAX_Z) tileRow = GROUND_MAX_Z - 1;
     if (tileCol < 0) tileCol = 0;
     if (tileCol >= GROUND_MAX_X) tileCol = GROUND_MAX_X - 1;
-    tile = groundDataTrack1[tileRow][tileCol];
+    tile = activeMap[tileRow][tileCol];
     return (tile == '4' || tile == '5');
 }
 
@@ -30,7 +35,7 @@ TerrainType GetTerrainType(long worldX, long worldZ) {
     if (tileCol < 0) tileCol = 0;
     if (tileCol >= GROUND_MAX_X) tileCol = GROUND_MAX_X - 1;
 
-    tile = groundDataTrack1[tileRow][tileCol];
+    tile = activeMap[tileRow][tileCol];
     if (tile == '3') return TERRAIN_GRASS;
     if (tile == 'v') return TERRAIN_SAND;
     return TERRAIN_TRACK;
@@ -96,14 +101,17 @@ z =
 void InitialiseGround() {
 	int tmpx, tmpz;
 	char groundData;
+
+	activeMap = (selectedTrackIndex == 1) ? groundDataMap2 : groundDataMap1;
+
 	// Initialise total number of models to zero
 	theGround.nTotalModels = 0;
 
 	// Read the worldGroundData array and place an instance of the model at the appropriate position in the world
 	for (tmpz = 0; tmpz < GROUND_MAX_Z; tmpz++) {
 		for (tmpx = 0; tmpx < GROUND_MAX_X; tmpx++) {
-			
-			groundData = groundDataTrack1[tmpz][tmpx];
+
+			groundData = activeMap[tmpz][tmpx];
 
 			// Straight road (left and right lanes)
 			if (groundData == '1') {
