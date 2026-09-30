@@ -66,7 +66,10 @@ yaroze-racer/
 │   ├── memcard          Memory card save/load
 │   ├── asset_manager    Asset loading
 │   ├── profiler         Frame-time profiler
-│   └── lang             Localisation strings
+│   ├── lang             Localisation strings
+│   ├── link             Link play connection/handshake
+│   ├── yario            YarIO: link cable data over TTY
+│   └── yario_emu        YarIO TTY driver for emulators
 │
 ├── game/                Game logic
 │   ├── game             Physics
@@ -87,7 +90,7 @@ yaroze-racer/
 │   ├── gameplay         Main race loop
 │   ├── menu_main        Title / main menu
 │   ├── menu_lobby       Link-game lobby
-│   ├── menu_vehicle     Vehicle swlwct
+│   ├── menu_vehicle     Vehicle select
 │   ├── menu_options     Settings screen
 │   ├── menu_pause       In-race pause
 │   ├── menu_memcard     Memory card browser
@@ -96,6 +99,7 @@ yaroze-racer/
 └── tools/
     ├── map_editor.py    Track layout editor
     ├── png2tim.py       PNG to TIM texture converter
+    ├── run-linked.ps1   Two linked emulators (make link)
     └── blender-rsd/     Blender 4.x RSD model exporter
 ```
 
