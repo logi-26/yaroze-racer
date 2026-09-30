@@ -3,6 +3,7 @@
 #include "player.h"
 #include "ground.h"
 #include "ai_racer.h"
+#include "link_race.h"
 #include "../engine/graphics.h"
 #include "../engine/font.h"
 #include "../engine/colours.h"
@@ -91,7 +92,7 @@ void DrawGameplayHUD(GsOT *ot) {
 	FontFX_SetSize(2);
 	FontFX_SetColour(COL_AMBER);
 
-    sprintf(hudStr, "%d/6", playerRacePosition);
+    sprintf(hudStr, "%d/%d", playerRacePosition, LinkRace_IsActive() ? 2 : 1 + NUM_AI_RACERS);
     FontFX_Print(gScreenWidth - 55, 20, hudStr, ot, OT_UI);
 
 	FontFX_SetSize(1);
