@@ -16,12 +16,11 @@ static long skyDrift = 0;
 
 
 // Initialise the skybox image (currently a 16-bit image)
-void InitialiseSky(void) {
+void InitialiseSky(u_long texMemAddr) {
     GsIMAGE tim;
 
-	// Load the image texture
-    LoadTexture(SKY_TEX_MEM_ADDR);
-    GsGetTimInfo((u_long *)(SKY_TEX_MEM_ADDR + 4), &tim);
+    LoadTexture(texMemAddr);
+    GsGetTimInfo((u_long *)(texMemAddr + 4), &tim);
 
     // Left tpage = image pixels 0-255 (VRAM x=512, tpage col 8)
     // Right tpage = image pixels 256-511 (VRAM x=768, tpage col 12)
@@ -32,7 +31,7 @@ void InitialiseSky(void) {
     skySpr.attribute = (2 << 24);
     skySpr.y  = 0;
     skySpr.h  = 100;
-    skySpr.v  = 0;
+    skySpr.v  = (u_char)(tim.py & 0xFF);
     skySpr.cx = 0;
     skySpr.cy = 0;
     skySpr.r  = skySpr.g = skySpr.b = 128;

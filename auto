@@ -70,5 +70,6 @@ local dload data\game\car5\green\CAR5G.TMD 800B9000
 local dload data\game\car5\green\green.tim 800BD000
 
 local dload data\game\sky\sky2.tim 80136000
+local dload data\game\sky\sky.tim 800E4000
 
 go
