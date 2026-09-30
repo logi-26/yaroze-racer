@@ -9,6 +9,7 @@
 #include "../engine/model.h"
 #include "../engine/ui.h"
 #include "../engine/lang.h"
+#include "../engine/link.h"
 #include "../game/vehicle_colour.h"
 #include "../game/player.h"
 #include "../game/world.h"
@@ -48,6 +49,7 @@ static const char *variantName[NUM_MODELS][MAX_VARIANTS] = {
 static int stateInitialised = 0;
 static int selectedModelIndex = 0;
 static int selectedVariantIndex = 0;
+static int localReady = 0;          	// Link game (this player has pressed Start)
 
 static PlayerStruct showroomCar;
 
@@ -74,6 +76,7 @@ static void ApplyShowroomOrientation(void)
 static void StateInit(void)
 {
     stateInitialised = 1;
+    localReady = 0;
 
 	// Decode selectedVehicleIndex back to model + variant using per-model offsets
     if (selectedVehicleIndex < modelOffset[1]) 
@@ -147,14 +150,10 @@ static void ApplySelection(void)
 }
 
 
-static void UpdateMenuVehicleSelect(void)
+// Left/right buttons change the vehicle, up/down buttons change the colour
+static void UpdateSelection(void)
 {
-    if (!stateInitialised) 
-	{
-        StateInit();
-	}
-
-	// Left/right button change vehicle, up/down buttons change colour
+	// Left/right button change vehicle, up/down buttons change the colour
     if (BTN_PRESSED(PADLleft))
     {
         selectedModelIndex = (selectedModelIndex + NUM_MODELS - 1) % NUM_MODELS;
@@ -187,19 +186,113 @@ static void UpdateMenuVehicleSelect(void)
         selectedVariantIndex = (selectedVariantIndex + 1) % numVariants[selectedModelIndex];
         ApplySelection();
     }
+}
+
+
+/*****************************************************
+Called once when state is exited
+*****************************************************/
+static void StateDeinitialise(void)
+{
+	// Reset the state initialised flag (so the showroom is set up again next time)
+	stateInitialised = 0;
+}
+
+
+static int IsLinkGame(void)
+{
+	return Link_GetStatus() != LINK_OFF;
+}
+
+
+// Is the other player ready (its status: on vehicle select, ready)
+static int RemoteReady(int remote)
+{
+	return remote >= 0 && LINK_STATUS_STAGE(remote) == LINK_STAGE_VEHICLE && LINK_STATUS_FLAG(remote);
+}
+
+
+// Link game: Start = ready (locks the selection), Circle = not ready (while the
+// other player isn't ready yet) or leave the link game. When both are ready,
+// both consoles go to track select.
+static void UpdateLinkGame(void)
+{
+	int remote;
+
+	// Lost connection to the other console, return to the lobby
+	if (Link_GetStatus() != LINK_CONNECTED)
+	{
+		StateDeinitialise();
+		gameState = STATE_MENU_LOBBY;
+		return;
+	}
+
+	remote = Link_GetRemoteData();
+
+	if (BTN_PRESSED(PADcircle))
+	{
+		if (!localReady)
+		{
+			Link_Close();
+			StateDeinitialise();
+			gameState = STATE_MENU_MAIN;
+			return;
+		}
+		if (!RemoteReady(remote))
+			localReady = 0;
+	}
+	else if (BTN_PRESSED(PADstart))
+	{
+		localReady = 1;
+	}
+
+	// Tell the other console our vehicle and whether we're ready (note theirs)
+	Link_SetLocalData(LINK_STATUS(LINK_STAGE_VEHICLE, selectedVehicleIndex, localReady));
+	if (remote >= 0 && LINK_STATUS_STAGE(remote) == LINK_STAGE_VEHICLE)
+		remoteVehicleIndex = LINK_STATUS_VALUE(remote);
+
+	// Both ready, or the other console has already gone on to track select or
+	// the race (it saw us ready)
+	if ((localReady && RemoteReady(remote)) || (remote >= 0 && LINK_STATUS_STAGE(remote) != LINK_STAGE_VEHICLE))
+	{
+		StateDeinitialise();
+		gameState = STATE_MENU_TRACK_SELECT;
+	}
+}
+
+
+static void UpdateMenuVehicleSelect(void)
+{
+    if (!stateInitialised) 
+	{
+        StateInit();
+	}
+
+	// Change the vehicle/colour (locked once ready in a link game)
+	if (!localReady)
+		UpdateSelection();
 
 	// Spin the vehicle
     RotModel(&showroomCar.gsObjectCoord, &showroomCar.rotation, 0, 20, 0);
 
-	// Return to the main menu
-    if (BTN_PRESSED(PADcircle)) 
+	// Link game (exchange the selections, and go on when both players are ready)
+	if (IsLinkGame())
 	{
+		UpdateLinkGame();
+		return;
+	}
+
+	// Return to the main menu
+    if (BTN_PRESSED(PADcircle))
+	{
+		StateDeinitialise();
         gameState = STATE_MENU_MAIN;
 	}
-    
+
 	// Advance to track selection
-	if (BTN_PRESSED(PADstart))
+	else if (BTN_PRESSED(PADstart))
 	{
+		StateDeinitialise();
         gameState = STATE_MENU_TRACK_SELECT;
 	}
 }
@@ -207,6 +300,8 @@ static void UpdateMenuVehicleSelect(void)
 
 static void RenderMenuVehicleSelect(void)
 {
+	static char playerText[] = "PLAYER 0";
+
 	// Get the attributes for the currently selected vehicle
     VehicleAttributes *attribs = (selectedModelIndex == 0) ? &car3Attribs
                                : (selectedModelIndex == 1) ? &car2Attribs
@@ -236,6 +331,31 @@ static void RenderMenuVehicleSelect(void)
     FontFX_SetCenter(SCREEN_X_OFFSET, gScreenWidth);
     FontFX_Print(20, 20, (char*)TXT(TXT_VEHICLE_SELECT_TITLE), &WorldOrderingTable[activeBuffer], OT_UI);
     FontFX_SetSize(1);
+
+	// Link game (show which player this console is)
+	if (Link_GetPlayerNumber() != 0)
+	{
+		playerText[sizeof(playerText) - 2] = '0' + Link_GetPlayerNumber();
+		FontFX_Print(20, 45, playerText, &WorldOrderingTable[activeBuffer], OT_UI);
+		FontFX_FontEnd();
+
+		FontFX_FontBegin();
+		FontFX_SetColour(COL_WHITE);
+		FontFX_SetCenter(SCREEN_X_OFFSET, gScreenWidth);
+		if (localReady)
+		{
+			FontFX_SetPulse(0, 255, 20);
+			FontFX_Print(20, 60, "READY - WAITING FOR OTHER PLAYER", &WorldOrderingTable[activeBuffer], OT_UI);
+		}
+		else if (RemoteReady(Link_GetRemoteData()))
+		{
+			FontFX_Print(20, 60, "OTHER PLAYER IS READY - PRESS START", &WorldOrderingTable[activeBuffer], OT_UI);
+		}
+		else
+		{
+			FontFX_Print(20, 60, "PRESS START WHEN READY", &WorldOrderingTable[activeBuffer], OT_UI);
+		}
+	}
     FontFX_FontEnd();
 
     FontFX_FontBegin();
