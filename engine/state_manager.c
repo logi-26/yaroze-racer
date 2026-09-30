@@ -12,6 +12,7 @@
 #include "message.h"
 #include "profiler.h"
 #include "asset_manager.h"
+#include "link.h"
 
 // Game states
 #include "../states/menu_main.h"
@@ -157,6 +158,9 @@ void GameUpdate(void)
 
 	// Update the controller module
 	Ctrl_Update();
+
+	// Send/receive this frame's link packet (while a link game is open)
+	Link_Update();
 	
 	
 	
