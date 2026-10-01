@@ -166,7 +166,10 @@ pip install pygame
 python tools/map_editor.py
 ```
 
-The editor shows a 30×30 tile grid. Left-click to paint tiles, right-click to erase. Press **S** to save the layout as a C header file.
+The editor shows a 64×64 tile grid. Left-click to paint tiles, right-click to erase. Use the mouse wheel to zoom, drag with the middle button or use the arrow keys to pan, and press **F** to fit the whole map in the window. Press **S** to save the layout as a C header file. If you open a map smaller than 64x64 the editor pads it with grass.
+
+Press **W** for waypoint mode, where you draw the AI racing line.
+Click to add waypoints, drag to move them, Shift+click a line to insert one, right-click to delete, **Home** makes the selected waypoint the start, **R** reverses the direction and **I** imports a `{ x, z }` list of coordinates. Waypoints off the track are shown in red, and turns over 45° (where the AI brakes) in orange. They are saved in the map header with the tiles, converted to world coordinates.
 
 ---
 
