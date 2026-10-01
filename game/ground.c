@@ -10,6 +10,9 @@ int selectedTrackIndex = 0;
 
 static char (*activeMap)[GROUND_MAX_X] = groundDataMap1;
 
+const Waypoint *trackWaypoints = waypointsMap1;
+int numTrackWaypoints = NUM_WAYPOINTS_MAP1;
+
 
 // Check when the player crosses the start/finish line
 int IsOnStartLine(long worldX, long worldZ) {
@@ -153,7 +156,15 @@ static MATRIX tileRotation[4];              // 0, 90, 180, 270 degrees rotation 
 void InitialiseGround() {
 	int i;
 
-	activeMap = (selectedTrackIndex == 1) ? groundDataMap2 : groundDataMap1;
+	if (selectedTrackIndex == 1) {
+		activeMap = groundDataMap2;
+		trackWaypoints = waypointsMap2;
+		numTrackWaypoints = NUM_WAYPOINTS_MAP2;
+	} else {
+		activeMap = groundDataMap1;
+		trackWaypoints = waypointsMap1;
+		numTrackWaypoints = NUM_WAYPOINTS_MAP1;
+	}
 
 	// Map letters
 	for (i = 0; i < 128; i++)

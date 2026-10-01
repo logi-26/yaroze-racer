@@ -5,17 +5,25 @@
 #include "game/player.h"
 
 
-// Size of the ground map in tiles (30x30)
-#define GROUND_MAX_X (30)
-#define GROUND_MAX_Z (30)
+// Size of the ground map in tiles (64x64)
+#define GROUND_MAX_X (64)
+#define GROUND_MAX_Z (64)
 
 
-// Seperation between ground tiles
+// Separation between ground tiles
 #define SEPERATION (1200)
 
 
 // Which track map to use (0 = map_1, 1 = map_2)
 extern int selectedTrackIndex;
+
+
+// An AI waypoint (world X, Z)
+typedef struct { long x; long z; } Waypoint;
+
+// The selected track's AI waypoints, in race order (made in the map editor, set by InitialiseGround)
+extern const Waypoint *trackWaypoints;
+extern int numTrackWaypoints;
 
 
 typedef enum {

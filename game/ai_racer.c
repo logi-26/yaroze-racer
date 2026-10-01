@@ -8,7 +8,6 @@
 #include "ground.h"
 #include "../engine/model.h"
 
-#define NUM_WAYPOINTS 146
 #define LOOKAHEAD_DIST 1800
 #define ADVANCE_DIST 600
 #define BRAKE_SPEED 150
@@ -46,158 +45,6 @@ int playerRaceSegIdx = 1;
 int playerRaceLapCount = 0;
 int playerRaceSegDistSinceLap = 0;
 
-typedef struct { long x; long z; } Waypoint;
-
-static const Waypoint waypoints[NUM_WAYPOINTS] = {
-    /*   0 */ {  3198, 10169 },
-    /*   1 */ {  3174, 11658 },
-    /*   2 */ {  3150, 13148 },
-    /*   3 */ {  3095, 17108 },
-    /*   4 */ {  3040, 21069 },
-    /*   5 */ {  3040, 23332 },
-    /*   6 */ {  3040, 25595 },
-    /*   7 */ {  3040, 27093 },
-    /*   8 */ {  3040, 28591 },
-    /*   9 */ {  3213, 29545 },
-    /*  10 */ {  3386, 30500 },
-    /*  11 */ {  3822, 30926 },
-    /*  12 */ {  4258, 31353 },
-    /*  13 */ {  5513, 31533 },
-    /*  14 */ {  6768, 31713 },
-    /*  15 */ {  8995, 31760 },
-    /*  16 */ { 11223, 31807 },
-    /*  17 */ { 13783, 31807 },
-    /*  18 */ { 16343, 31807 },
-    /*  19 */ { 18642, 31807 },
-    /*  20 */ { 20942, 31807 },
-    /*  21 */ { 22338, 31807 },
-    /*  22 */ { 23734, 31807 },
-    /*  23 */ { 25119, 31807 },
-    /*  24 */ { 26504, 31807 },
-    /*  25 */ { 27212, 31807 },
-    /*  26 */ { 27921, 31807 },
-    /*  27 */ { 28485, 31807 },
-    /*  28 */ { 29050, 31807 },
-    /*  29 */ { 29620, 31807 },
-    /*  30 */ { 30191, 31807 },
-    /*  31 */ { 30839, 31289 },
-    /*  32 */ { 31487, 30771 },
-    /*  33 */ { 31701, 29645 },
-    /*  34 */ { 31916, 28520 },
-    /*  35 */ { 31767, 27604 },
-    /*  36 */ { 31618, 26689 },
-    /*  37 */ { 30725, 26173 },
-    /*  38 */ { 29832, 25657 },
-    /*  39 */ { 29802, 25657 },
-    /*  40 */ { 29772, 25657 },
-    /*  41 */ { 28445, 25667 },
-    /*  42 */ { 27119, 25677 },
-    /*  43 */ { 26466, 25680 },
-    /*  44 */ { 25814, 25683 },
-    /*  45 */ { 25246, 25685 },
-    /*  46 */ { 24679, 25688 },
-    /*  47 */ { 24098, 25689 },
-    /*  48 */ { 23517, 25690 },
-    /*  49 */ { 22886, 25306 },
-    /*  50 */ { 22255, 24923 },
-    /*  51 */ { 22186, 24153 },
-    /*  52 */ { 22118, 23384 },
-    /*  53 */ { 22118, 22870 },
-    /*  54 */ { 22118, 22356 },
-    /*  55 */ { 22403, 21215 },
-    /*  56 */ { 22689, 20074 },
-    /*  57 */ { 23555, 19816 },
-    /*  58 */ { 24421, 19558 },
-    /*  59 */ { 25251, 19292 },
-    /*  60 */ { 26081, 19026 },
-    /*  61 */ { 26562, 18384 },
-    /*  62 */ { 27043, 17743 },
-    /*  63 */ { 27058, 16967 },
-    /*  64 */ { 27073, 16191 },
-    /*  65 */ { 27055, 14217 },
-    /*  66 */ { 27038, 12243 },
-    /*  67 */ { 27037, 10160 },
-    /*  68 */ { 27037,  8077 },
-    /*  69 */ { 27037,  6919 },
-    /*  70 */ { 27037,  5762 },
-    /*  71 */ { 26933,  4740 },
-    /*  72 */ { 26829,  3718 },
-    /*  73 */ { 26537,  3409 },
-    /*  74 */ { 26245,  3101 },
-    /*  75 */ { 25552,  2950 },
-    /*  76 */ { 24860,  2799 },
-    /*  77 */ { 23452,  2873 },
-    /*  78 */ { 22044,  2947 },
-    /*  79 */ { 21416,  2981 },
-    /*  80 */ { 20788,  3015 },
-    /*  81 */ { 20073,  3056 },
-    /*  82 */ { 19358,  3097 },
-    /*  83 */ { 18930,  3202 },
-    /*  84 */ { 18502,  3308 },
-    /*  85 */ { 18155,  3493 },
-    /*  86 */ { 17809,  3679 },
-    /*  87 */ { 17576,  4309 },
-    /*  88 */ { 17344,  4939 },
-    /*  89 */ { 17338,  5368 },
-    /*  90 */ { 17332,  5798 },
-    /*  91 */ { 17332,  6956 },
-    /*  92 */ { 17332,  8114 },
-    /*  93 */ { 17332, 10084 },
-    /*  94 */ { 17332, 12055 },
-    /*  95 */ { 17332, 14429 },
-    /*  96 */ { 17332, 16803 },
-    /*  97 */ { 17332, 18618 },
-    /*  98 */ { 17332, 20434 },
-    /*  99 */ { 17332, 21667 },
-    /* 100 */ { 17332, 22901 },
-    /* 101 */ { 17332, 23656 },
-    /* 102 */ { 17332, 24411 },
-    /* 103 */ { 17284, 25117 },
-    /* 104 */ { 17237, 25823 },
-    /* 105 */ { 16250, 26432 },
-    /* 106 */ { 15263, 27042 },
-    /* 107 */ { 14204, 26974 },
-    /* 108 */ { 13145, 26906 },
-    /* 109 */ { 12614, 26864 },
-    /* 110 */ { 12083, 26823 },
-    /* 111 */ { 11153, 26332 },
-    /* 112 */ { 10223, 25841 },
-    /* 113 */ { 10134, 24953 },
-    /* 114 */ { 10045, 24066 },
-    /* 115 */ { 10054, 22734 },
-    /* 116 */ { 10063, 21403 },
-    /* 117 */ { 10083, 19416 },
-    /* 118 */ { 10103, 17429 },
-    /* 119 */ { 10118, 15703 },
-    /* 120 */ { 10133, 13977 },
-    /* 121 */ { 10151, 12136 },
-    /* 122 */ { 10170, 10296 },
-    /* 123 */ { 10185,  9076 },
-    /* 124 */ { 10201,  7857 },
-    /* 125 */ { 10202,  6632 },
-    /* 126 */ { 10203,  5408 },
-    /* 127 */ { 10069,  4654 },
-    /* 128 */ {  9936,  3900 },
-    /* 129 */ {  9525,  3454 },
-    /* 130 */ {  9114,  3008 },
-    /* 131 */ {  8319,  2947 },
-    /* 132 */ {  7524,  2886 },
-    /* 133 */ {  6607,  2915 },
-    /* 134 */ {  5691,  2944 },
-    /* 135 */ {  5241,  2995 },
-    /* 136 */ {  4791,  3046 },
-    /* 137 */ {  4034,  3490 },
-    /* 138 */ {  3277,  3934 },
-    /* 139 */ {  3141,  4688 },
-    /* 140 */ {  3005,  5442 },
-    /* 141 */ {  2999,  6532 },
-    /* 142 */ {  2994,  7622 },
-    /* 143 */ {  2985,  8937 },
-    /* 144 */ {  2976, 10252 },
-    /* 145 */ {  3087, 10210 },
-};
-
-
 // Returns the index of the waypoint nearest to (px, pz) using Manhattan distance,
 // then adds 1 so the result is the NEXT waypoint the vehicle should target
 // Used once at spawn to align waypointIndex with physical grid position
@@ -205,23 +52,23 @@ static int FindNearestWaypoint(long px, long pz)
 {
     int i, best = 0;
     long bestDist = 0x7FFFFFFF;
-    for (i = 0; i < NUM_WAYPOINTS; i++)
+    for (i = 0; i < numTrackWaypoints; i++)
     {
-        long dx = waypoints[i].x - px;
-        long dz = waypoints[i].z - pz;
+        long dx = trackWaypoints[i].x - px;
+        long dz = trackWaypoints[i].z - pz;
         long dist = (dx < 0 ? -dx : dx) + (dz < 0 ? -dz : dz);
         if (dist < bestDist) 
 		{ 
 			bestDist = dist; best = i; 
 		}
     }
-    return (best + 1) % NUM_WAYPOINTS;
+    return (best + 1) % numTrackWaypoints;
 }
 
 
 // Returns a continuous race-distance score for ordering all vehicles
 //
-// score = lapCount * NUM_WAYPOINTS * 1024 + waypointIndex * 1024 + segmentT
+// score = lapCount * numTrackWaypoints * 1024 + waypointIndex * 1024 + segmentT
 //
 // segmentT is the dot-product projection of the vehicle onto the segment
 // from the previous waypoint to waypointIndex, giving sub-waypoint accuracy
@@ -232,11 +79,11 @@ static int FindNearestWaypoint(long px, long pz)
 // when a vehicle is far off-course.
 static long ComputeRaceProgress(long px, long pz, int waypointIndex, int lapCount)
 {
-    int prevWp = (waypointIndex - 1 + NUM_WAYPOINTS) % NUM_WAYPOINTS;
-    long segDX = (waypoints[waypointIndex].x - waypoints[prevWp].x) >> 3;
-    long segDZ = (waypoints[waypointIndex].z - waypoints[prevWp].z) >> 3;
-    long toDX = (px - waypoints[prevWp].x) >> 3;
-    long toDZ = (pz - waypoints[prevWp].z) >> 3;
+    int prevWp = (waypointIndex - 1 + numTrackWaypoints) % numTrackWaypoints;
+    long segDX = (trackWaypoints[waypointIndex].x - trackWaypoints[prevWp].x) >> 3;
+    long segDZ = (trackWaypoints[waypointIndex].z - trackWaypoints[prevWp].z) >> 3;
+    long toDX = (px - trackWaypoints[prevWp].x) >> 3;
+    long toDZ = (pz - trackWaypoints[prevWp].z) >> 3;
     long dot = segDX * toDX + segDZ * toDZ;
     long lenSq = segDX * segDX + segDZ * segDZ;
     long t;
@@ -253,7 +100,7 @@ static long ComputeRaceProgress(long px, long pz, int waypointIndex, int lapCoun
 	
     t = (lenSq > 0) ? (dot * 1024L / lenSq) : 0;
 
-    return (long)lapCount * ((long)NUM_WAYPOINTS * 1024L)
+    return (long)lapCount * ((long)numTrackWaypoints * 1024L)
         + (long)waypointIndex * 1024L
         + t;
 }
@@ -267,20 +114,20 @@ static long ComputeRaceProgress(long px, long pz, int waypointIndex, int lapCoun
 // Falls back to the tracked index with T=0 if no segment matches
 static long ComputeBestRaceProgress(long px, long pz, int trackedWpIdx, int lapCount)
 {
-    long best = (long)lapCount * ((long)NUM_WAYPOINTS * 1024L)
+    long best = (long)lapCount * ((long)numTrackWaypoints * 1024L)
              + (long)trackedWpIdx * 1024L;
     int i;
 
     for (i = 0; i < RACE_PROGRESS_LOOKAHEAD; i++)
     {
         int wpRaw = trackedWpIdx + i;
-        int wp = wpRaw % NUM_WAYPOINTS;
-        int prev = (wp - 1 + NUM_WAYPOINTS) % NUM_WAYPOINTS;
-        int lc = (wpRaw >= NUM_WAYPOINTS) ? lapCount + 1 : lapCount;
-        long segDX = (waypoints[wp].x - waypoints[prev].x) >> 3;
-        long segDZ = (waypoints[wp].z - waypoints[prev].z) >> 3;
-        long toDX = (px - waypoints[prev].x) >> 3;
-        long toDZ = (pz - waypoints[prev].z) >> 3;
+        int wp = wpRaw % numTrackWaypoints;
+        int prev = (wp - 1 + numTrackWaypoints) % numTrackWaypoints;
+        int lc = (wpRaw >= numTrackWaypoints) ? lapCount + 1 : lapCount;
+        long segDX = (trackWaypoints[wp].x - trackWaypoints[prev].x) >> 3;
+        long segDZ = (trackWaypoints[wp].z - trackWaypoints[prev].z) >> 3;
+        long toDX = (px - trackWaypoints[prev].x) >> 3;
+        long toDZ = (pz - trackWaypoints[prev].z) >> 3;
         long dot = segDX * toDX + segDZ * toDZ;
         long lenSq = segDX * segDX + segDZ * segDZ;
         long t, prog;
@@ -298,7 +145,7 @@ static long ComputeBestRaceProgress(long px, long pz, int trackedWpIdx, int lapC
 			continue;
 		}
 
-        prog = (long)lc * ((long)NUM_WAYPOINTS * 1024L)
+        prog = (long)lc * ((long)numTrackWaypoints * 1024L)
             + (long)wp * 1024L
             + t;
 
@@ -325,12 +172,12 @@ static int FindRaceSegOffset(long px, long pz, int currentSeg, long *outT)
 
     for (i = 0; i < RACE_SEG_SEARCH_AHEAD; i++)
     {
-        int wp = (currentSeg + i) % NUM_WAYPOINTS;
-        int prev = (wp - 1 + NUM_WAYPOINTS) % NUM_WAYPOINTS;
-        long segDX = (waypoints[wp].x - waypoints[prev].x) >> 3;
-        long segDZ = (waypoints[wp].z - waypoints[prev].z) >> 3;
-        long toDX = (px - waypoints[prev].x) >> 3;
-        long toDZ = (pz - waypoints[prev].z) >> 3;
+        int wp = (currentSeg + i) % numTrackWaypoints;
+        int prev = (wp - 1 + numTrackWaypoints) % numTrackWaypoints;
+        long segDX = (trackWaypoints[wp].x - trackWaypoints[prev].x) >> 3;
+        long segDZ = (trackWaypoints[wp].z - trackWaypoints[prev].z) >> 3;
+        long toDX = (px - trackWaypoints[prev].x) >> 3;
+        long toDZ = (pz - trackWaypoints[prev].z) >> 3;
         long dot = segDX * toDX + segDZ * toDZ;
         long lenSq = segDX * segDX + segDZ * segDZ;
         long t;
@@ -351,10 +198,10 @@ static int FindRaceSegOffset(long px, long pz, int currentSeg, long *outT)
         // Reject segments the car is not physically near (catches distant parallel
         // segments that share the same T range due to track geometry)
         {
-            long origDX = waypoints[wp].x - waypoints[prev].x;
-            long origDZ = waypoints[wp].z - waypoints[prev].z;
-            long projX = waypoints[prev].x + t * origDX / 1024L;
-            long projZ = waypoints[prev].z + t * origDZ / 1024L;
+            long origDX = trackWaypoints[wp].x - trackWaypoints[prev].x;
+            long origDZ = trackWaypoints[wp].z - trackWaypoints[prev].z;
+            long projX = trackWaypoints[prev].x + t * origDX / 1024L;
+            long projZ = trackWaypoints[prev].z + t * origDZ / 1024L;
             long perpX = px - projX;
             long perpZ = pz - projZ;
             long perpMag = (perpX < 0 ? -perpX : perpX) + (perpZ < 0 ? -perpZ : perpZ);
@@ -385,11 +232,11 @@ static void UpdateRaceSegTracker(long px, long pz, int *segIdx, int *lapCount, i
 
     for (s = 1; s <= offset; s++)
     {
-        int seg = (*segIdx + s) % NUM_WAYPOINTS;
+        int seg = (*segIdx + s) % numTrackWaypoints;
         (*distSinceLap)++;
         if (seg == 0)
         {
-            if (*distSinceLap >= NUM_WAYPOINTS * 3 / 4)
+            if (*distSinceLap >= numTrackWaypoints * 3 / 4)
 			{
                 (*lapCount)++;
 			}
@@ -400,7 +247,7 @@ static void UpdateRaceSegTracker(long px, long pz, int *segIdx, int *lapCount, i
 
     if (offset > 0)
 	{
-        *segIdx = (*segIdx + offset) % NUM_WAYPOINTS;
+        *segIdx = (*segIdx + offset) % numTrackWaypoints;
 	}
 }
 
@@ -720,13 +567,13 @@ static int ComputeSteering(GsCOORDINATE2 *coord, long targetX, long targetZ) {
    segments (< 32 units) are detected correctly. */
 static int PassedWaypoint(long px, long pz, int wpIdx)
 {
-    int prev = (wpIdx - 1 + NUM_WAYPOINTS) % NUM_WAYPOINTS;
-    long dX = waypoints[wpIdx].x - px;
-    long dZ = waypoints[wpIdx].z - pz;
+    int prev = (wpIdx - 1 + numTrackWaypoints) % numTrackWaypoints;
+    long dX = trackWaypoints[wpIdx].x - px;
+    long dZ = trackWaypoints[wpIdx].z - pz;
     long absDX = dX < 0 ? -dX : dX;
     long absDZ = dZ < 0 ? -dZ : dZ;
-    long sX = (waypoints[wpIdx].x - waypoints[prev].x) >> 5;
-    long sZ = (waypoints[wpIdx].z - waypoints[prev].z) >> 5;
+    long sX = (trackWaypoints[wpIdx].x - trackWaypoints[prev].x) >> 5;
+    long sZ = (trackWaypoints[wpIdx].z - trackWaypoints[prev].z) >> 5;
     return (absDX < ADVANCE_DIST && absDZ < ADVANCE_DIST) || (sX * dX + sZ * dZ < 0);
 }
 
@@ -735,8 +582,8 @@ static void AdvanceWaypoint(AIRacer *ai, long *dX, long *dZ)
     long px = ai->player.gsObjectCoord.coord.t[0];
     long pz = ai->player.gsObjectCoord.coord.t[2];
 
-    *dX = waypoints[ai->waypointIndex].x - px;
-    *dZ = waypoints[ai->waypointIndex].z - pz;
+    *dX = trackWaypoints[ai->waypointIndex].x - px;
+    *dZ = trackWaypoints[ai->waypointIndex].z - pz;
 
     {
         int k;
@@ -748,11 +595,11 @@ static void AdvanceWaypoint(AIRacer *ai, long *dX, long *dZ)
 			}
 
             {
-                int nextWp = (ai->waypointIndex + 1) % NUM_WAYPOINTS;
+                int nextWp = (ai->waypointIndex + 1) % numTrackWaypoints;
                 ai->waypointsSinceLap++;
                 if (nextWp == 0)
                 {
-                    if (ai->waypointsSinceLap >= (NUM_WAYPOINTS * 3 / 4))
+                    if (ai->waypointsSinceLap >= (numTrackWaypoints * 3 / 4))
 					{
                         ai->lapCount++;
 					}
@@ -764,8 +611,8 @@ static void AdvanceWaypoint(AIRacer *ai, long *dX, long *dZ)
         }
     }
 
-    *dX = waypoints[ai->waypointIndex].x - px;
-    *dZ = waypoints[ai->waypointIndex].z - pz;
+    *dX = trackWaypoints[ai->waypointIndex].x - px;
+    *dZ = trackWaypoints[ai->waypointIndex].z - pz;
 }
 
 
@@ -942,10 +789,10 @@ static void CheckAIPlayerCollision(AIRacer *ai) {
 static int IsSharpCorner(AIRacer *ai) {
     
 	// Index of the next waypoint
-	int wpNext = (ai->waypointIndex + 1) % NUM_WAYPOINTS;
+	int wpNext = (ai->waypointIndex + 1) % numTrackWaypoints;
     
-	const Waypoint *wp = &waypoints[ai->waypointIndex];
-    const Waypoint *wpN = &waypoints[wpNext];
+	const Waypoint *wp = &trackWaypoints[ai->waypointIndex];
+    const Waypoint *wpN = &trackWaypoints[wpNext];
     
 	// Vector from AI to current waypoint
 	long d1x = (wp->x - ai->player.gsObjectCoord.coord.t[0]) >> 5;
@@ -1048,11 +895,11 @@ void UpdatePlayerRaceProgress(void)
 			}
 
             {
-                int nextWp = (playerWaypointIndex + 1) % NUM_WAYPOINTS;
+                int nextWp = (playerWaypointIndex + 1) % numTrackWaypoints;
                 playerWaypointsSinceLap++;
                 if (nextWp == 0)
                 {
-                    if (playerWaypointsSinceLap >= (NUM_WAYPOINTS * 3 / 4))
+                    if (playerWaypointsSinceLap >= (numTrackWaypoints * 3 / 4))
 					{
                         playerLapCount++;
 					}
@@ -1167,9 +1014,9 @@ void UpdateAIRacers(void) {
         // The extra lookahead means small heading deviations on straights dont
         // produce a steering correction (the target direction barely changes),
         // and corners are set up earlier so the car doesn't overshoot
-        steerWpIdx = (ai->waypointIndex + 2) % NUM_WAYPOINTS;
+        steerWpIdx = (ai->waypointIndex + 2) % numTrackWaypoints;
 
-        steer = ComputeSteering(&ai->player.gsObjectCoord, waypoints[steerWpIdx].x, waypoints[steerWpIdx].z);
+        steer = ComputeSteering(&ai->player.gsObjectCoord, trackWaypoints[steerWpIdx].x, trackWaypoints[steerWpIdx].z);
 
         // Smooth steering — always interpolate toward the target at a fixed rate
         // Bidirectional lerp prevents the discrete jumps in ComputeSteering output
