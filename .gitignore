@@ -26,3 +26,4 @@ backup/
 *.elf
 .link_own_driver_*
 .pcsx-link/
+.deps.mk

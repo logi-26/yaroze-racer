@@ -158,8 +158,14 @@ int IsObjectWithinDist(PlayerStruct* player, GsCOORDINATE2* objectCoord, long th
 // View-shaped culling (the player looks ahead of the car, and needs little to the sides)
 // Objects are kept inside an oval around the car
 int IsObjectInView(PlayerStruct *player, GsCOORDINATE2 *objectCoord, long ahead, long behind, long side) {
-    long dx = objectCoord->coord.t[0] - player->gsObjectCoord.coord.t[0];
-    long dz = objectCoord->coord.t[2] - player->gsObjectCoord.coord.t[2];
+    return IsPointInView(player, objectCoord->coord.t[0], objectCoord->coord.t[2], ahead, behind, side);
+}
+
+
+// The same for a point (x, z) of the world
+int IsPointInView(PlayerStruct *player, long x, long z, long ahead, long behind, long side) {
+    long dx = x - player->gsObjectCoord.coord.t[0];
+    long dz = z - player->gsObjectCoord.coord.t[2];
     long reach = ahead > side ? ahead : side;
     long forward, lateral, f, l;
     MATRIX *m = &player->gsObjectCoord.coord;

@@ -99,245 +99,87 @@ y =
 z = 
 */
 
+/*****************************************************
+Drawing the ground
+
+The map holds one letter per tile (map_1.h, map_2.h). 
+Each tile model is set up once, as a drawable shared by all its tiles.
+Each frame only the tiles around the car are looked at, and each one in view 
+is drawn by placing the shared drawable there (position and quarter turns) and sorting it.
+*****************************************************/
+
+// The tile models
+enum {
+	TILE_LINE, TILE_STRAIGHT, TILE_TURN, TILE_BLANK, TILE_GRID, TILE_STRAIGHT_01,
+	TILE_GRASS, TILE_TURN_00, TILE_TURN_01, TILE_TURN_02, TILE_SAND, TILE_MODELS
+};
+
+static const unsigned long tileModelAddr[TILE_MODELS] = {
+	LINE_L_MEM_ADDR, STRAIGHT_L_1_MEM_ADDR, TURN_L_1_MEM_ADDR, TURN_R_1_MEM_ADDR, GRID_MEM_ADDR,
+	STRAIGHT_L_01_MEM_ADDR, GRASS_MEM_ADDR, TURN_00_MEM_ADDR, TURN_01_MEM_ADDR, TURN_02_MEM_ADDR,
+	SAND_MEM_ADDR
+};
+
+// What each map letter is (a tile model and its quarter turns)
+#define TILE(model, quarters) ((model) | ((quarters) << 4))
+#define NO_TILE 0xFF
+
+static const struct { char letter; unsigned char kind; } tileLetters[] = {
+	{ '1', TILE(TILE_STRAIGHT, 0) },    { '2', TILE(TILE_STRAIGHT, 2) },
+	{ '6', TILE(TILE_STRAIGHT, 1) },    { '7', TILE(TILE_STRAIGHT, 3) },
+	{ '3', TILE(TILE_GRASS, 0) },
+	{ '4', TILE(TILE_LINE, 0) },        { '5', TILE(TILE_LINE, 2) },
+	{ '8', TILE(TILE_TURN, 0) },        { 'a', TILE(TILE_TURN, 1) },
+	{ 'c', TILE(TILE_TURN, 2) },        { 'd', TILE(TILE_TURN, 3) },
+	{ '9', TILE(TILE_BLANK, 0) },
+	{ 'g', TILE(TILE_GRID, 2) },        { 'h', TILE(TILE_GRID, 0) },
+	{ 'i', TILE(TILE_STRAIGHT_01, 0) }, { 'j', TILE(TILE_STRAIGHT_01, 1) },
+	{ 'k', TILE(TILE_STRAIGHT_01, 2) }, { 'l', TILE(TILE_STRAIGHT_01, 3) },
+	{ 'b', TILE(TILE_TURN_00, 0) },     { 'e', TILE(TILE_TURN_00, 1) },
+	{ 'f', TILE(TILE_TURN_00, 2) },     { 'm', TILE(TILE_TURN_00, 3) },
+	{ 'n', TILE(TILE_TURN_01, 0) },     { 'p', TILE(TILE_TURN_01, 1) },
+	{ 'q', TILE(TILE_TURN_01, 2) },     { 'r', TILE(TILE_TURN_01, 3) },
+	{ 'o', TILE(TILE_TURN_02, 0) },     { 's', TILE(TILE_TURN_02, 1) },
+	{ 't', TILE(TILE_TURN_02, 2) },     { 'u', TILE(TILE_TURN_02, 3) },
+	{ 'v', TILE(TILE_SAND, 0) },
+};
+
+static unsigned char tileKind[128];         
+static GsDOBJ2 tileModels[TILE_MODELS];     // One drawable per tile model
+static GsCOORDINATE2 tileCoord;             // Where the tile being drawn is
+static MATRIX tileRotation[4];              // 0, 90, 180, 270 degrees rotation (to reuse the same model for all quarter turns)
+
+
 void InitialiseGround() {
-	int tmpx, tmpz;
-	char groundData;
+	int i;
 
 	activeMap = (selectedTrackIndex == 1) ? groundDataMap2 : groundDataMap1;
 
-	// Initialise total number of models to zero
-	theGround.nTotalModels = 0;
+	// Map letters
+	for (i = 0; i < 128; i++)
+		tileKind[i] = NO_TILE;
+	for (i = 0; i < (int)(sizeof(tileLetters) / sizeof(tileLetters[0])); i++)
+		tileKind[(int)tileLetters[i].letter] = tileLetters[i].kind;
 
-	// Read the worldGroundData array and place an instance of the model at the appropriate position in the world
-	for (tmpz = 0; tmpz < GROUND_MAX_Z; tmpz++) {
-		for (tmpx = 0; tmpx < GROUND_MAX_X; tmpx++) {
-
-			groundData = activeMap[tmpz][tmpx];
-
-			// Straight road (left and right lanes)
-			if (groundData == '1') {
-				AddModelToGround(&theGround, (tmpz * SEPERATION), (0), (tmpx * SEPERATION), (long *)STRAIGHT_L_1_MEM_ADDR);
-			}
-			if (groundData == '2') {
-				AddModelToGround(&theGround, (tmpz * SEPERATION), (0), (tmpx * SEPERATION), (long *)STRAIGHT_L_1_MEM_ADDR);
-				RotateGround180(&theGround);
-			}
-
-			// Grass
-			if (groundData == '3') {
-                AddModelToGround(&theGround, (tmpz * SEPERATION), (0), (tmpx * SEPERATION), (long *)GRASS_MEM_ADDR);
-			}
-			
-			// Race line (left and right lanes)
-			if (groundData == '4') {
-                AddModelToGround(&theGround, (tmpz * SEPERATION), (0), (tmpx * SEPERATION), (long *)LINE_L_MEM_ADDR);
-			}
-			if (groundData == '5') {
-
-				AddModelToGround(&theGround, (tmpz * SEPERATION), (0), (tmpx * SEPERATION), (long *)LINE_L_MEM_ADDR);
-				RotateGround180(&theGround);
-			}
-			
-			// Straight road (left and right lanes rotated)
-			if (groundData == '6') {
-				AddModelToGround(&theGround, (tmpz * SEPERATION), (0), (tmpx * SEPERATION), (long *)STRAIGHT_L_1_MEM_ADDR);
-				RotateGround90(&theGround);
-			}
-			if (groundData == '7') {
-				AddModelToGround(&theGround, (tmpz * SEPERATION), (0), (tmpx * SEPERATION), (long *)STRAIGHT_L_1_MEM_ADDR);
-				RotateGround270(&theGround);
-			}
-			
-			// Turn (outter lane and rotations)
-			if (groundData == '8') {
-                AddModelToGround(&theGround, (tmpz * SEPERATION), (0), (tmpx * SEPERATION), (long *)TURN_L_1_MEM_ADDR);
-				
-			}
-			if (groundData == 'a') {
-				AddModelToGround(&theGround, (tmpz * SEPERATION), (0), (tmpx * SEPERATION), (long *)TURN_L_1_MEM_ADDR);
-				RotateGround90(&theGround);
-			}
-			if (groundData == 'c') {
-				AddModelToGround(&theGround, (tmpz * SEPERATION), (0), (tmpx * SEPERATION), (long *)TURN_L_1_MEM_ADDR);
-				RotateGround180(&theGround);
-			}
-			if (groundData == 'd') {
-				AddModelToGround(&theGround, (tmpz * SEPERATION), (0), (tmpx * SEPERATION), (long *)TURN_L_1_MEM_ADDR);
-				RotateGround270(&theGround);
-			}
-			
-			// Blank tarmac tile
-			if (groundData == '9') {
-                AddModelToGround(&theGround, (tmpz * SEPERATION), (0), (tmpx * SEPERATION), (long *)TURN_R_1_MEM_ADDR);
-			}
-			
-			// Racing grid (left and right lanes)
-			if (groundData == 'g') {
-                AddModelToGround(&theGround, (tmpz * SEPERATION), (0), (tmpx * SEPERATION), (long *)GRID_MEM_ADDR);
-				RotateGround180(&theGround);
-			}
-			if (groundData == 'h') {
-				AddModelToGround(&theGround, (tmpz * SEPERATION), (0), (tmpx * SEPERATION), (long *)GRID_MEM_ADDR);
-			}
-			
-			// Straight road no centre line (left and rotated)
-			if (groundData == 'i') {
-                AddModelToGround(&theGround, (tmpz * SEPERATION), (0), (tmpx * SEPERATION), (long *)STRAIGHT_L_01_MEM_ADDR);
-			}
-			if (groundData == 'j') {
-				AddModelToGround(&theGround, (tmpz * SEPERATION), (0), (tmpx * SEPERATION), (long *)STRAIGHT_L_01_MEM_ADDR);
-				RotateGround90(&theGround);
-			}
-			
-			// Straight road no centre line (right and rotated)
-			if (groundData == 'k') {
-				AddModelToGround(&theGround, (tmpz * SEPERATION), (0), (tmpx * SEPERATION), (long *)STRAIGHT_L_01_MEM_ADDR);
-				RotateGround180(&theGround);
-			}
-			if (groundData == 'l') {
-				AddModelToGround(&theGround, (tmpz * SEPERATION), (0), (tmpx * SEPERATION), (long *)STRAIGHT_L_01_MEM_ADDR);
-				RotateGround270(&theGround);
-			}			
-			
-			// Inner turn (entering corner and rotations)
-			if (groundData == 'b') {
-				AddModelToGround(&theGround, (tmpz * SEPERATION), (0), (tmpx * SEPERATION), (long *)TURN_00_MEM_ADDR);
-			}
-			if (groundData == 'e') {
-				AddModelToGround(&theGround, (tmpz * SEPERATION), (0), (tmpx * SEPERATION), (long *)TURN_00_MEM_ADDR);
-				RotateGround90(&theGround);
-			}
-			if (groundData == 'f') {
-				AddModelToGround(&theGround, (tmpz * SEPERATION), (0), (tmpx * SEPERATION), (long *)TURN_00_MEM_ADDR);
-				RotateGround180(&theGround);
-			}
-			if (groundData == 'm') {
-				AddModelToGround(&theGround, (tmpz * SEPERATION), (0), (tmpx * SEPERATION), (long *)TURN_00_MEM_ADDR);
-				RotateGround270(&theGround);
-			}
-
-			// Inner turn (corner and rotations)
-			if (groundData == 'n') {
-				AddModelToGround(&theGround, (tmpz * SEPERATION), (0), (tmpx * SEPERATION), (long *)TURN_01_MEM_ADDR);
-			}
-			if (groundData == 'p') {
-				AddModelToGround(&theGround, (tmpz * SEPERATION), (0), (tmpx * SEPERATION), (long *)TURN_01_MEM_ADDR);
-				RotateGround90(&theGround);
-			}
-			if (groundData == 'q') {
-				AddModelToGround(&theGround, (tmpz * SEPERATION), (0), (tmpx * SEPERATION), (long *)TURN_01_MEM_ADDR);
-				RotateGround180(&theGround);
-			}
-			if (groundData == 'r') {
-				AddModelToGround(&theGround, (tmpz * SEPERATION), (0), (tmpx * SEPERATION), (long *)TURN_01_MEM_ADDR);
-				RotateGround270(&theGround);
-			}
-			
-			// Inner turn (exiting corner and rotations)
-			if (groundData == 'o') {
-				AddModelToGround(&theGround, (tmpz * SEPERATION), (0), (tmpx * SEPERATION), (long *)TURN_02_MEM_ADDR);
-			}
-			if (groundData == 's') {
-				AddModelToGround(&theGround, (tmpz * SEPERATION), (0), (tmpx * SEPERATION), (long *)TURN_02_MEM_ADDR);
-				RotateGround90(&theGround);
-			}
-			if (groundData == 't') {
-				AddModelToGround(&theGround, (tmpz * SEPERATION), (0), (tmpx * SEPERATION), (long *)TURN_02_MEM_ADDR);
-				RotateGround180(&theGround);
-			}
-			if (groundData == 'u') {
-				AddModelToGround(&theGround, (tmpz * SEPERATION), (0), (tmpx * SEPERATION), (long *)TURN_02_MEM_ADDR);
-				RotateGround270(&theGround);
-			}
-
-			
-			if (groundData == 'v') {
-				AddModelToGround(&theGround, (tmpz * SEPERATION), (0), (tmpx * SEPERATION), (long *)SAND_MEM_ADDR);
-			}
-		}
+	// Map each TMD (past its ID) and link it to its drawable
+	GsInitCoordinate2(WORLD, &tileCoord);
+	for (i = 0; i < TILE_MODELS; i++) {
+		unsigned long *tmd = (unsigned long *)tileModelAddr[i] + 1;
+		GsMapModelingData(tmd);
+		GsLinkObject4((unsigned long)(tmd + 2), &tileModels[i], 0);
+		tileModels[i].coord2 = &tileCoord;
+		tileModels[i].attribute = 0;
 	}
-}
 
-
-void AddModelToGround(GroundStruct *theGround, int nX, int nY, int nZ, unsigned long *lModelAddress) {
-    theGround->lObjectPointer[theGround->nTotalModels] = (unsigned long*)lModelAddress;
-	
-	// Increment the pointer to move past the model id
-	theGround->lObjectPointer[theGround->nTotalModels]++;
-	
-	// Map tmd data to its actual address
-	GsMapModelingData(theGround->lObjectPointer[theGround->nTotalModels]);
-	
-	// Initialise the objects coordinate system - set to be that of the WORLD
-	GsInitCoordinate2(WORLD, &theGround->gsObjectCoord[theGround->nTotalModels]);
-	
-	// Increment pointer twice more - to point to top of model data
-    theGround->lObjectPointer[theGround->nTotalModels]++;
-	theGround->lObjectPointer[theGround->nTotalModels]++;
-	
-	// Link the model (tmd) with the object handler
-	GsLinkObject4((unsigned long *)theGround->lObjectPointer[theGround->nTotalModels], &theGround->gsObjectHandler[theGround->nTotalModels], 0);
-	
-	// Set the amount of polygon subdivision that will be done at runtime (none)
-	theGround->gsObjectHandler[theGround->nTotalModels].attribute = GsDIV1;
-	
-	// Assign the coordinates of the object model to the Object Handler
-	theGround->gsObjectHandler[theGround->nTotalModels].coord2 = &theGround->gsObjectCoord[theGround->nTotalModels];
-    
-	// Set The Position of the Object
-    theGround->gsObjectCoord[theGround->nTotalModels].coord.t[0] = nX;
-    theGround->gsObjectCoord[theGround->nTotalModels].coord.t[1] = nY;
-	theGround->gsObjectCoord[theGround->nTotalModels].coord.t[2] = nZ;
-	
-	// Increment the object counter
-	theGround->nTotalModels++;
-    
-	// Flag the object as needing to be drawn
-	theGround->gsObjectCoord[theGround->nTotalModels].flg = 0;
-}
-
-
-// Rotate a ground section 90 degrees around Y axis
-void RotateGround90(GroundStruct *theGround) {
-    SVECTOR rotateVector;
-    RotateGround(&theGround->gsObjectCoord[theGround->nTotalModels -1], &rotateVector, 0, 5125, 0);
-}
-
-
-// Rotate a ground section 180 degrees around Y axis
-void RotateGround180(GroundStruct *theGround) {
-    SVECTOR rotateVector;
-    RotateGround(&theGround->gsObjectCoord[theGround->nTotalModels -1], &rotateVector, 0, 10250, 0);
-}
-
-
-// Rotate a ground section 270 degrees around Y axis
-void RotateGround270(GroundStruct *theGround) {
-    SVECTOR rotateVector;
-    RotateGround(&theGround->gsObjectCoord[theGround->nTotalModels -1], &rotateVector, 0, 15375, 0);
-}
-
-
-// Rotate a ground section using X/Y/Z values
-void RotateGround(GsCOORDINATE2 *gsObjectCoord, SVECTOR *rotateVector, int nRX, int nRY, int nRZ) {
-    MATRIX matTmp;
-	
-    // Update rotation vector
-    rotateVector->vx = nRX;
-    rotateVector->vy = (rotateVector->vy + nRY) % ONE;
-    rotateVector->vz = nRZ;
-    
-    // Reset the coordinate system
-    ResetMatrix(gsObjectCoord->coord.m);
-    
-    // Set up the rotation matrix
-    RotMatrix(rotateVector, &matTmp);
-    
-    // Apply the rotation
-    MulMatrix0(&gsObjectCoord->coord, &matTmp, &gsObjectCoord->coord);
-    
-    // Mark for redraw
-    gsObjectCoord->flg = 0;
+	// Exact quarter turns
+	for (i = 0; i < 4; i++) {
+		SVECTOR turn;
+		turn.vx = 0;
+		turn.vy = i * 1024;
+		turn.vz = 0;
+		RotMatrix(&turn, &tileRotation[i]);
+		tileRotation[i].t[0] = tileRotation[i].t[1] = tileRotation[i].t[2] = 0;
+	}
 }
 
 
@@ -347,32 +189,53 @@ static const DivisionStep groundDivision[] = {
 };
 
 
-void DrawGround(GroundStruct *theGround, PlayerStruct *currentPlayer, GsOT *ot) {
-    MATRIX  tmpls, tmplw;
-    int nCurrentModel;
-    
-    //FntPrint(fontID_1, "Ground models: %d\n\n", (theGround->nTotalModels));
+void DrawGround(PlayerStruct *currentPlayer, GsOT *ot) {
+	MATRIX tmpls, tmplw;
+	MATRIX *m = &currentPlayer->gsObjectCoord.coord;
+	long px = currentPlayer->gsObjectCoord.coord.t[0];
+	long pz = currentPlayer->gsObjectCoord.coord.t[2];
+	long reachAhead = VIEW_AHEAD > VIEW_BEHIND ? VIEW_AHEAD : VIEW_BEHIND;
+	long ex, ez;
+	int row0, row1, col0, col1, row, col;
 
-    for (nCurrentModel = 0; nCurrentModel < theGround->nTotalModels; nCurrentModel++) {
-        
-		// Only render if object is near the current player
-        if (IsObjectInView(currentPlayer, &theGround->gsObjectCoord[nCurrentModel], VIEW_AHEAD, VIEW_BEHIND, VIEW_SIDE)) {
-            
-			// Get the local world and screen coordinates
-            GsGetLws(theGround->gsObjectHandler[nCurrentModel].coord2, &tmplw, &tmpls);
-            
-            // Set the resulting matrices
-            GsSetLightMatrix(&tmplw);
-            GsSetLsMatrix(&tmpls);
-            
-            // Subdivide the tiles near the camera
-            SetDivisionByDistance(&theGround->gsObjectHandler[nCurrentModel],
-                theGround->gsObjectCoord[nCurrentModel].coord.t[0] - currentPlayer->gsObjectCoord.coord.t[0],
-                theGround->gsObjectCoord[nCurrentModel].coord.t[2] - currentPlayer->gsObjectCoord.coord.t[2],
-                groundDivision);
+	// Only select the tiles that are in view (based on the culling around the players position/camera)
+	ex = (reachAhead * abs(m->m[0][2]) + VIEW_SIDE * abs(m->m[0][0])) / 4096 + SEPERATION;
+	ez = (reachAhead * abs(m->m[2][2]) + VIEW_SIDE * abs(m->m[2][0])) / 4096 + SEPERATION;
+	row0 = (px - ex) / SEPERATION;
+	row1 = (px + ex) / SEPERATION;
+	col0 = (pz - ez) / SEPERATION;
+	col1 = (pz + ez) / SEPERATION;
+	if (row0 < 0) row0 = 0;
+	if (col0 < 0) col0 = 0;
+	if (row1 >= GROUND_MAX_Z) row1 = GROUND_MAX_Z - 1;
+	if (col1 >= GROUND_MAX_X) col1 = GROUND_MAX_X - 1;
 
-            // Send Object To Ordering Table
-            GsSortObject4(&theGround->gsObjectHandler[nCurrentModel], ot, 2, (u_long *)getScratchAddr(0));
-        }
-    }
+	for (row = row0; row <= row1; row++) {
+		for (col = col0; col <= col1; col++) {
+			unsigned char kind = tileKind[activeMap[row][col] & 127];
+			long x = (long)row * SEPERATION;
+			long z = (long)col * SEPERATION;
+			GsDOBJ2 *model;
+
+			if (kind == NO_TILE || !IsPointInView(currentPlayer, x, z, VIEW_AHEAD, VIEW_BEHIND, VIEW_SIDE))
+				continue;
+			model = &tileModels[kind & 15];
+
+			// Place the ground tile (using its position and rotation)
+			tileCoord.coord = tileRotation[kind >> 4];
+			tileCoord.coord.t[0] = x;
+			tileCoord.coord.t[1] = 0;
+			tileCoord.coord.t[2] = z;
+			tileCoord.flg = 0;
+
+			GsGetLws(&tileCoord, &tmplw, &tmpls);
+			GsSetLightMatrix(&tmplw);
+			GsSetLsMatrix(&tmpls);
+
+			// Subdivide the tiles near the camera
+			SetDivisionByDistance(model, x - px, z - pz, groundDivision);
+
+			GsSortObject4(model, ot, 2, (u_long *)getScratchAddr(0));
+		}
+	}
 }

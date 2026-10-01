@@ -11,7 +11,6 @@
 // Global variables
 GsRVIEW2 Camera[2];
 u_long vsyncInterval = 0;
-GroundStruct theGround;
 int NumberOfPlayers = 1;
 int rearViewActive = 0;
 int birdsEyeActive = 0;
@@ -684,7 +683,7 @@ void DrawWorldModels(PlayerStruct *currentPlayer, int currentBuffer) {
 void DrawWorld(PlayerStruct *currentPlayer, int currentBuffer) {
 
 	// Draw the ground
-	DrawGround(&theGround, currentPlayer, &WorldOrderingTable[currentBuffer]);
+	DrawGround(currentPlayer, &WorldOrderingTable[currentBuffer]);
 
 	// Draw the world models
 	DrawWorldModels(currentPlayer, currentBuffer);
