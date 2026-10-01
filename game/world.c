@@ -25,7 +25,8 @@ Model declarations
 // model: 0 = BUILDING_1,   1 = BUILDING_2
 typedef struct { int x; int y; int z; int rot; int model; int collisionRadius; } BuildingDef;
 
-static const BuildingDef buildingDefs[] = {
+// The buildings around the arena of the first two tracks (the bigger tracks get a ring made to fit)
+static const BuildingDef smallArenaBuildings[] = {
 	
 	// Left row
 	{ -4700, -450,     0, 0, 0, 400 },
@@ -67,9 +68,11 @@ static const BuildingDef buildingDefs[] = {
 	{     0, -450, -5000, 0, 0, 400 },
 
 };
-#define NUM_BUILDINGS ((int)(sizeof(buildingDefs) / sizeof(buildingDefs[0])))
-#define MAX_BUILDINGS 40
+#define NUM_SMALL_ARENA_BUILDINGS ((int)(sizeof(smallArenaBuildings) / sizeof(smallArenaBuildings[0])))
+#define MAX_BUILDINGS 80
 
+static BuildingDef buildingDefs[MAX_BUILDINGS];
+static int numBuildings = 0;
 static ModelStruct buildingModels[MAX_BUILDINGS];
 
 // Crowd stand
@@ -82,57 +85,18 @@ ModelStruct stand2;
 // model: 0 = BARRIER_1,            1 = BARRIER_2
 typedef struct { int x; int z; int rot; int model; } BarrierDef;
 
-// Outer (perimeter) barriers — drawn on all maps
+// Outer (perimeter) barriers: a wall along each side of the arena
 // rot: 0=Z-aligned  1=Z-aligned-180  2=X-aligned-270  3=X-aligned-90
-static const BarrierDef outerBarrierDefs[] = {
+#define MAX_OUTER_BARRIERS 160
+static BarrierDef outerBarrierDefs[MAX_OUTER_BARRIERS];
+static int numOuterBarriers = 0;
 
-	// Left wall
-    {   200,  1200, 0, 0 }, {  200,  3150, 0, 1 },
-    {   200,  5100, 0, 0 }, {  200,  7050, 0, 1 },
-    {   200,  9000, 0, 0 }, {  200, 10950, 0, 1 },
-    {   200, 12900, 0, 0 }, {  200, 14850, 0, 1 },
-    {   200, 16800, 0, 0 }, {  200, 18750, 0, 1 },
-    {   200, 20700, 0, 0 }, {  200, 22650, 0, 1 },
-    {   200, 24600, 0, 0 }, {  200, 26550, 0, 1 },
-    {   200, 28500, 0, 0 }, {  200, 30450, 0, 1 },
-    {   200, 32400, 0, 0 }, {  200, 34350, 0, 1 },
-
-	// Right wall
-    { 35300,  1200, 1, 0 }, { 35300,  3150, 1, 1 },
-    { 35300,  5100, 1, 0 }, { 35300,  7050, 1, 1 },
-    { 35300,  9000, 1, 0 }, { 35300, 10950, 1, 1 },
-    { 35300, 12900, 1, 0 }, { 35300, 14850, 1, 1 },
-    { 35300, 16800, 1, 0 }, { 35300, 18750, 1, 1 },
-    { 35300, 20700, 1, 0 }, { 35300, 22650, 1, 1 },
-    { 35300, 24600, 1, 0 }, { 35300, 26550, 1, 1 },
-    { 35300, 28500, 1, 0 }, { 35300, 30450, 1, 1 },
-    { 35300, 32400, 1, 0 }, { 35300, 34350, 1, 1 },
-
-	// Bottom wall
-    {  1200,   200, 2, 0 }, {  3150,   200, 2, 1 },
-    {  5100,   200, 2, 0 }, {  7050,   200, 2, 1 },
-    {  9000,   200, 2, 0 }, { 10950,   200, 2, 1 },
-    { 12900,   200, 2, 0 }, { 14850,   200, 2, 1 },
-    { 16800,   200, 2, 0 }, { 18750,   200, 2, 1 },
-    { 20700,   200, 2, 0 }, { 22650,   200, 2, 1 },
-    { 24600,   200, 2, 0 }, { 26550,   200, 2, 1 },
-    { 28500,   200, 2, 0 }, { 30450,   200, 2, 1 },
-    { 32400,   200, 2, 0 }, { 34350,   200, 2, 1 },
-
-	// Top wall
-    {  1200, 35300, 3, 0 }, {  3150, 35300, 3, 1 },
-    {  5100, 35300, 3, 0 }, {  7050, 35300, 3, 1 },
-    {  9000, 35300, 3, 0 }, { 10950, 35300, 3, 1 },
-    { 12900, 35300, 3, 0 }, { 14850, 35300, 3, 1 },
-    { 16800, 35300, 3, 0 }, { 18750, 35300, 3, 1 },
-    { 20700, 35300, 3, 0 }, { 22650, 35300, 3, 1 },
-    { 24600, 35300, 3, 0 }, { 26550, 35300, 3, 1 },
-    { 28500, 35300, 3, 0 }, { 30450, 35300, 3, 1 },
-    { 32400, 35300, 3, 0 }, { 34350, 35300, 3, 1 },
-
-};
-#define NUM_OUTER_BARRIERS ((int)(sizeof(outerBarrierDefs) / sizeof(outerBarrierDefs[0])))
-#define MAX_OUTER_BARRIERS 80
+// The walls are 200 inside the near edges and 700 inside the far edges of the arena,
+// with a barrier every 1950 (alternating the two models)
+#define WALL_NEAR      200
+#define WALL_FAR_GAP   700
+#define WALL_FIRST     1200
+#define WALL_SPACING   1950
 
 static ModelStruct outerBarrierModels[MAX_OUTER_BARRIERS];
 
@@ -226,6 +190,72 @@ static long camSwayX = 0;
 static long prevCarYaw = 0;
 
 
+// The walls around the arena of the selected track
+static void InitialiseOuterBarriers(void) {
+	int farWall = (int)trackArenaSize - WALL_FAR_GAP;
+	int pos, k;
+
+	numOuterBarriers = 0;
+	for (k = 0, pos = WALL_FIRST; pos <= farWall - 900 && numOuterBarriers + 4 <= MAX_OUTER_BARRIERS; k++, pos += WALL_SPACING)
+	{
+		BarrierDef *b = &outerBarrierDefs[numOuterBarriers];
+		b[0].x = WALL_NEAR;  b[0].z = pos;       b[0].rot = 0; b[0].model = k & 1;		// Left wall
+		b[1].x = farWall;    b[1].z = pos;       b[1].rot = 1; b[1].model = k & 1;		// Right wall
+		b[2].x = pos;        b[2].z = WALL_NEAR; b[2].rot = 2; b[2].model = k & 1;		// Bottom wall
+		b[3].x = pos;        b[3].z = farWall;   b[3].rot = 3; b[3].model = k & 1;		// Top wall
+		numOuterBarriers += 4;
+	}
+}
+
+
+static void AddBuilding(int x, int z) {
+	BuildingDef *b;
+	if (numBuildings >= MAX_BUILDINGS)
+		return;
+	b = &buildingDefs[numBuildings++];
+	b->x = x;
+	b->y = -450;
+	b->z = z;
+	b->rot = 0;
+	b->model = 0;
+	b->collisionRadius = 400;
+}
+
+
+// The buildings around the arena of the selected track (in rows 5000 apart, outside the walls)
+static void InitialiseBuildingDefs(void) {
+	int size = (int)trackArenaSize;
+	int x, z;
+
+	numBuildings = 0;
+
+	// The first two tracks keep their hand-placed buildings
+	if (size <= 30 * SEPERATION)
+	{
+		for (numBuildings = 0; numBuildings < NUM_SMALL_ARENA_BUILDINGS; numBuildings++)
+			buildingDefs[numBuildings] = smallArenaBuildings[numBuildings];
+		return;
+	}
+
+	// Left row (with a gap for the stand by the start straight)
+	for (z = 0; z <= size - 1000; z += 5000)
+		if (z != 15000 && z != 20000)
+			AddBuilding(-4700, z);
+
+	// Bottom row
+	for (x = -1000; x <= size + 3000; x += 5000)
+		AddBuilding(x, size + 4000);
+
+	// Right row
+	for (z = size - 1000; z >= 0; z -= 5000)
+		AddBuilding(size + 3000, z);
+
+	// Top row
+	for (x = size - 1000; x >= 0; x -= 5000)
+		AddBuilding(x, -5000);
+}
+
+
 // Load from RAM into VRAM
 int LoadTexture(long addr) {
 	RECT rect;
@@ -297,10 +327,14 @@ void InitialiseWorldTextures() {
 
 void InitialiseWorldModels() {
 
+	// The walls and buildings around the arena of the selected track
+	InitialiseOuterBarriers();
+	InitialiseBuildingDefs();
+
 	// Initialise all buildings from the data table
 	{
 		int i;
-		for (i = 0; i < NUM_BUILDINGS; i++) 
+		for (i = 0; i < numBuildings; i++) 
 		{
 			const BuildingDef *b = &buildingDefs[i];
 			long addr = (b->model == 0) ? (long)BUILDING_1_MEM_ADDR : (long)BUILDING_2_MEM_ADDR;
@@ -324,7 +358,7 @@ void InitialiseWorldModels() {
 	// Initialise outer (perimeter) barriers — always loaded for all maps
 	{
 		int i;
-		for (i = 0; i < NUM_OUTER_BARRIERS; i++)
+		for (i = 0; i < numOuterBarriers; i++)
 		{
 			const BarrierDef *b = &outerBarrierDefs[i];
 			long addr = (b->model == 0) ? (long)BARRIER_1_MEM_ADDR : (long)BARRIER_2_MEM_ADDR;
@@ -345,16 +379,16 @@ void InitialiseWorldModels() {
 		}
 	}
 
-	// Select and initialise inner barriers for the active map
-	if (selectedTrackIndex == 1)
-	{
-		activeInnerDefs = 0;
-		numActiveInnerBarriers = NUM_INNER_BARRIERS_MAP2;
-	}
-	else
+	// Select and initialise inner barriers for the active map (only map_1 has any)
+	if (selectedTrackIndex == 0)
 	{
 		activeInnerDefs = innerBarrierDefsMap1;
 		numActiveInnerBarriers = NUM_INNER_BARRIERS_MAP1;
+	}
+	else
+	{
+		activeInnerDefs = 0;
+		numActiveInnerBarriers = NUM_INNER_BARRIERS_MAP2;
 	}
 
 	{
@@ -570,7 +604,7 @@ void CheckWorldCollisions(PlayerStruct *player, long *lateralSpeed) {
 	// Sphere collision for buildings and crowd stands
 	{
 		int i;
-		for (i = 0; i < NUM_BUILDINGS; i++)
+		for (i = 0; i < numBuildings; i++)
 		{
 			TestSphereCollision(player, lateralSpeed, &buildingModels[i]);
 		}
@@ -581,15 +615,18 @@ void CheckWorldCollisions(PlayerStruct *player, long *lateralSpeed) {
 
 	// Corner spheres (resolve the junction between perpendicular outer walls)
 	// before both capsules can fire simultaneously and trap the vehicle
-	TestCornerCollision(player, lateralSpeed,   200,   200, 400);
-	TestCornerCollision(player, lateralSpeed, 35300,   200, 400);
-	TestCornerCollision(player, lateralSpeed,   200, 35300, 400);
-	TestCornerCollision(player, lateralSpeed, 35300, 35300, 400);
+	{
+		int farWall = (int)trackArenaSize - WALL_FAR_GAP;
+		TestCornerCollision(player, lateralSpeed, WALL_NEAR, WALL_NEAR, 400);
+		TestCornerCollision(player, lateralSpeed, farWall,   WALL_NEAR, 400);
+		TestCornerCollision(player, lateralSpeed, WALL_NEAR, farWall,   400);
+		TestCornerCollision(player, lateralSpeed, farWall,   farWall,   400);
+	}
 
 	// Capsule collision for outer (perimeter) barriers
 	{
 		int i;
-		for (i = 0; i < NUM_OUTER_BARRIERS; i++)
+		for (i = 0; i < numOuterBarriers; i++)
 		{
 			const BarrierDef *b = &outerBarrierDefs[i];
 			TestCapsuleCollision(player, lateralSpeed, b->x, b->z, (b->rot == 2 || b->rot == 3) ? 0 : 1, 975, 100);
@@ -648,7 +685,7 @@ void DrawWorldModels(PlayerStruct *currentPlayer, int currentBuffer) {
 	// Draw all buildings from the data table (extended draw distance)
 	{
 		int i;
-		for (i = 0; i < NUM_BUILDINGS; i++)
+		for (i = 0; i < numBuildings; i++)
 		{
 			DrawBuildingCulled(currentPlayer, &buildingModels[i], currentBuffer);
 		}
@@ -661,7 +698,7 @@ void DrawWorldModels(PlayerStruct *currentPlayer, int currentBuffer) {
 	// Draw outer (perimeter) barriers
 	{
 		int i;
-		for (i = 0; i < NUM_OUTER_BARRIERS; i++)
+		for (i = 0; i < numOuterBarriers; i++)
 		{
 			DrawModelCulled(currentPlayer, &outerBarrierModels[i], barrierDivision, currentBuffer);
 		}

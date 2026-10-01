@@ -8,17 +8,18 @@
 #include "../engine/link.h"
 #include "../game/ground.h"
 
-#define NUM_TRACKS 2
-
 static int stateInitialised = 0;
 static int selectedItem     = 0;
 
 static const char *trackNames[NUM_TRACKS] = {
     "TRACK 1",
-    "TRACK 2"
+    "TRACK 2",
+    "TRACK 3",
+    "TRACK 4",
+    "TRACK 5"
 };
 
-static const short trackY[NUM_TRACKS] = { 100, 120 };
+static const short trackY[NUM_TRACKS] = { 90, 110, 130, 150, 170 };
 
 
 static void StateInit(void)

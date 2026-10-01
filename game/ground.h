@@ -14,8 +14,13 @@
 #define SEPERATION (1200)
 
 
-// Which track map to use (0 = map_1, 1 = map_2)
+// The tracks (map_1.h to map_5.h), and which one to use (0 = map_1)
+#define NUM_TRACKS (5)
 extern int selectedTrackIndex;
+
+// The size of the walled-in area of the world (square, from 0): the first two
+// tracks were made for a 30x30 map and only use part of the ground
+extern long trackArenaSize;
 
 
 // An AI waypoint (world X, Z)

@@ -2,6 +2,9 @@
 #include "ground.h"
 #include "map_1.h"
 #include "map_2.h"
+#include "map_3.h"
+#include "map_4.h"
+#include "map_5.h"
 #include "game.h"
 #include "../engine/graphics.h"
 #include "../engine/model.h"
@@ -12,6 +15,21 @@ static char (*activeMap)[GROUND_MAX_X] = groundDataMap1;
 
 const Waypoint *trackWaypoints = waypointsMap1;
 int numTrackWaypoints = NUM_WAYPOINTS_MAP1;
+long trackArenaSize = 30 * SEPERATION;
+
+// The tracks, in the order of the track select menu
+static const struct {
+	char (*tiles)[GROUND_MAX_X];
+	const Waypoint *waypoints;
+	int numWaypoints;
+	long arenaSize;
+} tracks[NUM_TRACKS] = {
+	{ groundDataMap1, waypointsMap1, NUM_WAYPOINTS_MAP1, 30 * SEPERATION },
+	{ groundDataMap2, waypointsMap2, NUM_WAYPOINTS_MAP2, 30 * SEPERATION },
+	{ groundDataMap3, waypointsMap3, NUM_WAYPOINTS_MAP3, GROUND_MAX_X * SEPERATION },
+	{ groundDataMap4, waypointsMap4, NUM_WAYPOINTS_MAP4, GROUND_MAX_X * SEPERATION },
+	{ groundDataMap5, waypointsMap5, NUM_WAYPOINTS_MAP5, GROUND_MAX_X * SEPERATION },
+};
 
 
 // Check when the player crosses the start/finish line
@@ -155,16 +173,12 @@ static MATRIX tileRotation[4];              // 0, 90, 180, 270 degrees rotation 
 
 void InitialiseGround() {
 	int i;
+	int track = (selectedTrackIndex >= 0 && selectedTrackIndex < NUM_TRACKS) ? selectedTrackIndex : 0;
 
-	if (selectedTrackIndex == 1) {
-		activeMap = groundDataMap2;
-		trackWaypoints = waypointsMap2;
-		numTrackWaypoints = NUM_WAYPOINTS_MAP2;
-	} else {
-		activeMap = groundDataMap1;
-		trackWaypoints = waypointsMap1;
-		numTrackWaypoints = NUM_WAYPOINTS_MAP1;
-	}
+	activeMap = tracks[track].tiles;
+	trackWaypoints = tracks[track].waypoints;
+	numTrackWaypoints = tracks[track].numWaypoints;
+	trackArenaSize = tracks[track].arenaSize;
 
 	// Map letters
 	for (i = 0; i < 128; i++)
