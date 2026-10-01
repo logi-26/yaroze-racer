@@ -28,7 +28,10 @@ void PlayMusic(void)
     if (musicStarted)
         return;
 
-    if (vh[0] == 0x00 && vh[1] == 0x00)
+    // No music loaded yet, just reserving the memory for it
+    // Other data can be loaded at this address when there's no music
+    // Check the VAB header to see if it's valid  (a VAB header starts with "pBAV")
+    if (vh[0] != 'p' || vh[1] != 'B' || vh[2] != 'A' || vh[3] != 'V')
 		return;
 
     SsSetMVol(currentVolL, currentVolR);

@@ -1,75 +1,75 @@
 local load main.exe
 
-local dload data\engine\icon\icon1.tim  80110000
-local dload data\engine\icon\icon2.tim  80111000
-local dload data\engine\icon\icon3.tim  80112000
+local dload data\engine\icon\icon1.tim  800C8040
+local dload data\engine\icon\icon2.tim  800C8100
+local dload data\engine\icon\icon3.tim  800C81C0
 
-local dload data\engine\font\8dotfont.tim 80108000
+local dload data\engine\font\8dotfont.tim 800C4000
 
 local dload data\game\track\line\line.tmd 80090000
-local dload data\game\track\line\line.tim 80091000
+local dload data\game\track\line\line.tim 80090070
 
-local dload data\game\track\st_1\st_1.tmd 80092000
-local dload data\game\track\st_1\st_1.tim 80093000
+local dload data\game\track\st_1\st_1.tmd 800908B0
+local dload data\game\track\st_1\st_1.tim 80090920
 
-local dload data\game\track\t_1\t_1.tmd 80094000
-local dload data\game\track\t_1\t_1.tim 80095000
+local dload data\game\track\t_1\t_1.tmd 80091160
+local dload data\game\track\t_1\t_1.tim 800911D0
 
-local dload data\game\track\t_00\t_00.tmd 80096000
-local dload data\game\track\t_00\t_00.tim 80097000
+local dload data\game\track\t_00\t_00.tmd 80091A10
+local dload data\game\track\t_00\t_00.tim 80091A80
 
-local dload data\game\track\t_01\t_01.tmd 80098000
-local dload data\game\track\t_01\t_01.tim 80099000
+local dload data\game\track\t_01\t_01.tmd 800922C0
+local dload data\game\track\t_01\t_01.tim 80092330
 
-local dload data\game\track\t_02\t_02.tmd 8009A000
-local dload data\game\track\t_02\t_02.tim 8009B000
+local dload data\game\track\t_02\t_02.tmd 80092B70
+local dload data\game\track\t_02\t_02.tim 80092BE0
 
-local dload data\game\track\blank\blank.tmd 8009C000
-local dload data\game\track\blank\blank.tim 8009D000
+local dload data\game\track\blank\blank.tmd 80093420
+local dload data\game\track\blank\blank.tim 80093490
 
-local dload data\game\track\grid\grid.tmd 8009E000
-local dload data\game\track\grid\grid.tim 8009F000
+local dload data\game\track\grid\grid.tmd 80093CD0
+local dload data\game\track\grid\grid.tim 80093D40
 
-local dload data\game\track\st_01\st_01.tmd 800A0000
-local dload data\game\track\st_01\st_01.tim 800A1000
+local dload data\game\track\st_01\st_01.tmd 80094580
+local dload data\game\track\st_01\st_01.tim 800945F0
 
-local dload data\game\track\grass_1\grass_1.tmd 800A2000
-local dload data\game\track\grass_1\grass_1.tim 800A3000
+local dload data\game\track\grass_1\grass_1.tmd 80094E30
+local dload data\game\track\grass_1\grass_1.tim 80094EA0
 
-local dload data\game\track\sand_1\sand_1.tmd 800A4000	
-local dload data\game\track\sand_1\sand_1.tim 800A5000
+local dload data\game\track\sand_1\sand_1.tmd 800956E0	
+local dload data\game\track\sand_1\sand_1.tim 80095750
 
-local dload data\game\barrier1\barrier1.tmd 800A6000
-local dload data\game\barrier1\barrier1.tim 800A7000
+local dload data\game\barrier1\barrier1.tmd 80095F90
+local dload data\game\barrier1\barrier1.tim 80096020
 
-local dload data\game\barrier2\barrier2.tmd 800A8000
-local dload data\game\barrier2\barrier2.tim 800A9000
+local dload data\game\barrier2\barrier2.tmd 80096860
+local dload data\game\barrier2\barrier2.tim 800968F0
 
-local dload data\game\stand\stand.tmd 800AA000
-local dload data\game\stand\crowd.tim 800AB000
-local dload data\game\stand\wood.tim 800AC000
+local dload data\game\stand\stand.tmd 80097130
+local dload data\game\stand\crowd.tim 800972C0
+local dload data\game\stand\wood.tim 80097700
 
-local dload data\game\tunnel\tunnel.tmd 800AD000
+local dload data\game\tunnel\tunnel.tmd 80097F40
 
-local dload data\game\sign1\sign1.tmd 800AE000
-local dload data\game\sign1\sign1.tim 800AF000
+local dload data\game\sign1\sign1.tmd 800982E0
+local dload data\game\sign1\sign1.tim 80098370
 
-local dload data\game\build1\build1.tmd 800E004C
-local dload data\game\build1\build1.tim 800E01DC
+local dload data\game\build1\build1.tmd 800A1EA0
+local dload data\game\build1\build1.tim 800A2030
 
-local dload data\game\build2\build2.tmd 800E312C
-local dload data\game\build2\build2.tim 800D32BC
+local dload data\game\build2\build2.tmd 800A4250
+local dload data\game\build2\build2.tim 800A0C80
 
-local dload data\game\car2\blue\CAR2B.TMD 80125000
-local dload data\game\car2\blue\car2.tim 80128000
+local dload data\game\car2\blue\CAR2B.TMD 800D0670
+local dload data\game\car2\blue\car2.tim 800D3150
 
-local dload data\game\car3\yellow\CAR3Y.TMD 80118000
-local dload data\game\car3\yellow\car3_yel.tim 80113000
+local dload data\game\car3\yellow\CAR3Y.TMD 800CC4A0
+local dload data\game\car3\yellow\car3_yel.tim 800C8280
 
-local dload data\game\car5\green\CAR5G.TMD 800B9000
-local dload data\game\car5\green\green.tim 800BD000
+local dload data\game\car5\green\CAR5G.TMD 80098BB0
+local dload data\game\car5\green\green.tim 8009CA60
 
-local dload data\game\sky\sky2.tim 80136000
-local dload data\game\sky\sky.tim 800E4000
+local dload data\game\sky\sky2.tim 800D7370
+local dload data\game\sky\sky.tim 800A43E0
 
 go

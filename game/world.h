@@ -38,26 +38,26 @@ void RenderWorldPlayer2(int currentBuffer);
 /*****************************************************/
 // World model and texture memory addresses
 /*****************************************************/
-#define BARRIER_1_MEM_ADDR              (0x800A6000)
-#define BARRIER_1_TEX_MEM_ADDR          (0x800A7000)
+#define BARRIER_1_MEM_ADDR              (0x80095F90)
+#define BARRIER_1_TEX_MEM_ADDR          (0x80096020)
 
-#define BARRIER_2_MEM_ADDR              (0x800A8000)
-#define BARRIER_2_TEX_MEM_ADDR          (0x800A9000)
+#define BARRIER_2_MEM_ADDR              (0x80096860)
+#define BARRIER_2_TEX_MEM_ADDR          (0x800968F0)
 
-#define STAND_MEM_ADDR                  (0x800AA000)
-#define CROWD_TEX_MEM_ADDR              (0x800AB000)
-#define STONE_TEX_MEM_ADDR              (0x800AC000)
+#define STAND_MEM_ADDR                  (0x80097130)
+#define CROWD_TEX_MEM_ADDR              (0x800972C0)
+#define STONE_TEX_MEM_ADDR              (0x80097700)
 
-#define TUNNEL_MEM_ADDR                 (0x800AD000)
+#define TUNNEL_MEM_ADDR                 (0x80097F40)
 
-#define SIGN_1_MEM_ADDR                 (0x800AE000)
-#define SIGN_1_TEX_MEM_ADDR             (0x800AF000)
+#define SIGN_1_MEM_ADDR                 (0x800982E0)
+#define SIGN_1_TEX_MEM_ADDR             (0x80098370)
 
-#define BUILDING_1_MEM_ADDR             (0x800E004C)
-#define BUILDING_1_TEX_MEM_ADDR         (0x800E01DC)
+#define BUILDING_1_MEM_ADDR             (0x800A1EA0)
+#define BUILDING_1_TEX_MEM_ADDR         (0x800A2030)
 
-#define BUILDING_2_MEM_ADDR             (0x800E312C)
-#define BUILDING_2_TEX_MEM_ADDR         (0x800E32BC)
+#define BUILDING_2_MEM_ADDR             (0x800A4250)
+#define BUILDING_2_TEX_MEM_ADDR         (0x800A0C80)
 /*****************************************************/
 
 #endif // WORLD_H

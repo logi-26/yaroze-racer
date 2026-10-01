@@ -38,20 +38,21 @@ void DrawPlayer(PlayerStruct *thePlayer, GsOT *othWorld);
 int IsObjectNearPlayer(PlayerStruct* player, GsCOORDINATE2* objectCoord);
 int IsObjectWithinDist(PlayerStruct* player, GsCOORDINATE2* objectCoord, long thresholdSq);
 int IsObjectInView(PlayerStruct *player, GsCOORDINATE2 *objectCoord, long ahead, long behind, long side);
+int IsPointInView(PlayerStruct *player, long x, long z, long ahead, long behind, long side);
 /*****************************************************/
 
 
 /*****************************************************/
 // Player model and texture memory addresses
 /*****************************************************/
-#define CAR_3Y_MEM_ADDR         (0x80118000)  // car3 yellow TMD
-#define CAR_3Y_TEX_MEM_ADDR     (0x80113000)  // car3 base TIM
+#define CAR_3Y_MEM_ADDR         (0x800CC4A0)  // car3 yellow TMD
+#define CAR_3Y_TEX_MEM_ADDR     (0x800C8280)  // car3 base TIM
 
-#define CAR_2B_MEM_ADDR         (0x80125000)  // car2 blue TMD
-#define CAR_2B_TEX_MEM_ADDR     (0x80128000)  // car2 blue TIM
+#define CAR_2B_MEM_ADDR         (0x800D0670)  // car2 blue TMD
+#define CAR_2B_TEX_MEM_ADDR     (0x800D3150)  // car2 blue TIM
 
-#define CAR_5G_MEM_ADDR         (0x800B9000)  // car5 green TMD
-#define CAR_5G_TEX_MEM_ADDR     (0x800BD000)  // car5 green TIM
+#define CAR_5G_MEM_ADDR         (0x80098BB0)  // car5 green TMD
+#define CAR_5G_TEX_MEM_ADDR     (0x8009CA60)  // car5 green TIM
 /*****************************************************/
 
 #endif // PLAYER_H

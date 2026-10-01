@@ -9,17 +9,18 @@
     | Region           | Start    | Size   | Contents                   |
     +------------------+----------+--------+----------------------------+
     | Kernel           | 80000000 | 64KB   | PS1 BIOS kernel            |
-    | Code + Globals   | 80010000 | ~1.25MB| Your game executable       |
-    | Audio VH         | 800C8000 | 60KB   | VAG header                 |
-    | Audio VB         | 800D7000 | 136KB  | VAG audio data             |
-    | Audio SEQ        | 800F9000 | 36KB   | SEQ music sequence         |
-    | Font TIM         | 80108000 | 32KB   | 8dot font sprite sheet     |
-    | Icon TIM 1       | 80110000 | 4KB    | Memcard icon frame 1       |
-    | Icon TIM 2       | 80111000 | 4KB    | Memcard icon frame 2       |
-    | Icon TIM 3       | 80112000 | 4KB    | Memcard icon frame 3       |
-    | Game Assets      | 80113000 | ???    | Models, textures (AUTO)    |
-    | Stack            | 801FFF00 | ~32KB  | Grows downward             |
+    | Monitor + libps  | 80010000 | 512KB  | Net Yaroze monitor, libs   |
+    | Assets (AUTO)    | 80090000 | 412KB  | Models, textures, font,    |
+    |                  |          |        | icons: packed one after    |
+    |                  |          |        | another (to 800F6F90)      |
+    | Audio VH         | 800F7000 | 60KB   | VAB header   } reserved:   |
+    | Audio VB         | 80106000 | 136KB  | VAB samples  } not loaded  |
+    | Audio SEQ        | 80128000 | 60KB   | SEQ music    } yet         |
+    | Free             | 80137000 | 164KB  |                            |
+    | Program          | 80160000 | ~560KB | Code, globals, GPU buffers |
+    | Stack            | 801FFF00 |        | Grows downward             |
     +------------------+----------+--------+----------------------------+
+
 
 **************************************************************************/
 
@@ -27,24 +28,24 @@
 #define MEM_KERNEL_START    0x80000000
 #define MEM_KERNEL_SIZE     0x00010000   // 64KB
 
-// Audio — loaded by AUTO dload
-#define MEM_VH_ADDR         0x800C8000
+// Audio — to be loaded by AUTO dload (not loaded yet)
+#define MEM_VH_ADDR         0x800F7000
 #define MEM_VH_SIZE         0x0000F000   // 60KB
-#define MEM_VB_ADDR         0x800D7000
+#define MEM_VB_ADDR         0x80106000
 #define MEM_VB_SIZE         0x00022000   // 136KB
-#define MEM_SEQ_ADDR        0x800F9000
+#define MEM_SEQ_ADDR        0x80128000
 #define MEM_SEQ_SIZE        0x0000F000   // 60KB
 
 // Font
-#define MEM_FONT_ADDR       0x80108000
+#define MEM_FONT_ADDR       0x800C4000
 #define MEM_FONT_SIZE       0x00008000   // 32KB
 
 // Memcard icons
-#define MEM_ICON1_ADDR      0x80110000
+#define MEM_ICON1_ADDR      0x800C8040
 #define MEM_ICON1_SIZE      0x00001000   // 4KB
-#define MEM_ICON2_ADDR      0x80111000
+#define MEM_ICON2_ADDR      0x800C8100
 #define MEM_ICON2_SIZE      0x00001000   // 4KB
-#define MEM_ICON3_ADDR      0x80112000
+#define MEM_ICON3_ADDR      0x800C81C0
 #define MEM_ICON3_SIZE      0x00001000   // 4KB
 
 // Stack grows down from top of RAM

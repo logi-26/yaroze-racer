@@ -10,9 +10,9 @@ Instruments (like drums) are assigned to channels inside the sequence
 #include <libps.h>
 
 // RAM addresses for the audio files
-#define VH_ADDR  ((unsigned char*)0x800C8000)
-#define VB_ADDR  ((unsigned char*)0x800D7000)
-#define SEQ_ADDR ((unsigned char*)0x800F9000)
+#define VH_ADDR  ((unsigned char*)0x800F7000)
+#define VB_ADDR  ((unsigned char*)0x80106000)
+#define SEQ_ADDR ((unsigned char*)0x80128000)
 
 // Volume constants
 #define VOL_MIN     0
