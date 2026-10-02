@@ -1,0 +1,7 @@
+# Headlight beam
+@RSD940102
+PLY=beam.ply
+MAT=beam.mat
+# Number of Texture Files
+NTEX=1
+TEX[0]=beam.tim

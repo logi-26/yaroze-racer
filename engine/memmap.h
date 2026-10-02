@@ -16,7 +16,10 @@
     | Audio VH         | 800F7000 | 60KB   | VAB header   } reserved:   |
     | Audio VB         | 80106000 | 136KB  | VAB samples  } not loaded  |
     | Audio SEQ        | 80128000 | 60KB   | SEQ music    } yet         |
-    | Free             | 80137000 | 164KB  |                            |
+    | Headlights       | 80137000 | 8KB    | Beam model, beam and glow  |
+    |                  |          |        | textures                   |
+    |                  |          |        | (game/headlights.h)        |
+    | Free             | 80139000 | 156KB  |                            |
     | Program          | 80160000 | ~560KB | Code, globals, GPU buffers |
     | Stack            | 801FFF00 |        | Grows downward             |
     +------------------+----------+--------+----------------------------+

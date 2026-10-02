@@ -72,4 +72,8 @@ local dload data\game\car5\green\green.tim 8009CA60
 local dload data\game\sky\sky2.tim 800D7370
 local dload data\game\sky\sky.tim 800A43E0
 
+local dload data\game\headlight\glow.tim 80137000
+local dload data\game\headlight\beam.tim 80138240
+local dload data\game\headlight\BEAM.TMD 80138300
+
 go

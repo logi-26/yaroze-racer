@@ -28,4 +28,6 @@ call car2\blue\CONV2.BAT
 call car3\yellow\CONV2.BAT
 call car5\green\CONV2.BAT
 
+call headlight\CONV2.BAT
+
 echo Done.
