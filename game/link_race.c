@@ -83,7 +83,7 @@ static void SendState(void)
     if (z > LINK_RACE_MAX_POS) z = LINK_RACE_MAX_POS;
 
     Link_SetLocalData(LINK_RACE_STATUS(finishPlace != 0, player1.rotation.vy));
-    Link_SetLocalExtra(LINK_RACE_EXTRA(x, z, selectedTrackIndex));
+    Link_SetLocalExtra(LINK_RACE_EXTRA(x, z, LINK_RACE_SETUP(selectedTrackIndex, nightMode)));
 }
 
 

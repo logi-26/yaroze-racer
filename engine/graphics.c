@@ -4,6 +4,9 @@
 
 // Runtime screen dimensions - set during InitialiseGraphicsSystem
 int gScreenWidth = PAL_WIDTH;
+
+// How far ahead of the car things are drawn (set with the lighting in world.c)
+long viewAhead = 11000;
 int gScreenHeight = PAL_HEIGHT;
 
 // Global graphics state

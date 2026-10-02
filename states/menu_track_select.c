@@ -44,16 +44,17 @@ static int ChoosesTrack(void)
 }
 
 
-static void StartRace(int track)
+static void StartRace(int track, int night)
 {
     selectedTrackIndex = track;
+    nightMode = night;
 
-    // Link game (tell the other console the race has started and on which track)
+    // Link game (tell the other console the race has started, on which track and day or night)
     // The race then keeps sending our car's position with it
     if (IsLinkGame())
     {
         Link_SetLocalData(LINK_RACE_STATUS(0, 0));
-        Link_SetLocalExtra(LINK_RACE_EXTRA(0, 0, track));
+        Link_SetLocalExtra(LINK_RACE_EXTRA(0, 0, LINK_RACE_SETUP(track, night)));
     }
 
     stateInitialised = 0;
@@ -108,17 +109,23 @@ static void UpdateMenuTrackSelect(void)
 
     if (ChoosesTrack())
     {
+        // X (or Start): a day race, Square: a night race
         if (BTN_PRESSED(PADcross) || BTN_PRESSED(PADstart))
         {
-            StartRace(selectedItem);
+            StartRace(selectedItem, 0);
+            return;
+        }
+        if (BTN_PRESSED(PADsquare))
+        {
+            StartRace(selectedItem, 1);
             return;
         }
     }
     else if (remote >= 0 && LINK_STATUS_STAGE(remote) == LINK_STAGE_RACE &&
              LINK_RACE_TRACK(Link_GetRemoteExtra()) < NUM_TRACKS)
     {
-        // Player 1 has chosen (race on that track)
-        StartRace(LINK_RACE_TRACK(Link_GetRemoteExtra()));
+        // Player 1 has chosen (race on that track, day or night)
+        StartRace(LINK_RACE_TRACK(Link_GetRemoteExtra()), LINK_RACE_NIGHT(Link_GetRemoteExtra()));
         return;
     }
 
@@ -159,6 +166,17 @@ static void RenderMenuTrackSelect(void)
             FontFX_SetOutline(COL_DARKGREY);
         }
         FontFX_Print(120, trackY[i], (char *)trackNames[i], ot, OT_UI);
+        FontFX_FontEnd();
+    }
+
+    // How to start the race (in the day or at night)
+    if (ChoosesTrack())
+    {
+        FontFX_FontBegin();
+        FontFX_SetColour(COL_WHITE);
+        FontFX_SetOutline(COL_DARKGREY);
+        FontFX_SetCenter(SCREEN_X_OFFSET, gScreenWidth);
+        FontFX_Print(20, 205, "X: DAY RACE   SQUARE: NIGHT RACE", ot, OT_UI);
         FontFX_FontEnd();
     }
 

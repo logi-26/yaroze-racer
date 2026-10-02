@@ -11,6 +11,7 @@
 #include "../engine/model.h"
 
 int selectedTrackIndex = 0;
+int nightMode = 1;
 
 static char (*activeMap)[GROUND_MAX_X] = groundDataMap1;
 
@@ -342,12 +343,13 @@ void DrawGround(PlayerStruct *currentPlayer, GsOT *ot) {
 	long px = currentPlayer->gsObjectCoord.coord.t[0];
 	long pz = currentPlayer->gsObjectCoord.coord.t[2];
 	long reachAhead = VIEW_AHEAD > VIEW_BEHIND ? VIEW_AHEAD : VIEW_BEHIND;
+	long reachSide = VIEW_SIDE + (((VIEW_AHEAD + VIEW_CAMERA_BACK) * VIEW_SPREAD) >> 10);
 	long ex, ez;
 	int row0, row1, col0, col1, row, col;
 
 	// Only select the tiles that are in view (based on the culling around the players position/camera)
-	ex = (reachAhead * abs(m->m[0][2]) + VIEW_SIDE * abs(m->m[0][0])) / 4096 + SEPERATION;
-	ez = (reachAhead * abs(m->m[2][2]) + VIEW_SIDE * abs(m->m[2][0])) / 4096 + SEPERATION;
+	ex = (reachAhead * abs(m->m[0][2]) + reachSide * abs(m->m[0][0])) / 4096 + SEPERATION;
+	ez = (reachAhead * abs(m->m[2][2]) + reachSide * abs(m->m[2][0])) / 4096 + SEPERATION;
 	row0 = (px - ex) / SEPERATION;
 	row1 = (px + ex) / SEPERATION;
 	col0 = (pz - ez) / SEPERATION;

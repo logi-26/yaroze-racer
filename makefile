@@ -26,7 +26,7 @@ LINK_STAMP := .link_own_driver_$(LINK_OWN_DRIVER)
 endif
 
 PROG = main.exe
-OBJS = main.o state_manager.o graphics.o controller.o memcard.o audio.o font.o timer.o lang.o ui.o sincos.o menu_main.o menu_memcard.o menu_memcard_load.o menu_memcard_save.o menu_options.o menu_lobby.o menu_vehicle_select.o menu_track_select.o menu_pause.o gameplay.o gameover.o memcard_context.o message.o keyboard.o world.o light.o player.o model.o game.o suspension.o gear.o hud.o ground.o calculations.o car_controls.o brakelights.o vehicle_colour.o sky.o ai_racer.o link.o yario.o yario_emu.o link_race.o
+OBJS = main.o state_manager.o graphics.o controller.o memcard.o audio.o font.o timer.o lang.o ui.o sincos.o menu_main.o menu_memcard.o menu_memcard_load.o menu_memcard_save.o menu_options.o menu_lobby.o menu_vehicle_select.o menu_track_select.o menu_pause.o gameplay.o gameover.o memcard_context.o message.o keyboard.o world.o light.o player.o model.o game.o suspension.o gear.o hud.o ground.o calculations.o car_controls.o brakelights.o vehicle_colour.o sky.o ai_racer.o link.o yario.o yario_emu.o link_race.o headlights.o
 
 all: $(PROG) psx.exe
 
@@ -165,6 +165,9 @@ ai_racer.o: game/ai_racer.c engine/graphics.h game/ai_racer.h game/player.h game
 
 link_race.o: game/link_race.c game/link_race.h engine/link.h engine/font.h engine/colours.h engine/graphics.h engine/calculations.h engine/model.h game/player.h game/game.h game/ground.h game/ai_racer.h
 	$(CC) $(CFLAGS) -I. -c game/link_race.c
+
+headlights.o: game/headlights.c game/headlights.h game/player.h game/game.h game/world.h game/ai_racer.h game/link_race.h engine/graphics.h engine/model.h
+	$(CC) $(CFLAGS) -I. -c game/headlights.c
 
 rebuild:
 	$(MAKE) clean

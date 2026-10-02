@@ -2,6 +2,7 @@
 #include "../engine/graphics.h"
 #include "../engine/model.h"
 #include "player.h"
+#include "headlights.h"
 #include "game.h"
 #include "world.h"
 
@@ -128,11 +129,16 @@ void SetPlayerHeading(PlayerStruct *thePlayer, int heading) {
 void DrawPlayer(PlayerStruct *thePlayer, GsOT *othWorld) {
 	MATRIX tmpls, tmplw;
 
+	// Lit by the headlights of a car behind it
+	HeadlightsOn(thePlayer->gsObjectCoord.coord.t[0], thePlayer->gsObjectCoord.coord.t[2], thePlayer);
+
 	GsGetLws(thePlayer->gsObjectHandler.coord2, &tmplw, &tmpls);
 	GsSetLightMatrix(&tmplw);
 	GsSetLsMatrix(&tmpls);
 
 	GsSortObject4(&thePlayer->gsObjectHandler, othWorld, 3, (u_long *)getScratchAddr(0));
+
+	HeadlightsOff();
 }
 
 
@@ -162,8 +168,7 @@ int IsObjectWithinDist(PlayerStruct* player, GsCOORDINATE2* objectCoord, long th
 }
 
 
-// View-shaped culling (the player looks ahead of the car, and needs little to the sides)
-// Objects are kept inside an oval around the car
+// View-shaped culling (objects in the wedge the camera sees)
 int IsObjectInView(PlayerStruct *player, GsCOORDINATE2 *objectCoord, long ahead, long behind, long side) {
     return IsPointInView(player, objectCoord->coord.t[0], objectCoord->coord.t[2], ahead, behind, side);
 }
@@ -173,8 +178,8 @@ int IsObjectInView(PlayerStruct *player, GsCOORDINATE2 *objectCoord, long ahead,
 int IsPointInView(PlayerStruct *player, long x, long z, long ahead, long behind, long side) {
     long dx = x - player->gsObjectCoord.coord.t[0];
     long dz = z - player->gsObjectCoord.coord.t[2];
-    long reach = ahead > side ? ahead : side;
-    long forward, lateral, f, l;
+    long reach = (ahead > behind ? ahead : behind) + side + (((ahead + VIEW_CAMERA_BACK) * VIEW_SPREAD) >> 10);
+    long forward, lateral, width;
     MATRIX *m = &player->gsObjectCoord.coord;
 
     if (dx > reach || dx < -reach || dz > reach || dz < -reach)
@@ -186,8 +191,12 @@ int IsPointInView(PlayerStruct *player, long x, long z, long ahead, long behind,
     if (rearViewActive)
         forward = -forward;
 
-    // Inside the oval (forward/ahead or behind)^2 + (lateral/side)^2 <= 1
-    f = forward * 256 / (forward >= 0 ? ahead : behind);
-    l = lateral * 256 / side;
-    return f * f + l * l <= 256 * 256;
+    if (forward > ahead || forward < -behind)
+        return 0;
+
+    // Inside the wedge the camera sees (it widens with the distance from the camera)
+    width = side;
+    if (forward > -VIEW_CAMERA_BACK)
+        width += ((forward + VIEW_CAMERA_BACK) * VIEW_SPREAD) >> 10;
+    return lateral <= width && lateral >= -width;
 }

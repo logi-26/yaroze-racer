@@ -29,6 +29,7 @@ typedef struct {
     int raceSegDistSinceLap; 	// segments advanced by race tracker since last lap start
     int steerSmooth;    		// smoothed steering value
     int recoverTimer;   		// > 0 while reversing away from a wall
+    int braking;        		// 1 while braking (for its brake lights)
     int stuckTimer;     		// counts down to the next position-based stuck check
     long lastPosX;      		// world X at the start of the stuck-check window
     long lastPosZ;      		// world Z at the start of the stuck-check window

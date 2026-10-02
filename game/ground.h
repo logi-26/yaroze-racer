@@ -18,6 +18,9 @@
 #define NUM_TRACKS (6)
 extern int selectedTrackIndex;
 
+// Whether the race is at night (1) or in the day (0)
+extern int nightMode;
+
 // The walled-in area of the world (from the map file)
 extern long trackArenaX;
 extern long trackArenaZ;

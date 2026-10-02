@@ -37,7 +37,11 @@ typedef enum
 #define LINK_RACE_EXTRA(x, z, track)         ((((u_long)(x) >> 3) & 0x3FFF) | ((((u_long)(z) >> 3) & 0x3FFF) << 14) | (((u_long)(track) & 15) << 28))
 #define LINK_RACE_X(extra)                   ((long)((extra) & 0x3FFF) << 3)
 #define LINK_RACE_Z(extra)                   ((long)(((extra) >> 14) & 0x3FFF) << 3)
-#define LINK_RACE_TRACK(extra)               ((int)(((extra) >> 28) & 15))
+#define LINK_RACE_TRACK(extra)               ((int)(((extra) >> 28) & 7))
+#define LINK_RACE_NIGHT(extra)               ((int)(((extra) >> 31) & 1))
+
+// The race setup in the 4 bits of the extra data for the track: the track (bits 0-2) and night (bit 3)
+#define LINK_RACE_SETUP(track, night)        (((track) & 7) | (((night) & 1) << 3))
 
 
 /************* FUNCTION PROTOTYPES *******************/

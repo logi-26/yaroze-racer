@@ -7,6 +7,8 @@
 #include "link_race.h"
 #include "../engine/graphics.h"
 #include "../engine/calculations.h"
+#include "../engine/light.h"
+#include "headlights.h"
 
 // Global variables
 GsRVIEW2 Camera[2];
@@ -73,6 +75,123 @@ int LoadTexture(long addr) {
 }
 
 
+/*****************************************************
+Lighting
+
+The models are lit by the GTE, which has a key light and a fill light, and an ambient level.
+The ambient level and parallel lights, with fog help fade everything into the colour of the skys horizon.
+It also helps to reduce the model pop-in from the culling.
+There is a night and a day mode, each with its own sky, fog and lighting setup.
+*****************************************************/
+typedef struct {
+	short vx, vy, vz;               		// The direction the light travels
+	u_char r, g, b;
+} LightDef;
+
+typedef struct {
+	LightDef key;                   		// The main light (the moon/sun), from high up
+	LightDef fill;                  		// A weaker light from the other side, so nothing is left flat
+	short ambientR, ambientG, ambientB;    	// ONE (4096) = full brightness
+	u_char fogR, fogG, fogB;        		// What things fade to in the distance (the sky at the horizon)
+	long fogNear, fogFar;           		// No fog up to fogNear from the camera, all fog from fogFar
+	u_long sky;                     		// The sky image (SKY_TEX_MEM_ADDR/SKY_ALT_TEX_MEM_ADDR)
+	int headlights;                 		// The cars headlights are on (the beams, their glows and their light)
+	int tailGlow;                   		// The tail lights glow when not braking (they always do when braking)
+	long viewAhead;                 		// How far ahead things are drawn (VIEW_AHEAD), and the buildings
+	long buildingViewAhead;
+} SceneLighting;
+
+// Night (sky.tim)
+// Dim blue light with a warmer light for the track, and things fade into the dark in the distance. 
+// The fog is black because the fog only tints textured polygons (the GPU multiplies the texture by the fogged colour)
+// The sky fades to black at the horizon to match.
+static const SceneLighting nightLighting = {
+	{ -40, 100,  60, 0x58, 0x60, 0x80 },
+	{  60,  30, -80, 0x40, 0x34, 0x28 },
+	0x3c0, 0x400, 0x500,
+	0, 0, 0,
+	4500, 11000,
+	SKY_ALT_TEX_MEM_ADDR,
+	1, 1,
+	11000, 12000
+};
+
+// Day (sky2.tim)
+// Natural sunlight from high up with a pale blue fog-haze to match the daytime sky texture.
+// More pop-in than the nightime because the fog is lighter and the sky is brighter, but the track is more visible.
+static const SceneLighting dayLighting = {
+	{ -40, 100,  60, 0xa0, 0xa0, 0x98 },
+	{  60,  30, -80, 0x40, 0x48, 0x58 },
+	0x600, 0x600, 0x660,
+	150, 168, 188,
+	3000, 10000,
+	SKY_TEX_MEM_ADDR,
+	0, 0,
+	11000, 12000
+};
+
+// The lighting in use (for FogAmount)
+static const SceneLighting *sceneLighting = &nightLighting;
+
+// How far ahead the buildings are drawn (they are seen from further away)
+static long buildingViewAhead = 12000;
+
+
+// Whether the cars headlights are on, and whether the tail lights glow when not braking
+int SceneHeadlights(void) {
+	return sceneLighting->headlights;
+}
+
+int SceneTailGlow(void) {
+	return sceneLighting->tailGlow;
+}
+
+
+// How much of something at this depth (from the camera) is hidden by the fog: 0 (none) to 256 (all)
+int FogAmount(long depth) {
+	long amount;
+	const SceneLighting *s = sceneLighting;
+
+	if (depth <= s->fogNear)
+		return 0;
+	if (depth >= s->fogFar)
+		return 256;
+	amount = (256 * s->fogFar / (s->fogFar - s->fogNear)) * (depth - s->fogNear) / depth;
+	return (int)(amount > 256 ? 256 : amount);
+}
+
+
+static void InitialiseLighting(const SceneLighting *s) {
+	GsF_LIGHT off = { 0, 0, 0, 0, 0, 0 };
+	GsFOGPARAM fog;
+
+	sceneLighting = s;
+	viewAhead = s->viewAhead;
+	buildingViewAhead = s->buildingViewAhead;
+
+	InitialiseLight(&flLights[0], 0, s->key.vx, s->key.vy, s->key.vz, s->key.r, s->key.g, s->key.b);
+	InitialiseLight(&flLights[1], 1, s->fill.vx, s->fill.vy, s->fill.vz, s->fill.r, s->fill.g, s->fill.b);
+	GsSetFlatLight(2, &off);
+	GsSetAmbient(s->ambientR, s->ambientG, s->ambientB);
+
+	// The GTE's depth cue
+	// P = DQB + DQA * H / depth (P from 0 = none to 1 = all fog colour)
+	// Fitted so that P is 0 at fogNear and 1 at fogFar
+	fog.dqa = (short)((256L * s->fogNear / RACE_PROJECTION) * s->fogFar / (s->fogNear - s->fogFar));
+	fog.dqb = ((1L << 24) / (s->fogFar - s->fogNear)) * s->fogFar;
+	fog.rfc = s->fogR;
+	fog.gfc = s->fogG;
+	fog.bfc = s->fogB;
+	GsSetFogParam(&fog);
+	GsSetLightMode(1);
+
+	// Beyond the view distance, the screen is cleared to the fog colour
+	// and with black fog the sky fades to black at the horizon to match
+	SetBackgroundColor(s->fogR, s->fogG, s->fogB);
+	SetSkyFade(s->fogR == 0 && s->fogG == 0 && s->fogB == 0);
+}
+
+
 void InitialiseWorld() {
 
 	// Load the ground textures into VRAM
@@ -87,8 +206,15 @@ void InitialiseWorld() {
 	// Initialise the models in the world
 	InitialiseWorldModels();
 
-	// Initialise the sky — pass SKY_TEX_MEM_ADDR or SKY_ALT_TEX_MEM_ADDR
-	InitialiseSky(SKY_ALT_TEX_MEM_ADDR);
+	// The sky and the lighting for the night or the day
+	{
+		const SceneLighting *s = nightMode ? &nightLighting : &dayLighting;
+		InitialiseSky(s->sky);
+		InitialiseLighting(s);
+	}
+
+	// The cars headlights
+	InitialiseHeadlights();
 }
 
 
@@ -387,9 +513,9 @@ void CheckWorldCollisions(PlayerStruct *player, long *lateralSpeed) {
 
 
 // The buildings are seen from further away than the rest of the world, so they have a larger view distance for culling
-#define BUILDING_VIEW_AHEAD  18000
+#define BUILDING_VIEW_AHEAD  buildingViewAhead
 #define BUILDING_VIEW_BEHIND 4000
-#define BUILDING_VIEW_SIDE   12800
+#define BUILDING_VIEW_SIDE   3000
 
 // Polygon subdivision by distance from the camera (the big buildings and stands, and the barriers)
 static const DivisionStep buildingDivision[] = {
@@ -403,7 +529,9 @@ static void DrawDivided(PlayerStruct *currentPlayer, ModelStruct *model, const D
 	SetDivisionByDistance(&model->gsObjectHandler,
 		model->gsObjectCoord.coord.t[0] - currentPlayer->gsObjectCoord.coord.t[0],
 		model->gsObjectCoord.coord.t[2] - currentPlayer->gsObjectCoord.coord.t[2], division);
+	HeadlightsOn(model->gsObjectCoord.coord.t[0], model->gsObjectCoord.coord.t[2], 0);
 	DrawModel(model, &WorldOrderingTable[currentBuffer]);
+	HeadlightsOff();
 }
 
 static void DrawModelCulled(PlayerStruct *currentPlayer, ModelStruct *model, const DivisionStep *division, int currentBuffer) {
@@ -459,6 +587,9 @@ void DrawWorld(PlayerStruct *currentPlayer, int currentBuffer) {
 
 	// Draw the world models
 	DrawWorldModels(currentPlayer, currentBuffer);
+
+	// Draw the cars light pools and head/tail light glows
+	DrawHeadlights(currentPlayer, currentBuffer);
 
 	// Draw the sky (always draw last)
 	DrawSky(&WorldOrderingTable[currentBuffer]);
@@ -562,6 +693,7 @@ void RenderWorld() {
 		// is near-vertical but not exactly down (avoids a gimbal singularity).
 		// Track spans roughly X 3000-32000, Z 3000-32000 — centre ≈ (17500, 17000).
 		GsSetProjection(150);
+		GsSetLightMode(0);              // No fog in birdseye view (it hides the whole track)
 		Camera[0].super = WORLD;
 		Camera[0].vpx = 17500;
 		Camera[0].vpy = -22000;
@@ -573,7 +705,8 @@ void RenderWorld() {
 	} 
 	else 
 	{
-		GsSetProjection(200);
+		GsSetProjection(RACE_PROJECTION);
+		GsSetLightMode(1);
 		Camera[0].super = &player1.gsObjectCoord;
 		Camera[0].rz = 0;
 		if (rearViewActive) 

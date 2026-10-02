@@ -108,12 +108,6 @@ static void StateInit(void)
 	// Initialise the view for player 1
     InitialiseTrackerViewPlayer1(&Camera[0], 250, 0, 0, -694, -1500, 0, -394, 0);
 
-	// Initialise the lights
-    InitialiseLight(&flLights[0], 0, -100, -100, -100, 0xff, 0xff, 0xff);
-    InitialiseLight(&flLights[1], 1, 1000, 1000, 1000, 0xcc, 0xcc, 0xcc);
-    GsSetAmbient(0, 0, 0);
-    GsSetLightMode(0);
-
 	// Initialise the world (this initialises the vehicle and textures)
 	InitialiseWorld();
 

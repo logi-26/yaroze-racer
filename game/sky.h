@@ -10,6 +10,7 @@
 /************* FUNCTION PROTOTYPES *******************/
 void InitialiseSky(u_long texMemAddr);
 void DrawSky(GsOT *ot);
+void SetSkyFade(int on);
 /*****************************************************/
 
 

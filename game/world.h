@@ -24,6 +24,9 @@ extern u_long vsyncInterval;
 
 /************* FUNCTION PROTOTYPES *******************/
 int LoadTexture(long addr);
+int FogAmount(long depth);
+int SceneHeadlights(void);
+int SceneTailGlow(void);
 void InitialiseWorld ();
 void InitialiseWorldTextures();
 void InitialiseWorldModels();

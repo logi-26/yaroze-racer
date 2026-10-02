@@ -64,9 +64,16 @@ Ordering table and buffer counts
 
 // Draw distance of the world (IsObjectInView): an oval around the car, longer
 // ahead than to the sides
-#define VIEW_AHEAD  13800
+// View culling: things are drawn when they're in the camera's view, a wedge from the camera
+extern long viewAhead;
+#define VIEW_AHEAD  viewAhead
 #define VIEW_BEHIND 3200
-#define VIEW_SIDE   6400
+#define VIEW_SIDE   1800
+#define VIEW_CAMERA_BACK 1500
+#define VIEW_SPREAD 840
+
+// The race cameras' projection distance (the fog and the headlight glows depend on it)
+#define RACE_PROJECTION 200
 
 
 /*****************************************************

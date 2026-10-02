@@ -378,6 +378,7 @@ void InitialiseAIRacers(void) {
 		// Clear steering interpolation/smoothing value
         aiRacers[i].steerSmooth  = 0;
         aiRacers[i].recoverTimer = 0;
+        aiRacers[i].braking = 0;
 
         // Stagger stuck checks so all three racers don't fire the same frame
         aiRacers[i].stuckTimer = 60 + i * 20;
@@ -1047,6 +1048,7 @@ void UpdateAIRacers(void) {
             int predictBrake = (absDX < LOOKAHEAD_DIST * 3 && absDZ < LOOKAHEAD_DIST * 3) && IsSharpCorner(ai);
             isBraking = ((absRaw >= 26 || predictBrake) && ai->player.speed > BRAKE_SPEED) ? 1 : 0;
         }
+        ai->braking = isBraking;
 
         steer = ai->steerSmooth;
         if (isBraking) 
