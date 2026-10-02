@@ -159,17 +159,14 @@ If the game is launched using a Net Yaroze boot disc (the game uploaded with sio
 
 ## Track Editor
 
-`tools/map_editor.py` is a standalone Python 3 application for designing race tracks.
+The tracks are made in `tools/map_editor.py`, a Python/pygame editor for the road layout, the AI racing line, the barriers and buildings, and the start positions. Each track is saved as a C header in `game/`.
 
 ```bash
 pip install pygame
 python tools/map_editor.py
 ```
 
-The editor shows a 64×64 tile grid. Left-click to paint tiles, right-click to erase. Use the mouse wheel to zoom, drag with the middle button or use the arrow keys to pan, and press **F** to fit the whole map in the window. Press **S** to save the layout as a C header file. If you open a map smaller than 64x64 the editor pads it with grass.
-
-Press **W** for waypoint mode, where you draw the AI racing line.
-Click to add waypoints, drag to move them, Shift+click a line to insert one, right-click to delete, **Home** makes the selected waypoint the start, **R** reverses the direction and **I** imports a `{ x, z }` list of coordinates. Waypoints off the track are shown in red, and turns over 45° (where the AI brakes) in orange. They are saved in the map header with the tiles, converted to world coordinates.
+See [tools/map_editor.md](tools/map_editor.md) for how to use it and how to add a new track to the game.
 
 ---
 
