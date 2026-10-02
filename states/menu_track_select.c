@@ -16,10 +16,11 @@ static const char *trackNames[NUM_TRACKS] = {
     "TRACK 2",
     "TRACK 3",
     "TRACK 4",
-    "TRACK 5"
+    "TRACK 5",
+    "TRACK 6"
 };
 
-static const short trackY[NUM_TRACKS] = { 90, 110, 130, 150, 170 };
+static const short trackY[NUM_TRACKS] = { 80, 100, 120, 140, 160, 180 };
 
 
 static void StateInit(void)
