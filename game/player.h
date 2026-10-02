@@ -33,6 +33,7 @@ extern int remoteVehicleIndex;
 
 /************* FUNCTION PROTOTYPES *******************/
 void InitialisePlayer(PlayerStruct *thePlayer, int playerNumber, int nX, int nY, int nZ, unsigned long *lModelAddress);
+void SetPlayerHeading(PlayerStruct *thePlayer, int heading);
 void AddModelToPlayer(PlayerStruct *thePlayer, int nX, int nY, int nZ, unsigned long *lModelAddress);
 void DrawPlayer(PlayerStruct *thePlayer, GsOT *othWorld);
 int IsObjectNearPlayer(PlayerStruct* player, GsCOORDINATE2* objectCoord);

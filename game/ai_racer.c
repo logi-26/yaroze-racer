@@ -254,8 +254,6 @@ static void UpdateRaceSegTracker(long px, long pz, int *segIdx, int *lapCount, i
 
 // Grid start positions — two-column staggered formation, spaced > AVOID_DIST
 // so avoidance does not fire between adjacent cars at race start
-static const int spawnX[NUM_AI_RACERS] = { 3000, 4200, 3600, 4800, 4200 };
-static const int spawnZ[NUM_AI_RACERS] = { 8800, 7800, 5800, 4800, 2800 };
 
 // Per-racer vehicle data: cycle through the three available models
 static const long aiTmdAddr[NUM_AI_RACERS] = {
@@ -347,8 +345,10 @@ void InitialiseAIRacers(void) {
 	// Create and configure each AI racer
     for (i = 0; i < NUM_AI_RACERS; i++) 
 	{
-		// Initialise the AI racer using the predefined spawn position and model for this AI vehicle
-        InitialisePlayer(&aiRacers[i].player, 0, spawnX[i], CAR_GROUND_Y, spawnZ[i], (unsigned long *)aiTmdAddr[i]);
+		// Initialise the AI racer at its start position on the track (and facing its heading)
+        const StartDef *start = &trackStarts[START_AI + i];
+        InitialisePlayer(&aiRacers[i].player, 0, start->x, CAR_GROUND_Y, start->z, (unsigned long *)aiTmdAddr[i]);
+        SetPlayerHeading(&aiRacers[i].player, start->heading);
 
 		// Set the models initial orientation so all AI racers start facing the correct direction on the track
         {
@@ -365,7 +365,7 @@ void InitialiseAIRacers(void) {
         aiRacers[i].gear = 1;
 		
 		// Begin navigation at the waypoint nearest to this cars grid position
-        aiRacers[i].waypointIndex = FindNearestWaypoint(spawnX[i], spawnZ[i]);
+        aiRacers[i].waypointIndex = FindNearestWaypoint(start->x, start->z);
         aiRacers[i].lapCount          = 0;
         aiRacers[i].waypointsSinceLap = 0;
         aiRacers[i].racePosition      = 1;
@@ -381,8 +381,8 @@ void InitialiseAIRacers(void) {
 
         // Stagger stuck checks so all three racers don't fire the same frame
         aiRacers[i].stuckTimer = 60 + i * 20;
-        aiRacers[i].lastPosX   = spawnX[i];
-        aiRacers[i].lastPosZ   = spawnZ[i];
+        aiRacers[i].lastPosX   = start->x;
+        aiRacers[i].lastPosZ   = start->z;
 		
 		// Assign vehicle-specific handling and suspension settings
         aiRacers[i].attribs = aiVehicleAttribs[i];

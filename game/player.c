@@ -1,5 +1,6 @@
 #include <libps.h>
 #include "../engine/graphics.h"
+#include "../engine/model.h"
 #include "player.h"
 #include "game.h"
 #include "world.h"
@@ -115,6 +116,12 @@ void InitialisePlayer(PlayerStruct *thePlayer, int playerNumber, int nX, int nY,
 	
 	// Initialise other player variables and link in tmd
 	AddModelToPlayer(thePlayer, nX, nY, nZ, lModelAddress);
+}
+
+
+// Turn a player that has just been placed to face its start heading (0-4095, 0 = facing +Z)
+void SetPlayerHeading(PlayerStruct *thePlayer, int heading) {
+	RotModel(&thePlayer->gsObjectCoord, &thePlayer->rotation, 0, heading, 0);
 }
 
 

@@ -5,6 +5,7 @@
 #include "map_3.h"
 #include "map_4.h"
 #include "map_5.h"
+#include "map_6.h"
 #include "game.h"
 #include "../engine/graphics.h"
 #include "../engine/model.h"
@@ -15,34 +16,141 @@ static char (*activeMap)[GROUND_MAX_X] = groundDataMap1;
 
 const Waypoint *trackWaypoints = waypointsMap1;
 int numTrackWaypoints = NUM_WAYPOINTS_MAP1;
+long trackArenaX = 0;
+long trackArenaZ = 0;
 long trackArenaSize = 30 * SEPERATION;
+const BarrierDef *trackBarriers = barriersMap1;
+int numTrackBarriers = NUM_BARRIERS_MAP1;
+const BuildingDef *trackBuildings = buildingsMap1;
+int numTrackBuildings = NUM_BUILDINGS_MAP1;
+const StartDef *trackStarts = startsMap1;
 
 // The tracks, in the order of the track select menu
 static const struct {
 	char (*tiles)[GROUND_MAX_X];
 	const Waypoint *waypoints;
 	int numWaypoints;
+	long arenaX;
+	long arenaZ;
 	long arenaSize;
+	const BarrierDef *barriers;
+	int numBarriers;
+	const BuildingDef *buildings;
+	int numBuildings;
+	const StartDef *starts;
 } tracks[NUM_TRACKS] = {
-	{ groundDataMap1, waypointsMap1, NUM_WAYPOINTS_MAP1, 30 * SEPERATION },
-	{ groundDataMap2, waypointsMap2, NUM_WAYPOINTS_MAP2, 30 * SEPERATION },
-	{ groundDataMap3, waypointsMap3, NUM_WAYPOINTS_MAP3, GROUND_MAX_X * SEPERATION },
-	{ groundDataMap4, waypointsMap4, NUM_WAYPOINTS_MAP4, GROUND_MAX_X * SEPERATION },
-	{ groundDataMap5, waypointsMap5, NUM_WAYPOINTS_MAP5, GROUND_MAX_X * SEPERATION },
+	{ groundDataMap1, waypointsMap1, NUM_WAYPOINTS_MAP1, ARENA_X_MAP1, ARENA_Z_MAP1, ARENA_SIZE_MAP1,
+	  barriersMap1, NUM_BARRIERS_MAP1, buildingsMap1, NUM_BUILDINGS_MAP1, startsMap1 },
+	{ groundDataMap2, waypointsMap2, NUM_WAYPOINTS_MAP2, ARENA_X_MAP2, ARENA_Z_MAP2, ARENA_SIZE_MAP2,
+	  barriersMap2, NUM_BARRIERS_MAP2, buildingsMap2, NUM_BUILDINGS_MAP2, startsMap2 },
+	{ groundDataMap3, waypointsMap3, NUM_WAYPOINTS_MAP3, ARENA_X_MAP3, ARENA_Z_MAP3, ARENA_SIZE_MAP3,
+	  barriersMap3, NUM_BARRIERS_MAP3, buildingsMap3, NUM_BUILDINGS_MAP3, startsMap3 },
+	{ groundDataMap4, waypointsMap4, NUM_WAYPOINTS_MAP4, ARENA_X_MAP4, ARENA_Z_MAP4, ARENA_SIZE_MAP4,
+	  barriersMap4, NUM_BARRIERS_MAP4, buildingsMap4, NUM_BUILDINGS_MAP4, startsMap4 },
+	{ groundDataMap5, waypointsMap5, NUM_WAYPOINTS_MAP5, ARENA_X_MAP5, ARENA_Z_MAP5, ARENA_SIZE_MAP5,
+	  barriersMap5, NUM_BARRIERS_MAP5, buildingsMap5, NUM_BUILDINGS_MAP5, startsMap5 },
+	{ groundDataMap6, waypointsMap6, NUM_WAYPOINTS_MAP6, ARENA_X_MAP6, ARENA_Z_MAP6, ARENA_SIZE_MAP6,
+	  barriersMap6, NUM_BARRIERS_MAP6, buildingsMap6, NUM_BUILDINGS_MAP6, startsMap6 },
 };
 
 
-// Check when the player crosses the start/finish line
+/*****************************************************
+The start line
+
+The line is painted across the middle of the start line tiles ('4' / '5', on a road along Z).
+The laps (and the race positions) change where the waypoints wrap round to waypoint 0, so the
+race uses a copy of the track's waypoints with one added where they cross the line, as the last one.
+*****************************************************/
+#define MAX_LAP_WAYPOINTS (512)
+static Waypoint lapWaypoints[MAX_LAP_WAYPOINTS + 1];
+
+static int hasStartLine = 0;
+static long lineZ;                  // The start/finish line
+static long lineX0, lineX1;         // From X0 to X1
+static int lineDir = 1;             // The way the race crosses it (+1 = towards +Z, -1 = towards -Z)
+
+
+// Find the start/finish line on the map, and set the race's waypoints
+static void FindStartLine(const Waypoint *wps, int num) {
+	int r, c, i, k;
+	int col = -1, rowMin = GROUND_MAX_Z, rowMax = -1;
+
+	hasStartLine = 0;
+	lineDir = 1;
+	trackWaypoints = wps;
+	numTrackWaypoints = num;
+
+	// The line tiles (one column of them across the road)
+	for (r = 0; r < GROUND_MAX_Z; r++) {
+		for (c = 0; c < GROUND_MAX_X; c++) {
+			if ((activeMap[r][c] == '4' || activeMap[r][c] == '5') && (col < 0 || c == col)) {
+				col = c;
+				if (r < rowMin) rowMin = r;
+				if (r > rowMax) rowMax = r;
+			}
+		}
+	}
+	if (col < 0)
+		return;
+	lineZ = (long)col * SEPERATION + SEPERATION / 2;
+	lineX0 = (long)rowMin * SEPERATION;
+	lineX1 = (long)(rowMax + 1) * SEPERATION;
+	hasStartLine = 1;
+
+	if (num < 2 || num > MAX_LAP_WAYPOINTS)
+		return;
+
+	// The waypoint segment that crosses the line
+	for (i = 0; i < num; i++) {
+		const Waypoint *a = &wps[i];
+		const Waypoint *b = &wps[(i + 1) % num];
+		long dz = b->z - a->z;
+		long t, x, toA, toB;
+		int start, insert;
+
+		if (dz == 0 || !((a->z < lineZ && b->z >= lineZ) || (a->z > lineZ && b->z <= lineZ)))
+			continue;
+		t = (lineZ - a->z) * 1024 / dz;
+		x = a->x + (b->x - a->x) * t / 1024;
+		if (x < lineX0 - SEPERATION || x > lineX1 + SEPERATION)
+			continue;
+		lineDir = (dz > 0) ? 1 : -1;
+
+		// From the first waypoint past the line round to the line itself
+		// (a waypoint already on the line is used as it is)
+		toA = (lineZ > a->z) ? lineZ - a->z : a->z - lineZ;
+		toB = (lineZ > b->z) ? lineZ - b->z : b->z - lineZ;
+		if (toA < 50) {
+			start = (i + 1) % num;
+			insert = 0;
+		} else if (toB < 50) {
+			start = (i + 2) % num;
+			insert = 0;
+		} else {
+			start = (i + 1) % num;
+			insert = 1;
+		}
+		for (k = 0; k < num; k++)
+			lapWaypoints[k] = wps[(start + k) % num];
+		if (insert) {
+			lapWaypoints[num].x = x;
+			lapWaypoints[num].z = lineZ;
+		}
+		trackWaypoints = lapWaypoints;
+		numTrackWaypoints = num + insert;
+		return;
+	}
+}
+
+
+// Whether a car has just crossed the start/finish line (it's within a tile past the line)
 int IsOnStartLine(long worldX, long worldZ) {
-    int tileRow = (int)(worldX / SEPERATION);
-    int tileCol = (int)(worldZ / SEPERATION);
-    char tile;
-    if (tileRow < 0) tileRow = 0;
-    if (tileRow >= GROUND_MAX_Z) tileRow = GROUND_MAX_Z - 1;
-    if (tileCol < 0) tileCol = 0;
-    if (tileCol >= GROUND_MAX_X) tileCol = GROUND_MAX_X - 1;
-    tile = activeMap[tileRow][tileCol];
-    return (tile == '4' || tile == '5');
+	long past;
+
+	if (!hasStartLine || worldX < lineX0 || worldX >= lineX1)
+		return 0;
+	past = (worldZ - lineZ) * lineDir;
+	return past >= 0 && past < SEPERATION;
 }
 
 
@@ -171,14 +279,28 @@ static GsCOORDINATE2 tileCoord;             // Where the tile being drawn is
 static MATRIX tileRotation[4];              // 0, 90, 180, 270 degrees rotation (to reuse the same model for all quarter turns)
 
 
-void InitialiseGround() {
-	int i;
+// Point the track data (tiles, waypoints, arena, objects and start positions) at the selected track
+// (done first when a race starts, before anything is placed on the track)
+void SelectTrack() {
 	int track = (selectedTrackIndex >= 0 && selectedTrackIndex < NUM_TRACKS) ? selectedTrackIndex : 0;
 
 	activeMap = tracks[track].tiles;
-	trackWaypoints = tracks[track].waypoints;
-	numTrackWaypoints = tracks[track].numWaypoints;
+	FindStartLine(tracks[track].waypoints, tracks[track].numWaypoints);
+	trackArenaX = tracks[track].arenaX;
+	trackArenaZ = tracks[track].arenaZ;
 	trackArenaSize = tracks[track].arenaSize;
+	trackBarriers = tracks[track].barriers;
+	numTrackBarriers = tracks[track].numBarriers;
+	trackBuildings = tracks[track].buildings;
+	numTrackBuildings = tracks[track].numBuildings;
+	trackStarts = tracks[track].starts;
+}
+
+
+void InitialiseGround() {
+	int i;
+
+	SelectTrack();
 
 	// Map letters
 	for (i = 0; i < 128; i++)
@@ -238,8 +360,9 @@ void DrawGround(PlayerStruct *currentPlayer, GsOT *ot) {
 	for (row = row0; row <= row1; row++) {
 		for (col = col0; col <= col1; col++) {
 			unsigned char kind = tileKind[activeMap[row][col] & 127];
-			long x = (long)row * SEPERATION;
-			long z = (long)col * SEPERATION;
+			// The middle of the tile (the tile models are centred on their origin
+			long x = (long)row * SEPERATION + SEPERATION / 2;
+			long z = (long)col * SEPERATION + SEPERATION / 2;
 			GsDOBJ2 *model;
 
 			if (kind == NO_TILE || !IsPointInView(currentPlayer, x, z, VIEW_AHEAD, VIEW_BEHIND, VIEW_SIDE))

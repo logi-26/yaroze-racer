@@ -14,6 +14,7 @@ static int lapStarted = 0;
 static int lastLapMs = 0;
 static int bestLapMs = 0;
 static int wasOnStartLine = 0;
+static int lapsTimed = 0;       // The lap count when the clock was last restarted
 
 
 static void FormatLapTime(char *buf, int ms) {
@@ -30,6 +31,7 @@ void ResetLapTimer(void) {
     lastLapMs = 0;
     bestLapMs = 0;
     wasOnStartLine = 0;
+    lapsTimed = 0;
     TimerReset();
 }
 
@@ -39,29 +41,33 @@ static void UpdateLapTimer(void) {
     // Require forward motion to prevent backward crossings from triggering
     int onStartLine = (player1.speed > 20) && IsOnStartLine(player1.gsObjectCoord.coord.t[0], player1.gsObjectCoord.coord.t[2]);
 
-    if (onStartLine && !wasOnStartLine) 
+    if (!lapStarted)
 	{
-		if (!lapStarted) 
+		// First crossing of the line (start the clock)
+		if (onStartLine && !wasOnStartLine)
 		{
-            // First crossing: start the clock
             TimerReset();
             TimerStart();
             lapStarted = 1;
-        } 
-		else 
-		{
-            // Completed a lap: record time and restart
-            lastLapMs = TimerGetElapsedMs();
-            
-			if (bestLapMs == 0 || lastLapMs < bestLapMs) 
-			{
-                bestLapMs = lastLapMs;
-			}
-			
-            TimerReset();
-            TimerStart();
+            lapsTimed = playerRaceLapCount;
         }
     }
+	else if (playerRaceLapCount > lapsTimed)
+	{
+		// Completed a lap (record the time and restart the clock)
+		// Only when the lap counter goes up, which it doesn't for a lap that skipped
+		// part of the track or for going back and forth over the line
+		lastLapMs = TimerGetElapsedMs();
+
+		if (bestLapMs == 0 || lastLapMs < bestLapMs)
+		{
+			bestLapMs = lastLapMs;
+		}
+
+		TimerReset();
+		TimerStart();
+		lapsTimed = playerRaceLapCount;
+	}
     wasOnStartLine = onStartLine;
 }
 

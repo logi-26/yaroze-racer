@@ -20,167 +20,16 @@ int birdsEyeActive = 0;
 Model declarations
 *****************************************************/
 
-// Building data table
-// rot:   0 = no rotation,  1 = 180-deg
-// model: 0 = BUILDING_1,   1 = BUILDING_2
-typedef struct { int x; int y; int z; int rot; int model; int collisionRadius; } BuildingDef;
-
-// The buildings around the arena of the first two tracks (the bigger tracks get a ring made to fit)
-static const BuildingDef smallArenaBuildings[] = {
-	
-	// Left row
-	{ -4700, -450,     0, 0, 0, 400 },
-    { -4700, -450,  5000, 0, 0, 400 },
-	{ -4700, -450, 10000, 0, 0, 400 },
-    { -4700, -300, 25000, 0, 0, 400 },
-    { -4700, -450, 30000, 0, 0, 400 },
-	{ -4700, -450, 35000, 0, 0, 400 },
-	
-	// Bottom row
-	{ -1000, -450, 40000, 0, 0, 400 },
-	{  4000, -450, 40000, 0, 0, 400 },
-	{  9000, -450, 40000, 0, 0, 400 },
-	{ 14000, -450, 40000, 0, 0, 400 },
-	{ 19000, -450, 40000, 0, 0, 400 },
-	{ 24000, -450, 40000, 0, 0, 400 },
-	{ 29000, -450, 40000, 0, 0, 400 },
-	{ 34000, -450, 40000, 0, 0, 400 },
-	{ 39000, -450, 40000, 0, 0, 400 },
-	
-	// Right row
-	{ 39000, -450, 35000, 0, 0, 400 },
-	{ 39000, -450, 30000, 0, 0, 400 },
-	{ 39000, -450, 25000, 0, 0, 400 },
-	{ 39000, -450, 20000, 0, 0, 400 },
-	{ 39000, -450, 15000, 0, 0, 400 },
-	{ 39000, -450, 10000, 0, 0, 400 },
-	{ 39000, -450,  5000, 0, 0, 400 },
-	{ 39000, -450,     0, 0, 0, 400 },
-	
-	// Top row
-	{ 35000, -450, -5000, 0, 0, 400 },
-	{ 30000, -450, -5000, 0, 0, 400 },
-	{ 25000, -450, -5000, 0, 0, 400 },
-	{ 20000, -450, -5000, 0, 0, 400 },
-	{ 15000, -450, -5000, 0, 0, 400 },
-	{ 10000, -450, -5000, 0, 0, 400 },
-	{  5000, -450, -5000, 0, 0, 400 },
-	{     0, -450, -5000, 0, 0, 400 },
-
-};
-#define NUM_SMALL_ARENA_BUILDINGS ((int)(sizeof(smallArenaBuildings) / sizeof(smallArenaBuildings[0])))
-#define MAX_BUILDINGS 80
-
-static BuildingDef buildingDefs[MAX_BUILDINGS];
+// The track's buildings and barriers, from its map file
+static ModelStruct buildingModels[MAX_TRACK_BUILDINGS];
 static int numBuildings = 0;
-static ModelStruct buildingModels[MAX_BUILDINGS];
+static ModelStruct barrierModels[MAX_TRACK_BARRIERS];
+static int numBarriers = 0;
 
-// Crowd stand
-ModelStruct stand1;
-ModelStruct stand2;
-
-
-// Barrier data table
-// rot:   0 = Z-aligned (default),  1 = Z-aligned 180-deg,  2 = X-aligned 270-deg
-// model: 0 = BARRIER_1,            1 = BARRIER_2
-typedef struct { int x; int z; int rot; int model; } BarrierDef;
-
-// Outer (perimeter) barriers: a wall along each side of the arena
-// rot: 0=Z-aligned  1=Z-aligned-180  2=X-aligned-270  3=X-aligned-90
-#define MAX_OUTER_BARRIERS 160
-static BarrierDef outerBarrierDefs[MAX_OUTER_BARRIERS];
-static int numOuterBarriers = 0;
-
-// The walls are 200 inside the near edges and 700 inside the far edges of the arena,
-// with a barrier every 1950 (alternating the two models)
+// The arena walls are 200 inside the near edges and 700 inside the far edges of the
+// arena (where they meet, the corners have collision posts)
 #define WALL_NEAR      200
 #define WALL_FAR_GAP   700
-#define WALL_FIRST     1200
-#define WALL_SPACING   1950
-
-static ModelStruct outerBarrierModels[MAX_OUTER_BARRIERS];
-
-// Inner barriers for map_1
-static const BarrierDef innerBarrierDefsMap1[] = {
-
-	// Inner track barriers
-    {  5300,  7000, 1, 0 }, {  5300,  8950, 1, 1 },
-    {  5300, 10900, 1, 0 }, {  5300, 12850, 1, 1 },
-    {  5300, 14800, 1, 0 }, {  5300, 16750, 1, 1 },
-    {  5300, 18700, 1, 0 }, {  5300, 20650, 1, 1 },
-    {  5300, 22600, 1, 0 }, {  5300, 24550, 1, 1 },
-    {  5300, 26500, 1, 0 }, {  5300, 28450, 1, 1 },
-
-    // Inner track bottom
-    {  6290, 29400, 2, 0 }, {  8240, 29400, 2, 1 },
-    { 10190, 29400, 2, 0 }, { 12140, 29400, 2, 1 },
-	{ 14090, 29400, 2, 0 }, { 16040, 29400, 2, 1 },
-	{ 17990, 29400, 2, 0 }, { 19940, 29400, 2, 1 },
-	{ 21890, 29400, 2, 0 }, { 23840, 29400, 2, 1 },
-	{ 25790, 29400, 2, 0 }, { 27740, 29400, 2, 1 },
-
-	// Runs parallel with the previous barriers but facing the opposite direction
-	{  8240, 29395, 3, 1 },
-    { 10190, 29395, 3, 0 }, { 12140, 29395, 3, 1 },
-	{ 14090, 29395, 3, 0 }, { 16040, 29395, 3, 1 },
-	{ 17990, 29395, 3, 0 }, { 19940, 29395, 3, 1 },
-	{ 21890, 29395, 3, 0 }, { 23840, 29395, 3, 1 },
-	{ 25790, 29395, 3, 0 }, { 27740, 29395, 3, 1 },
-
-	// Inner wall
-	{ 7265, 28420, 0, 0 }, { 7265, 26470, 0, 1 },
-	{ 7265, 24520, 0, 0 }, { 7265, 22570, 0, 1 },
-	{ 7265, 20620, 0, 0 }, { 7265, 18670, 0, 1 },
-	{ 7265, 16720, 0, 0 }, { 7265, 14770, 0, 1 },
-	{ 7265, 12820, 0, 0 }, { 7265, 10870, 0, 1 },
-	{ 7265,  8920, 0, 0 }, { 7265,  6970, 0, 1 },
-
-	// Connector bridging the X=7265 wall and the X=5300 inner wall
-	{ 6300, 6000, 3, 0 },
-
-	// Inner
-	{ 19700,  6962, 0, 0 }, { 19700,  8912, 0, 1 },
-	{ 19700, 10862, 0, 0 }, { 19700, 12812, 0, 1 },
-	{ 19700, 14762, 0, 0 }, { 19700, 16712, 0, 1 },
-	{ 19700, 18662, 0, 0 }, { 19700, 20612, 0, 1 },
-	{ 19700, 22562, 0, 0 }, { 19700, 24512, 0, 1 },
-	{ 19700, 26462, 0, 0 }, { 19700, 28412, 0, 1 },
-
-	// Parallel row
-	{ 19695,  6962, 1, 0 }, { 19695,  8912, 1, 1 },
-	{ 19695, 10862, 1, 0 }, { 19695, 12812, 1, 1 },
-	{ 19695, 14762, 1, 0 }, { 19695, 16712, 1, 1 },
-	{ 19695, 18662, 1, 0 }, { 19695, 20612, 1, 1 },
-	{ 19695, 22562, 1, 0 }, { 19695, 24512, 1, 1 },
-	{ 19695, 26462, 1, 0 }, { 19695, 28412, 1, 1 },
-
-	// Inner
-	{ 13750,  1218, 0, 0 }, { 13750,  3168, 0, 1 },
-	{ 13750,  5118, 0, 0 }, { 13750,  7068, 0, 1 },
-	{ 13750,  9018, 0, 0 }, { 13750, 10968, 0, 1 },
-	{ 13750, 12918, 0, 0 }, { 13750, 14868, 0, 1 },
-	{ 13750, 16818, 0, 0 }, { 13750, 18768, 0, 1 },
-	{ 13750, 20718, 0, 0 }, { 13750, 22668, 0, 1 },
-
-	// Parallel row
-	{ 13745,  1218, 1, 0 }, { 13745,  3168, 1, 1 },
-	{ 13745,  5118, 1, 0 }, { 13745,  7068, 1, 1 },
-	{ 13745,  9018, 1, 0 }, { 13745, 10968, 1, 1 },
-	{ 13745, 12918, 1, 0 }, { 13745, 14868, 1, 1 },
-	{ 13745, 16818, 1, 0 }, { 13745, 18768, 1, 1 },
-	{ 13745, 20718, 1, 0 }, { 13745, 22668, 1, 1 }
-
-};
-#define NUM_INNER_BARRIERS_MAP1 ((int)(sizeof(innerBarrierDefsMap1) / sizeof(innerBarrierDefsMap1[0])))
-
-// Inner barriers for map_2 — none currently defined
-#define NUM_INNER_BARRIERS_MAP2 0
-
-#define MAX_INNER_BARRIERS 100
-
-static ModelStruct innerBarrierModels[MAX_INNER_BARRIERS];
-static const BarrierDef *activeInnerDefs = 0;
-static int numActiveInnerBarriers = 0;
 
 // Tunnel (just testing)
 ModelStruct tunnel;
@@ -188,72 +37,6 @@ ModelStruct tunnel;
 // Variables for the camera sway
 static long camSwayX = 0;
 static long prevCarYaw = 0;
-
-
-// The walls around the arena of the selected track
-static void InitialiseOuterBarriers(void) {
-	int farWall = (int)trackArenaSize - WALL_FAR_GAP;
-	int pos, k;
-
-	numOuterBarriers = 0;
-	for (k = 0, pos = WALL_FIRST; pos <= farWall - 900 && numOuterBarriers + 4 <= MAX_OUTER_BARRIERS; k++, pos += WALL_SPACING)
-	{
-		BarrierDef *b = &outerBarrierDefs[numOuterBarriers];
-		b[0].x = WALL_NEAR;  b[0].z = pos;       b[0].rot = 0; b[0].model = k & 1;		// Left wall
-		b[1].x = farWall;    b[1].z = pos;       b[1].rot = 1; b[1].model = k & 1;		// Right wall
-		b[2].x = pos;        b[2].z = WALL_NEAR; b[2].rot = 2; b[2].model = k & 1;		// Bottom wall
-		b[3].x = pos;        b[3].z = farWall;   b[3].rot = 3; b[3].model = k & 1;		// Top wall
-		numOuterBarriers += 4;
-	}
-}
-
-
-static void AddBuilding(int x, int z) {
-	BuildingDef *b;
-	if (numBuildings >= MAX_BUILDINGS)
-		return;
-	b = &buildingDefs[numBuildings++];
-	b->x = x;
-	b->y = -450;
-	b->z = z;
-	b->rot = 0;
-	b->model = 0;
-	b->collisionRadius = 400;
-}
-
-
-// The buildings around the arena of the selected track (in rows 5000 apart, outside the walls)
-static void InitialiseBuildingDefs(void) {
-	int size = (int)trackArenaSize;
-	int x, z;
-
-	numBuildings = 0;
-
-	// The first two tracks keep their hand-placed buildings
-	if (size <= 30 * SEPERATION)
-	{
-		for (numBuildings = 0; numBuildings < NUM_SMALL_ARENA_BUILDINGS; numBuildings++)
-			buildingDefs[numBuildings] = smallArenaBuildings[numBuildings];
-		return;
-	}
-
-	// Left row (with a gap for the stand by the start straight)
-	for (z = 0; z <= size - 1000; z += 5000)
-		if (z != 15000 && z != 20000)
-			AddBuilding(-4700, z);
-
-	// Bottom row
-	for (x = -1000; x <= size + 3000; x += 5000)
-		AddBuilding(x, size + 4000);
-
-	// Right row
-	for (z = size - 1000; z >= 0; z -= 5000)
-		AddBuilding(size + 3000, z);
-
-	// Top row
-	for (x = size - 1000; x >= 0; x -= 5000)
-		AddBuilding(x, -5000);
-}
 
 
 // Load from RAM into VRAM
@@ -326,97 +109,45 @@ void InitialiseWorldTextures() {
 
 
 void InitialiseWorldModels() {
+	int i;
 
-	// The walls and buildings around the arena of the selected track
-	InitialiseOuterBarriers();
-	InitialiseBuildingDefs();
-
-	// Initialise all buildings from the data table
+	// The track's buildings
+	numBuildings = (numTrackBuildings < MAX_TRACK_BUILDINGS) ? numTrackBuildings : MAX_TRACK_BUILDINGS;
+	for (i = 0; i < numBuildings; i++)
 	{
-		int i;
-		for (i = 0; i < numBuildings; i++) 
-		{
-			const BuildingDef *b = &buildingDefs[i];
-			long addr = (b->model == 0) ? (long)BUILDING_1_MEM_ADDR : (long)BUILDING_2_MEM_ADDR;
-			InitialiseModel(&buildingModels[i], b->x, b->y, b->z, 0, 0, 0, (long*)addr);
-			
-			if (b->rot == 1) 
-			{
-				RotateModel180(&buildingModels[i].gsObjectCoord, &buildingModels[i].rotation);
-			}
+		const BuildingDef *b = &trackBuildings[i];
+		long addr = (b->model == 2) ? (long)STAND_MEM_ADDR : (b->model == 1) ? (long)BUILDING_2_MEM_ADDR : (long)BUILDING_1_MEM_ADDR;
+		InitialiseModel(&buildingModels[i], b->x, b->y, b->z, 0, 0, 0, (long*)addr);
 
-			buildingModels[i].collisionRadius = b->collisionRadius;
+		if (b->rot == 1)
+		{
+			RotateModel180(&buildingModels[i].gsObjectCoord, &buildingModels[i].rotation);
+		}
+
+		buildingModels[i].collisionRadius = b->collisionRadius;
+	}
+
+	// The track's barriers
+	numBarriers = (numTrackBarriers < MAX_TRACK_BARRIERS) ? numTrackBarriers : MAX_TRACK_BARRIERS;
+	for (i = 0; i < numBarriers; i++)
+	{
+		const BarrierDef *b = &trackBarriers[i];
+		long addr = (b->model == 0) ? (long)BARRIER_1_MEM_ADDR : (long)BARRIER_2_MEM_ADDR;
+		InitialiseModel(&barrierModels[i], b->x, -200, b->z, 0, 0, 0, (long*)addr);
+
+		if (b->rot == 1)
+		{
+			RotateModel180(&barrierModels[i].gsObjectCoord, &barrierModels[i].rotation);
+		}
+		else if (b->rot == 2)
+		{
+			RotateModel270(&barrierModels[i].gsObjectCoord, &barrierModels[i].rotation);
+		}
+		else if (b->rot == 3)
+		{
+			RotateModel90 (&barrierModels[i].gsObjectCoord, &barrierModels[i].rotation);
 		}
 	}
-
-	// Stand
-	InitialiseModel(&stand1, -1700, -450, 15000, 0, 5000, 5000, (long*)STAND_MEM_ADDR);
-
-	InitialiseModel(&stand2, 7500, -450, 15000, 0, 5000, 5000, (long*)STAND_MEM_ADDR);
-	RotateModel180(&stand2.gsObjectCoord, &stand2.rotation);
-
-	// Initialise outer (perimeter) barriers — always loaded for all maps
-	{
-		int i;
-		for (i = 0; i < numOuterBarriers; i++)
-		{
-			const BarrierDef *b = &outerBarrierDefs[i];
-			long addr = (b->model == 0) ? (long)BARRIER_1_MEM_ADDR : (long)BARRIER_2_MEM_ADDR;
-			InitialiseModel(&outerBarrierModels[i], b->x, -200, b->z, 0, 0, 0, (long*)addr);
-
-			if (b->rot == 1)
-			{
-				RotateModel180(&outerBarrierModels[i].gsObjectCoord, &outerBarrierModels[i].rotation);
-			}
-			else if (b->rot == 2)
-			{
-				RotateModel270(&outerBarrierModels[i].gsObjectCoord, &outerBarrierModels[i].rotation);
-			}
-			else if (b->rot == 3)
-			{
-				RotateModel90 (&outerBarrierModels[i].gsObjectCoord, &outerBarrierModels[i].rotation);
-			}
-		}
-	}
-
-	// Select and initialise inner barriers for the active map (only map_1 has any)
-	if (selectedTrackIndex == 0)
-	{
-		activeInnerDefs = innerBarrierDefsMap1;
-		numActiveInnerBarriers = NUM_INNER_BARRIERS_MAP1;
-	}
-	else
-	{
-		activeInnerDefs = 0;
-		numActiveInnerBarriers = NUM_INNER_BARRIERS_MAP2;
-	}
-
-	{
-		int i;
-		for (i = 0; i < numActiveInnerBarriers; i++)
-		{
-			const BarrierDef *b = &activeInnerDefs[i];
-			long addr = (b->model == 0) ? (long)BARRIER_1_MEM_ADDR : (long)BARRIER_2_MEM_ADDR;
-			InitialiseModel(&innerBarrierModels[i], b->x, -200, b->z, 0, 0, 0, (long*)addr);
-
-			if (b->rot == 1)
-			{
-				RotateModel180(&innerBarrierModels[i].gsObjectCoord, &innerBarrierModels[i].rotation);
-			}
-			else if (b->rot == 2)
-			{
-				RotateModel270(&innerBarrierModels[i].gsObjectCoord, &innerBarrierModels[i].rotation);
-			}
-			else if (b->rot == 3)
-			{
-				RotateModel90 (&innerBarrierModels[i].gsObjectCoord, &innerBarrierModels[i].rotation);
-			}
-		}
-	}
-
-	// Collision radius for stands (buildings set their radius in the init loop above)
-	stand1.collisionRadius = 350;
-	stand2.collisionRadius = 350;
 }
 
 
@@ -600,46 +331,56 @@ static void TestCornerCollision(PlayerStruct *player, long *lateralSpeed, int cx
 }
 
 
+// Objects further than this from the car on either axis can't be touching it
+// (half a barrier's length plus the barrier's and the car's radius)
+#define COLLISION_REACH 2000
+
+static int IsNearCar(long px, long pz, long x, long z) {
+	long dx = x - px;
+	long dz = z - pz;
+	return dx < COLLISION_REACH && dx > -COLLISION_REACH && dz < COLLISION_REACH && dz > -COLLISION_REACH;
+}
+
+
 void CheckWorldCollisions(PlayerStruct *player, long *lateralSpeed) {
-	// Sphere collision for buildings and crowd stands
+	long px = player->gsObjectCoord.coord.t[0];
+	long pz = player->gsObjectCoord.coord.t[2];
+
+	// Sphere collision for buildings and stands
 	{
 		int i;
 		for (i = 0; i < numBuildings; i++)
 		{
-			TestSphereCollision(player, lateralSpeed, &buildingModels[i]);
+			if (IsNearCar(px, pz, buildingModels[i].gsObjectCoord.coord.t[0], buildingModels[i].gsObjectCoord.coord.t[2]))
+			{
+				TestSphereCollision(player, lateralSpeed, &buildingModels[i]);
+			}
 		}
 	}
 	
-	TestSphereCollision(player, lateralSpeed, &stand1);
-	TestSphereCollision(player, lateralSpeed, &stand2);
-
 	// Corner spheres (resolve the junction between perpendicular outer walls)
 	// before both capsules can fire simultaneously and trap the vehicle
 	{
-		int farWall = (int)trackArenaSize - WALL_FAR_GAP;
-		TestCornerCollision(player, lateralSpeed, WALL_NEAR, WALL_NEAR, 400);
-		TestCornerCollision(player, lateralSpeed, farWall,   WALL_NEAR, 400);
-		TestCornerCollision(player, lateralSpeed, WALL_NEAR, farWall,   400);
-		TestCornerCollision(player, lateralSpeed, farWall,   farWall,   400);
+		int nearX = (int)trackArenaX + WALL_NEAR;
+		int nearZ = (int)trackArenaZ + WALL_NEAR;
+		int farX  = (int)(trackArenaX + trackArenaSize) - WALL_FAR_GAP;
+		int farZ  = (int)(trackArenaZ + trackArenaSize) - WALL_FAR_GAP;
+		TestCornerCollision(player, lateralSpeed, nearX, nearZ, 400);
+		TestCornerCollision(player, lateralSpeed, farX,  nearZ, 400);
+		TestCornerCollision(player, lateralSpeed, nearX, farZ,  400);
+		TestCornerCollision(player, lateralSpeed, farX,  farZ,  400);
 	}
 
-	// Capsule collision for outer (perimeter) barriers
+	// Capsule collision for barriers
 	{
 		int i;
-		for (i = 0; i < numOuterBarriers; i++)
+		for (i = 0; i < numBarriers; i++)
 		{
-			const BarrierDef *b = &outerBarrierDefs[i];
-			TestCapsuleCollision(player, lateralSpeed, b->x, b->z, (b->rot == 2 || b->rot == 3) ? 0 : 1, 975, 100);
-		}
-	}
-
-	// Capsule collision for inner barriers of the active map
-	{
-		int i;
-		for (i = 0; i < numActiveInnerBarriers; i++)
-		{
-			const BarrierDef *b = &activeInnerDefs[i];
-			TestCapsuleCollision(player, lateralSpeed, b->x, b->z, (b->rot == 2 || b->rot == 3) ? 0 : 1, 975, 100);
+			const BarrierDef *b = &trackBarriers[i];
+			if (IsNearCar(px, pz, b->x, b->z))
+			{
+				TestCapsuleCollision(player, lateralSpeed, b->x, b->z, (b->rot == 2 || b->rot == 3) ? 0 : 1, 975, 100);
+			}
 		}
 	}
 }
@@ -682,34 +423,28 @@ static void DrawBuildingCulled(PlayerStruct *currentPlayer, ModelStruct *model, 
 
 void DrawWorldModels(PlayerStruct *currentPlayer, int currentBuffer) {
 
-	// Draw all buildings from the data table (extended draw distance)
+	// Draw the buildings (extended draw distance) and stands
 	{
 		int i;
 		for (i = 0; i < numBuildings; i++)
 		{
-			DrawBuildingCulled(currentPlayer, &buildingModels[i], currentBuffer);
+			if (trackBuildings[i].model == 2)
+			{
+				DrawModelCulled(currentPlayer, &buildingModels[i], buildingDivision, currentBuffer);
+			}
+			else
+			{
+				DrawBuildingCulled(currentPlayer, &buildingModels[i], currentBuffer);
+			}
 		}
 	}
 
-	// Draw the stands
-	DrawModelCulled(currentPlayer, &stand1, buildingDivision, currentBuffer);
-	DrawModelCulled(currentPlayer, &stand2, buildingDivision, currentBuffer);
-
-	// Draw outer (perimeter) barriers
+	// Draw the barriers
 	{
 		int i;
-		for (i = 0; i < numOuterBarriers; i++)
+		for (i = 0; i < numBarriers; i++)
 		{
-			DrawModelCulled(currentPlayer, &outerBarrierModels[i], barrierDivision, currentBuffer);
-		}
-	}
-
-	// Draw inner barriers for the active map
-	{
-		int i;
-		for (i = 0; i < numActiveInnerBarriers; i++)
-		{
-			DrawModelCulled(currentPlayer, &innerBarrierModels[i], barrierDivision, currentBuffer);
+			DrawModelCulled(currentPlayer, &barrierModels[i], barrierDivision, currentBuffer);
 		}
 	}
 

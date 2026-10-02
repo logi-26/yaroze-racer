@@ -14,21 +14,56 @@
 #define SEPERATION (1200)
 
 
-// The tracks (map_1.h to map_5.h), and which one to use (0 = map_1)
-#define NUM_TRACKS (5)
+// The tracks (map_1.h to map_6.h), and which one to use (0 = map_1)
+#define NUM_TRACKS (6)
 extern int selectedTrackIndex;
 
-// The size of the walled-in area of the world (square, from 0): the first two
-// tracks were made for a 30x30 map and only use part of the ground
+// The walled-in area of the world (from the map file)
+extern long trackArenaX;
+extern long trackArenaZ;
 extern long trackArenaSize;
 
 
 // An AI waypoint (world X, Z)
 typedef struct { long x; long z; } Waypoint;
 
+// A barrier (world X, Z), one-sided
+// rot:   0 / 1 = along Z facing +X / -X,  2 / 3 = along X facing +Z / -Z
+// model: 0 = BARRIER_1,  1 = BARRIER_2
+typedef struct { int x; int z; int rot; int model; } BarrierDef;
+
+// A building (world X, Y, Z)
+// rot:   0 = no rotation,  1 = 180-deg
+// model: 0 = BUILDING_1,   1 = BUILDING_2,  2 = STAND
+typedef struct { int x; int y; int z; int rot; int model; int collisionRadius; } BuildingDef;
+
+// A start position (world X, Z) and heading (0-4095: 0 = facing +Z, 1024 = facing +X)
+typedef struct { int x; int z; int heading; } StartDef;
+
+// The start positions of a track, player 1, player 2 and the the AI racers
+#define NUM_STARTS (7)
+#define START_PLAYER1 (0)
+#define START_PLAYER2 (1)
+#define START_AI (2)
+
+// The most barriers and buildings a track can have
+#define MAX_TRACK_BARRIERS (600)
+#define MAX_TRACK_BUILDINGS (120)
+
 // The selected track's AI waypoints, in race order (made in the map editor, set by InitialiseGround)
+// (for the race the start line is added to them as the last waypoint, so the laps change at the line)
 extern const Waypoint *trackWaypoints;
 extern int numTrackWaypoints;
+
+// The selected track's barriers and buildings (the arena walls, the buildings around it
+// and everything inside it)
+extern const BarrierDef *trackBarriers;
+extern int numTrackBarriers;
+extern const BuildingDef *trackBuildings;
+extern int numTrackBuildings;
+
+// The selected track's start positions
+extern const StartDef *trackStarts;
 
 
 typedef enum {
@@ -39,6 +74,7 @@ typedef enum {
 
 /************* FUNCTION PROTOTYPES *******************/
 void InitialiseGroundTextures();
+void SelectTrack();
 void InitialiseGround();
 void DrawGround(PlayerStruct *currentPlayer, GsOT *ot);
 int IsOnStartLine(long worldX, long worldZ);

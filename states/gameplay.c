@@ -17,6 +17,7 @@
 #include "../game/vehicle_colour.h"
 #include "../game/ai_racer.h"
 #include "../game/link_race.h"
+#include "../game/ground.h"
 
 PlayerStruct player1;
 PlayerStruct player2;
@@ -82,18 +83,23 @@ static void ColourVehicle(int vehicleIndex)
 static void StateInit(void)
 {
     long startX, startZ;
+    int startHeading;
 
     stateInitialised = 1;
 
+	// The selected track's data (its start positions are needed before the world is initialised)
+	SelectTrack();
+
 	// A link race if the link is connected (two players, no AI racers)
 	LinkRace_Begin();
-	LinkRace_GetStart(&startX, &startZ);
+	LinkRace_GetStart(&startX, &startZ, &startHeading);
 	
 	activeVehicle    = (selectedVehicleIndex <  5) ? &car3Attribs    : (selectedVehicleIndex < 10) ? &car2Attribs    : &car5Attribs;
 	activeSuspension = (selectedVehicleIndex <  5) ? &car3Suspension : (selectedVehicleIndex < 10) ? &car2Suspension : &car5Suspension;
 
 	// Initialise player 1 with the vehicle chosen on the select screen
     InitialisePlayer(&player1, 1, startX, CAR_GROUND_Y, startZ, (long*)playerTmdAddr[selectedVehicleIndex]);
+    SetPlayerHeading(&player1, startHeading);
     {
         SVECTOR modelRot = {0, 0, 0, 0};
         RotModel(&player1.gsModelCoord, &modelRot, 3072, 2048, 0);

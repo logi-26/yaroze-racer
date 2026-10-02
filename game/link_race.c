@@ -10,12 +10,6 @@
 #include "ground.h"
 #include "ai_racer.h"
 
-// Grid positions: player 1 at the front, player 2 behind (the first AI slot)
-#define P1_START_X      3605
-#define P1_START_Z      9273
-#define P2_START_X      3000
-#define P2_START_Z      8800
-
 static int active = 0;          // This race is a link race
 static int finishPlace;         // 0 while racing, then 1 or 2
 static int opponentFinished;    // The other player has finished
@@ -113,19 +107,14 @@ int LinkRace_IsActive(void)
 }
 
 
-// This console's grid position (player 1's in a normal race)
-void LinkRace_GetStart(long *x, long *z)
+// This console's grid position and heading (player 1's in a normal race), from the track
+void LinkRace_GetStart(long *x, long *z, int *heading)
 {
-    if (active && Link_GetPlayerNumber() == 2)
-    {
-        *x = P2_START_X;
-        *z = P2_START_Z;
-    }
-    else
-    {
-        *x = P1_START_X;
-        *z = P1_START_Z;
-    }
+    const StartDef *s = &trackStarts[(active && Link_GetPlayerNumber() == 2) ? START_PLAYER2 : START_PLAYER1];
+
+    *x = s->x;
+    *z = s->z;
+    *heading = s->heading;
 }
 
 
@@ -134,19 +123,12 @@ void LinkRace_InitOpponent(unsigned long *tmdAddr)
 {
     long x, z;
     SVECTOR modelRot = {0, 0, 0, 0};
+    const StartDef *s = &trackStarts[(Link_GetPlayerNumber() == 2) ? START_PLAYER1 : START_PLAYER2];
 
-    if (Link_GetPlayerNumber() == 2)
-    {
-        x = P1_START_X;
-        z = P1_START_Z;
-    }
-    else
-    {
-        x = P2_START_X;
-        z = P2_START_Z;
-    }
-
+    x = s->x;
+    z = s->z;
     InitialisePlayer(&player2, 2, x, CAR_GROUND_Y, z, tmdAddr);
+    SetPlayerHeading(&player2, s->heading);
     RotModel(&player2.gsModelCoord, &modelRot, 3072, 2048, 0);
     InitialiseOpponentRaceProgress(x, z);
     SendState();

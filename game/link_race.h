@@ -13,7 +13,7 @@ player's car (player2) where the other console says it is.
 /************* FUNCTION PROTOTYPES *******************/
 void LinkRace_Begin(void);
 int LinkRace_IsActive(void);
-void LinkRace_GetStart(long *x, long *z);
+void LinkRace_GetStart(long *x, long *z, int *heading);
 void LinkRace_InitOpponent(unsigned long *tmdAddr);
 void LinkRace_Update(void);
 int LinkRace_CanLeave(void);
