@@ -78,6 +78,8 @@ typedef enum {
 /************* FUNCTION PROTOTYPES *******************/
 void InitialiseGroundTextures();
 void SelectTrack();
+char (*TrackTiles(int track))[GROUND_MAX_X];
+const StartDef *TrackStarts(int track);
 void InitialiseGround();
 void DrawGround(PlayerStruct *currentPlayer, GsOT *ot);
 int IsOnStartLine(long worldX, long worldZ);

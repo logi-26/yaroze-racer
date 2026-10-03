@@ -280,6 +280,16 @@ static GsCOORDINATE2 tileCoord;             // Where the tile being drawn is
 static MATRIX tileRotation[4];              // 0, 90, 180, 270 degrees rotation (to reuse the same model for all quarter turns)
 
 
+// A tracks tiles and start positions (for the track select screens preview)
+char (*TrackTiles(int track))[GROUND_MAX_X] {
+	return tracks[track].tiles;
+}
+
+const StartDef *TrackStarts(int track) {
+	return tracks[track].starts;
+}
+
+
 // Point the track data (tiles, waypoints, arena, objects and start positions) at the selected track
 // (done first when a race starts, before anything is placed on the track)
 void SelectTrack() {
