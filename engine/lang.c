@@ -17,8 +17,13 @@ static const char* strings_english[TXT_COUNT] =
 	"TWO PLAYER",
     "LINK GAME",
     "OPTIONS",
-    "QUIT GAME",
     "YAROZE ENGINE",
+
+    /*****************************************************
+    GAME MODE MENU (one player)
+    *****************************************************/
+    "SINGLE RACE",
+    "TOURNAMENT",
 
     /*****************************************************
     MEMORY CARD MENU
@@ -79,8 +84,13 @@ static const char* strings_french[TXT_COUNT] =
 	"DEUX JOUEURS",
     "PARTIE EN RESEAU",
     "OPTIONS",
-    "QUITTER",
     "MOTEUR YAROZE",
+
+    /*****************************************************
+    GAME MODE MENU (one player)
+    *****************************************************/
+    "COURSE SIMPLE",
+    "TOURNOI",
 
     /*****************************************************
     MEMORY CARD MENU
@@ -142,8 +152,13 @@ static const char* strings_dutch[TXT_COUNT] =
 	"TWEE SPELERS",
     "LINKSPEL",
     "OPTIES",
-    "AFSLUITEN",
     "YAROZE-ENGINE",
+
+    /*****************************************************
+    GAME MODE MENU (one player)
+    *****************************************************/
+    "ENKELE RACE",
+    "TOERNOOI",
 
     /*****************************************************
     MEMORY CARD MENU
@@ -205,8 +220,13 @@ static const char* strings_german[TXT_COUNT] =
 	"ZWEI SPIELER",
     "VERBINDUNGSSPIEL",
     "OPTIONEN",
-    "SPIEL BEENDEN",
     "YAROZE-ENGINE",
+
+    /*****************************************************
+    GAME MODE MENU (one player)
+    *****************************************************/
+    "EINZELRENNEN",
+    "TURNIER",
 
     /*****************************************************
     MEMORY CARD MENU

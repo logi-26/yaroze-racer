@@ -251,9 +251,9 @@ int UpdateGraphicsSystem(int activeBuffer) {
         GsSortClear(r, g, b, &WorldOrderingTable[activeBuffer]);
         GsDrawOt(&WorldOrderingTable[activeBuffer]);
 
-        // Bottom half
+        // Bottom half (GsSortClear fills the whole buffer, not just the draw
+        // environments clip, so it would wipe the top half. The top halfs clear covers both)
         PutDrawEnv(&SplitScreenInfo[activeBuffer + 2]);
-        GsSortClear(r, g, b, &WorldOrderingTable[activeBuffer + 2]);
         GsDrawOt(&WorldOrderingTable[activeBuffer + 2]);
     } else {
 #endif

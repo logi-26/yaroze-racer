@@ -8,6 +8,7 @@
 
 int selectedVehicleIndex = 0;
 int remoteVehicleIndex = -1;    // The other player's vehicle in a link game (-1: none)
+int player2VehicleIndex = 0;    // Player 2's vehicle in a two player race
 
 // Hatchback car (car3)
 VehicleAttributes car3Attribs = {
@@ -188,7 +189,7 @@ int IsPointInView(PlayerStruct *player, long x, long z, long ahead, long behind,
     // Position relative to the car (its forward (local Z) and right (local X) axes)
     forward = (dx * m->m[0][2] + dz * m->m[2][2]) >> 12;
     lateral = (dx * m->m[0][0] + dz * m->m[2][0]) >> 12;
-    if (rearViewActive)
+    if ((player == &player2) ? rearViewActive2 : rearViewActive)
         forward = -forward;
 
     if (forward > ahead || forward < -behind)

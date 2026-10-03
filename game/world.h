@@ -16,6 +16,7 @@ extern GsRVIEW2 Camera[2];
 
 // Set to 1 while R1 is held to activate the rear-view camera
 extern int rearViewActive;
+extern int rearViewActive2;
 
 // Set to 1 while Up+Select are held to activate the birds-eye overview camera
 extern int birdsEyeActive;

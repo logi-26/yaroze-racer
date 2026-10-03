@@ -69,7 +69,9 @@ extern long viewAhead;
 #define VIEW_AHEAD  viewAhead
 #define VIEW_BEHIND 3200
 #define VIEW_SIDE   1800
-#define VIEW_CAMERA_BACK 1500
+// How far behind the car the chase camera is (further back in a two player race)
+extern int NumberOfPlayers;
+#define VIEW_CAMERA_BACK ((NumberOfPlayers == 2) ? 1800 : 1500)
 #define VIEW_SPREAD 840
 
 // The race cameras' projection distance (the fog and the headlight glows depend on it)

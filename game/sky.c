@@ -13,13 +13,17 @@ static unsigned short tpageL, tpageR;
 // The skys top row in its texture page
 static u_char skyV;
 
-// Whether the bottom of the sky fades to black (for the nights black fog)
-static int skyFade = 0;
+// The brightness the bottom of the sky fades to (0 = black for the nights black fog, 128 = no fade)
+static int skyFadeTo = 128;
 
 // Used for creating the sky fading effect (the bottom of the sky fades to black, for the nights black fog)
 #define SKY_HEIGHT       100
 #define SKY_FADE_HEIGHT  40
 #define SKY_FADE_STEP    4
+
+// Each half of the screen in two player
+#define SKY_HEIGHT_SPLIT       36
+#define SKY_FADE_HEIGHT_SPLIT  16
 
 // Fixed-point drift accumulator (4 fractional bits, range 0..8191 = 512 pixels * 16)
 // Increments by 2 per frame => 6 pixels/second at 50fps, full cycle 82 seconds
@@ -55,9 +59,9 @@ void InitialiseSky(u_long texMemAddr) {
 }
 
 
-// Fade the bottom of the sky to black (on for black fog)
-void SetSkyFade(int on) {
-    skyFade = on;
+// Fade the bottom of the sky to a brightness (0 = black for black fog, 128 = no fade)
+void SetSkyFade(int fadeTo) {
+    skyFadeTo = fadeTo;
 }
 
 
@@ -117,7 +121,7 @@ static void DrawSkyBand(GsOT *ot, int scroll, int y, int h, int bright) {
 void DrawSky(GsOT *ot) {
 
     int scroll;       // Horizontal sky offset in texture space (0-511)
-    int y;
+    int y, height, fade;
 
     // Advance cloud drift (6 pixels/second at 50fps)
     skyDrift = (skyDrift + 2) & 8191;
@@ -126,15 +130,19 @@ void DrawSky(GsOT *ot) {
     scroll = (int)((player1.rotation.vy * 512L) / (long)ONE);
     scroll = ((scroll + (int)(skyDrift >> 4)) % 512 + 512) % 512;
 
-    if (!skyFade) {
-        DrawSkyBand(ot, scroll, 0, SKY_HEIGHT, 128);
+    // Half the screen in two player (with the horizon higher up it)
+    height = (gScreenMode == SCREEN_MODE_SPLITSCREEN) ? SKY_HEIGHT_SPLIT : SKY_HEIGHT;
+    fade   = (gScreenMode == SCREEN_MODE_SPLITSCREEN) ? SKY_FADE_HEIGHT_SPLIT : SKY_FADE_HEIGHT;
+
+    if (skyFadeTo >= 128) {
+        DrawSkyBand(ot, scroll, 0, height, 128);
         return;
     }
 
-    // The sky, then the bands fading to black at the horizon
-    DrawSkyBand(ot, scroll, 0, SKY_HEIGHT - SKY_FADE_HEIGHT, 128);
-    for (y = SKY_HEIGHT - SKY_FADE_HEIGHT; y < SKY_HEIGHT; y += SKY_FADE_STEP) {
-        int bright = 128 * (SKY_HEIGHT - SKY_FADE_STEP - y) / (SKY_FADE_HEIGHT - SKY_FADE_STEP);
+    // The sky, then the bands fading towards skyFadeTo at the horizon
+    DrawSkyBand(ot, scroll, 0, height - fade, 128);
+    for (y = height - fade; y < height; y += SKY_FADE_STEP) {
+        int bright = skyFadeTo + (128 - skyFadeTo) * (height - SKY_FADE_STEP - y) / (fade - SKY_FADE_STEP);
         DrawSkyBand(ot, scroll, y, SKY_FADE_STEP, bright);
     }
 }

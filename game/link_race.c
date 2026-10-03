@@ -35,14 +35,16 @@ static void MoveOpponent(long x, long z, int heading)
 }
 
 
-// Collision detection for the remote player (its console does the same for its car)
-static void CollideWithOpponent(void)
+// Collision between two cars
+// The first one is pushed out to the edge of the other, and slowed down
+// (in a link race only our car is moved, the other console does the same for its car)
+void CollideCars(PlayerStruct *car, long *lateralSpeed, PlayerStruct *other)
 {
     long dx, dz, combinedRadius, absDx, absDz, approxDist;
 
-    dx = player1.gsObjectCoord.coord.t[0] - player2.gsObjectCoord.coord.t[0];
-    dz = player1.gsObjectCoord.coord.t[2] - player2.gsObjectCoord.coord.t[2];
-    combinedRadius = player1.collisionRadius + player2.collisionRadius;
+    dx = car->gsObjectCoord.coord.t[0] - other->gsObjectCoord.coord.t[0];
+    dz = car->gsObjectCoord.coord.t[2] - other->gsObjectCoord.coord.t[2];
+    combinedRadius = car->collisionRadius + other->collisionRadius;
 
     if (dx > combinedRadius || dx < -combinedRadius || dz > combinedRadius || dz < -combinedRadius)
         return;
@@ -54,23 +56,23 @@ static void CollideWithOpponent(void)
     absDz = dz < 0 ? -dz : dz;
     approxDist = ((absDx > absDz ? absDx : absDz) * 123 + (absDx > absDz ? absDz : absDx) * 51) >> 7;
 
-    // Push our car out to the edge of the other one, and slow it down
+    // Push the car out to the edge of the other one, and slow it down
     if (approxDist < 1)
     {
-        player1.gsObjectCoord.coord.t[0] += combinedRadius;
+        car->gsObjectCoord.coord.t[0] += combinedRadius;
     }
     else
     {
-        player1.gsObjectCoord.coord.t[0] = player2.gsObjectCoord.coord.t[0] + (dx * combinedRadius) / approxDist;
-        player1.gsObjectCoord.coord.t[2] = player2.gsObjectCoord.coord.t[2] + (dz * combinedRadius) / approxDist;
+        car->gsObjectCoord.coord.t[0] = other->gsObjectCoord.coord.t[0] + (dx * combinedRadius) / approxDist;
+        car->gsObjectCoord.coord.t[2] = other->gsObjectCoord.coord.t[2] + (dz * combinedRadius) / approxDist;
     }
-    player1.gsObjectCoord.flg = 0;
-    player1.speed /= 2;
-    player1_lateralSpeed = 0;
+    car->gsObjectCoord.flg = 0;
+    car->speed /= 2;
+    *lateralSpeed = 0;
 }
 
 
-// Send our car's state to the other console
+// Send our cars state to the other console
 static void SendState(void)
 {
     long x = player1.gsObjectCoord.coord.t[0];
@@ -91,7 +93,7 @@ static void SendState(void)
 Public Interface
 *****************************************************/
 
-// Call when the race starts: it's a link race if the link is connected
+// Call when the race starts: its a link race if the link is connected
 void LinkRace_Begin(void)
 {
     active = (Link_GetStatus() == LINK_CONNECTED && remoteVehicleIndex >= 0);
@@ -166,7 +168,7 @@ void LinkRace_Update(void)
         }
     }
 
-    CollideWithOpponent();
+    CollideCars(&player1, &player1_lateralSpeed, &player2);
 
     // Race positions between the two players
     UpdateOpponentRaceProgress(player2.gsObjectCoord.coord.t[0], player2.gsObjectCoord.coord.t[2]);

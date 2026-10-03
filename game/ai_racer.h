@@ -17,22 +17,22 @@
 typedef struct {
     PlayerStruct player;
     long lateralSpeed;
-    long roll;           		// body roll state
-    long pitch;          		// body pitch state
-    int gear;           		// current gear
-    int waypointIndex;       	// next waypoint for navigation (PassedWaypoint gate system)
-    int lapCount;            	// completed laps (navigation system)
-    int waypointsSinceLap;   	// waypoints passed since last lap (must hit 3/4 circuit before crossing counts)
-    int racePosition;        	// current race position (1 = leading)
-    int raceSegIdx;          	// current circuit segment for race-progress scoring (scan-based, independent of waypointIndex)
-    int raceLapCount;        	// laps completed per race-progress tracker
-    int raceSegDistSinceLap; 	// segments advanced by race tracker since last lap start
-    int steerSmooth;    		// smoothed steering value
+    long roll;           		// Body roll state
+    long pitch;          		// Body pitch state
+    int gear;           		// Current gear
+    int waypointIndex;       	// Next waypoint for navigation (PassedWaypoint gate system)
+    int lapCount;            	// Completed laps (navigation system)
+    int waypointsSinceLap;   	// Waypoints passed since last lap (must hit 3/4 circuit before crossing counts)
+    int racePosition;        	// Current race position (1 = leading)
+    int raceSegIdx;          	// Current circuit segment for race-progress scoring (scan-based, independent of waypointIndex)
+    int raceLapCount;        	// Laps completed per race-progress tracker
+    int raceSegDistSinceLap; 	// Segments advanced by race tracker since last lap start
+    int steerSmooth;    		// Smoothed steering value
     int recoverTimer;   		// > 0 while reversing away from a wall
     int braking;        		// 1 while braking (for its brake lights)
-    int stuckTimer;     		// counts down to the next position-based stuck check
-    long lastPosX;      		// world X at the start of the stuck-check window
-    long lastPosZ;      		// world Z at the start of the stuck-check window
+    int stuckTimer;     		// Counts down to the next position-based stuck check
+    long lastPosX;      		// World X at the start of the stuck-check window
+    long lastPosZ;      		// World Z at the start of the stuck-check window
     VehicleAttributes *attribs;
     SuspensionConfig *suspension;
 } AIRacer;
@@ -43,6 +43,10 @@ extern AIRacer aiRacers[NUM_AI_RACERS];
 
 // 1 if any AI racer is currently braking
 extern int aiRacerBraking;
+
+// Whether there are AI racers (not in a link race or a two player race)
+int AIRacersActive(void);
+int OpponentRaceLapCount(void);
 
 // Player race-progress tracking
 extern int playerWaypointIndex;

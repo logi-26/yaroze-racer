@@ -11,8 +11,13 @@ typedef enum
 	TXT_TWO_PLAYER,
     TXT_LINK_GAME,
     TXT_OPTIONS,
-    TXT_QUIT_GAME,
     TXT_GAME_TITLE,
+
+    /*****************************************************
+    GAME MODE MENU (one player)
+    *****************************************************/
+    TXT_SINGLE_RACE,
+    TXT_TOURNAMENT,
 
     /*****************************************************
     MEMORY CARD MENU

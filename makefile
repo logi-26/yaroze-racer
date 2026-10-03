@@ -86,7 +86,7 @@ state_manager.o: engine/state_manager.c engine/state_manager.h engine/link.h eng
 	$(CC) $(CFLAGS) -c engine/state_manager.c
 
 menu_main.o: states/menu_main.c engine/state_manager.h engine/font.h engine/colours.h engine/controller.h engine/audio.h engine/graphics.h
-	$(CC) $(CFLAGS) -c states/menu_main.c
+	$(CC) $(CFLAGS) -I. -c states/menu_main.c
 
 menu_memcard.o: states/menu_memcard.c engine/state_manager.h engine/font.h engine/colours.h engine/controller.h engine/audio.h engine/graphics.h
 	$(CC) $(CFLAGS) -c states/menu_memcard.c

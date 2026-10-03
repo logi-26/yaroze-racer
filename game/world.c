@@ -15,6 +15,7 @@ GsRVIEW2 Camera[2];
 u_long vsyncInterval = 0;
 int NumberOfPlayers = 1;
 int rearViewActive = 0;
+int rearViewActive2 = 0;        // Player 2's rear view (two player races)
 int birdsEyeActive = 0;
 
 
@@ -99,6 +100,7 @@ typedef struct {
 	int tailGlow;                   		// The tail lights glow when not braking (they always do when braking)
 	long viewAhead;                 		// How far ahead things are drawn (VIEW_AHEAD), and the buildings
 	long buildingViewAhead;
+	int skyFadeTo;                  		// The brightness the bottom of the sky fades to (0 = black, 128 = no fade)
 } SceneLighting;
 
 // Night (sky.tim)
@@ -113,12 +115,13 @@ static const SceneLighting nightLighting = {
 	4500, 11000,
 	SKY_ALT_TEX_MEM_ADDR,
 	1, 1,
-	11000, 12000
+	11000, 12000,
+	0
 };
 
 // Day (sky2.tim)
 // Natural sunlight from high up with a pale blue fog-haze to match the daytime sky texture.
-// More pop-in than the nightime because the fog is lighter and the sky is brighter, but the track is more visible.
+// More pop-in than the night-time because the fog is lighter and the sky is brighter, but the track is more visible.
 static const SceneLighting dayLighting = {
 	{ -40, 100,  60, 0xa0, 0xa0, 0x98 },
 	{  60,  30, -80, 0x40, 0x48, 0x58 },
@@ -127,8 +130,23 @@ static const SceneLighting dayLighting = {
 	3000, 10000,
 	SKY_TEX_MEM_ADDR,
 	0, 0,
-	11000, 12000
+	11000, 12000,
+	128
 };
+
+// Two player race: (how far ahead things are drawn, the fog ends there)
+#define TWO_PLAYER_VIEW_AHEAD 7500
+
+// Two player race, fog distance
+#define TWO_PLAYER_FOG_FAR    6000
+
+// Two player race, the chase cameras are a little further back
+#define TWO_PLAYER_CAMERA_Z   -1800
+
+// Two player race in the day: (a darker haze, about 64% of the day haze)
+#define TWO_PLAYER_DAY_FOG_R  96
+#define TWO_PLAYER_DAY_FOG_G  108
+#define TWO_PLAYER_DAY_FOG_B  122
 
 // The lighting in use (for FogAmount)
 static const SceneLighting *sceneLighting = &nightLighting;
@@ -188,7 +206,7 @@ static void InitialiseLighting(const SceneLighting *s) {
 	// Beyond the view distance, the screen is cleared to the fog colour
 	// and with black fog the sky fades to black at the horizon to match
 	SetBackgroundColor(s->fogR, s->fogG, s->fogB);
-	SetSkyFade(s->fogR == 0 && s->fogG == 0 && s->fogB == 0);
+	SetSkyFade(s->skyFadeTo);
 }
 
 
@@ -208,7 +226,25 @@ void InitialiseWorld() {
 
 	// The sky and the lighting for the night or the day
 	{
+		static SceneLighting twoPlayerLighting;
 		const SceneLighting *s = nightMode ? &nightLighting : &dayLighting;
+
+		if (NumberOfPlayers == 2)
+		{
+			twoPlayerLighting = *s;
+			twoPlayerLighting.viewAhead = TWO_PLAYER_VIEW_AHEAD;
+			twoPlayerLighting.buildingViewAhead = TWO_PLAYER_VIEW_AHEAD + 1000;
+			// At nigh, the same fog as one player
+			if (!nightMode)
+			{
+				twoPlayerLighting.fogNear = s->fogNear / 2;
+				twoPlayerLighting.fogFar = TWO_PLAYER_FOG_FAR;
+				twoPlayerLighting.fogR = TWO_PLAYER_DAY_FOG_R;
+				twoPlayerLighting.fogG = TWO_PLAYER_DAY_FOG_G;
+				twoPlayerLighting.fogB = TWO_PLAYER_DAY_FOG_B;
+			}
+			s = &twoPlayerLighting;
+		}
 		InitialiseSky(s->sky);
 		InitialiseLighting(s);
 	}
@@ -605,14 +641,16 @@ void RenderWorldPlayer1(int currentBuffer) {
 	// Draw player 1
 	DrawPlayer(&player1, &WorldOrderingTable[currentBuffer]);
 
-	// Draw AI racers (none in a link race)
-	if (!LinkRace_IsActive())
+	// Draw AI racers (none in a link race or a two player race)
+	if (AIRacersActive())
 	{
 		DrawAIRacers(&player1, &WorldOrderingTable[currentBuffer]);
 	}
 
 	// If it is 2 player mode or a link race, draw the second player vehicle
-	if (NumberOfPlayers == 2 || LinkRace_IsActive()) 
+	// (only within the view distance, like the AI racers)
+	if ((NumberOfPlayers == 2 || LinkRace_IsActive()) &&
+		IsObjectInView(&player1, &player2.gsObjectCoord, VIEW_AHEAD, VIEW_BEHIND, VIEW_SIDE))
 	{
 		DrawPlayer(&player2, &WorldOrderingTable[currentBuffer]);
 	}
@@ -634,8 +672,11 @@ void RenderWorldPlayer2(int currentBuffer) {
 	// Draw the world
 	DrawWorld(&player2, currentBuffer+2);
 
-	// Draw player 1
-	DrawPlayer(&player1, &WorldOrderingTable[currentBuffer+2]);
+	// Draw player 1 (only within the view distance)
+	if (IsObjectInView(&player2, &player1.gsObjectCoord, VIEW_AHEAD, VIEW_BEHIND, VIEW_SIDE))
+	{
+		DrawPlayer(&player1, &WorldOrderingTable[currentBuffer+2]);
+	}
 
 	// Draw player 2
 	DrawPlayer(&player2, &WorldOrderingTable[currentBuffer+2]);
@@ -683,15 +724,10 @@ void RenderWorld() {
 	UpdateCameraLag();
 
 	// Set camera mode — all fields written every frame so any mode switch is clean.
-	// Bird's-eye uses world-space coordinates; the other two are car-local
-	// (the car sits on the ground at Y CAR_GROUND_Y: the camera heights are
-	// relative to that).
+	// Birds-eye uses world-space coordinates; the other two are car-local
 	if (birdsEyeActive) 
 	{
-		// Fixed overhead view of the whole track.
-		// Camera sits above and slightly south of centre so the view direction
-		// is near-vertical but not exactly down (avoids a gimbal singularity).
-		// Track spans roughly X 3000-32000, Z 3000-32000 — centre ≈ (17500, 17000).
+		// Fixed overhead view of the whole track (just for testing)
 		GsSetProjection(150);
 		GsSetLightMode(0);              // No fog in birdseye view (it hides the whole track)
 		Camera[0].super = WORLD;
@@ -724,7 +760,7 @@ void RenderWorld() {
 		{
 			// Normal chase camera — vpx is left to UpdateCameraLag for sway
 			Camera[0].vpy = -694;
-			Camera[0].vpz = -1500;
+			Camera[0].vpz = (NumberOfPlayers == 2) ? TWO_PLAYER_CAMERA_Z : -1500;
 			Camera[0].vrx = 0;
 			Camera[0].vry = -394;
 			Camera[0].vrz = 0;
@@ -737,9 +773,27 @@ void RenderWorld() {
 	// Render the world for player 1
 	RenderWorldPlayer1(currentBuffer);
 	
-	// If two player mode, render the world for player 2
-	if (NumberOfPlayers == 2) 
+	// If two player mode, render the world for player 2 (with its own chase or rear camera)
+	if (NumberOfPlayers == 2)
 	{
+		Camera[1].super = &player2.gsObjectCoord;
+		Camera[1].rz = 0;
+		Camera[1].vpx = 0;
+		Camera[1].vpy = -694;
+		if (rearViewActive2)
+		{
+			Camera[1].vpz = -600;
+			Camera[1].vrx = 0;
+			Camera[1].vry = 6;
+			Camera[1].vrz = -3000;
+		}
+		else
+		{
+			Camera[1].vpz = TWO_PLAYER_CAMERA_Z;
+			Camera[1].vrx = 0;
+			Camera[1].vry = -394;
+			Camera[1].vrz = 0;
+		}
 		RenderWorldPlayer2(currentBuffer);
 	}
 }

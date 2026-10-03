@@ -353,7 +353,7 @@ static int BrightestBeam(long x, long z, PlayerStruct *self, PlayerStruct **by) 
 	if (NumberOfPlayers == 2 || LinkRace_IsActive()) {
 		TRY(&player2);
 	}
-	if (!LinkRace_IsActive()) {
+	if (AIRacersActive()) {
 		for (i = 0; i < NUM_AI_RACERS; i++) {
 			TRY(&aiRacers[i].player);
 		}
@@ -410,7 +410,7 @@ void DrawHeadlights(PlayerStruct *viewer, int currentBuffer) {
 	AddCarBox(viewer, &player1);
 	if (NumberOfPlayers == 2 || LinkRace_IsActive())
 		AddCarBox(viewer, &player2);
-	if (!LinkRace_IsActive()) {
+	if (AIRacersActive()) {
 		for (i = 0; i < NUM_AI_RACERS; i++)
 			AddCarBox(viewer, &aiRacers[i].player);
 	}
@@ -420,7 +420,7 @@ void DrawHeadlights(PlayerStruct *viewer, int currentBuffer) {
 	if (NumberOfPlayers == 2 || LinkRace_IsActive())
 		DrawCarLights(viewer, &player2, 1, player2_isBraking, ot);
 
-	if (!LinkRace_IsActive()) {
+	if (AIRacersActive()) {
 		for (i = 0; i < NUM_AI_RACERS; i++)
 			DrawCarLights(viewer, &aiRacers[i].player, 2 + i, aiRacers[i].braking, ot);
 	}

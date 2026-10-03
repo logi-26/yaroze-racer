@@ -2,6 +2,7 @@
 #define LINK_RACE_H
 
 #include <libps.h>
+#include "player.h"
 
 /****************************************
 Link race: two players, one on each console, and no AI racers. 
@@ -14,6 +15,7 @@ player's car (player2) where the other console says it is.
 void LinkRace_Begin(void);
 int LinkRace_IsActive(void);
 void LinkRace_GetStart(long *x, long *z, int *heading);
+void CollideCars(PlayerStruct *car, long *lateralSpeed, PlayerStruct *other);
 void LinkRace_InitOpponent(unsigned long *tmdAddr);
 void LinkRace_Update(void);
 int LinkRace_CanLeave(void);

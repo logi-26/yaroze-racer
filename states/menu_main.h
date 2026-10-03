@@ -4,6 +4,7 @@
 
 /************* FUNCTION PROTOTYPES *******************/
 void StateMenuMain(void);
+void MenuMainReturnFromVehicleSelect(void);
 /*****************************************************/
 
 #endif

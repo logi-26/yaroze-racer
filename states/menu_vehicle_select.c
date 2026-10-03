@@ -1,4 +1,5 @@
 #include "menu_vehicle_select.h"
+#include "menu_main.h"
 
 #include "../engine/state_manager.h"
 #include "../engine/font.h"
@@ -13,6 +14,7 @@
 #include "../game/vehicle_colour.h"
 #include "../game/player.h"
 #include "../game/world.h"
+#include "../game/game.h"
 
 #define NUM_MODELS   3
 #define MAX_VARIANTS 5
@@ -54,22 +56,79 @@ static int localReady = 0;          	// Link game (this player has pressed Start
 static PlayerStruct showroomCar;
 
 
-// Swap the vehicle model
-static void SwapTMD(unsigned long *addr)
+// Two player race: the same model as player 1's has player 1's colour (the cars share the same texture)
+static int p2ModelIndex = 0;
+static int p2VariantIndex = 0;
+static int p2Ready = 0;
+static PlayerStruct showroomCar2;
+
+static int IsTwoPlayer(void);
+
+
+// Swap a showroom vehicle's model
+static void SwapTMD(PlayerStruct *car, unsigned long *addr)
 {
     addr++;
     GsMapModelingData(addr);
     addr++;
     addr++;
-    GsLinkObject4(addr, &showroomCar.gsObjectHandler, 0);
+    GsLinkObject4((unsigned long)addr, &car->gsObjectHandler, 0);
 }
 
 
-// Set the vehicle orientation
-static void ApplyShowroomOrientation(void)
+// Set a showroom vehicle's orientation
+static void ApplyShowroomOrientation(PlayerStruct *car)
 {
     SVECTOR modelRot = {1024, 0, 0};
-    RotModel(&showroomCar.gsModelCoord, &modelRot, 0, 0, 0);
+    RotModel(&car->gsModelCoord, &modelRot, 0, 0, 0);
+}
+
+
+// Load a model's texture and colour it as the variant
+static void ColourModel(int model, int variant)
+{
+    LoadTexture(carTexAddr[model][variant]);
+    if (model == 0)
+	{
+        ApplyVehicleColour(carTexAddr[0][variant], CAR3_BODY_CLUT_START, CAR3_BODY_CLUT_END, car3Colours[variant]);
+    }
+	else if (model == 1)
+	{
+        ApplyVehicleColour(carTexAddr[1][variant], CAR2_BODY_CLUT_START_1, CAR2_BODY_CLUT_END_1, car2Colours[variant]);
+        ApplyVehicleColour(carTexAddr[1][variant], CAR2_BODY_CLUT_START_2, CAR2_BODY_CLUT_END_2, car2Colours[variant]);
+    }
+	else if (model == 2)
+	{
+        ApplyVehicleColour(carTexAddr[2][variant], CAR5_BODY_CLUT_START_1, CAR5_BODY_CLUT_END_1, car5Colours[variant]);
+        ApplyVehicleColour(carTexAddr[2][variant], CAR5_BODY_CLUT_START_2, CAR5_BODY_CLUT_END_2, car5Colours[variant]);
+        ApplyVehicleColour(carTexAddr[2][variant], CAR5_BODY_CLUT_START_3, CAR5_BODY_CLUT_END_3, car5Colours[variant]);
+    }
+}
+
+
+// Decode a vehicle index back to its model and variant (using the per-model offsets)
+static void DecodeVehicle(int index, int *model, int *variant)
+{
+	*model = (index < modelOffset[1]) ? 0 : (index < modelOffset[2]) ? 1 : 2;
+	*variant = index - modelOffset[*model];
+}
+
+
+// Set player 2's selected vehicle (the same model as player 1's has player 1's colour)
+static void ApplySelection2(void)
+{
+	if (p2ModelIndex == selectedModelIndex)
+	{
+		p2VariantIndex = selectedVariantIndex;
+	}
+	else
+	{
+		ColourModel(p2ModelIndex, p2VariantIndex);
+	}
+
+	SwapTMD(&showroomCar2, (unsigned long*)carTmdAddr[p2ModelIndex][p2VariantIndex]);
+	ApplyShowroomOrientation(&showroomCar2);
+	player2VehicleIndex = modelOffset[p2ModelIndex] + p2VariantIndex;
 }
 
 
@@ -77,76 +136,48 @@ static void StateInit(void)
 {
     stateInitialised = 1;
     localReady = 0;
+	p2Ready = 0;
 
-	// Decode selectedVehicleIndex back to model + variant using per-model offsets
-    if (selectedVehicleIndex < modelOffset[1]) 
-	{ 
-		selectedModelIndex = 0; 
-	}
-    else if (selectedVehicleIndex < modelOffset[2]) 
-	{ 
-		selectedModelIndex = 1; 
-	}
-    else { 
-		selectedModelIndex = 2; 
-	}
-	
-    selectedVariantIndex = selectedVehicleIndex - modelOffset[selectedModelIndex];
-	
+	DecodeVehicle(selectedVehicleIndex, &selectedModelIndex, &selectedVariantIndex);
+
 	// Set the background colour for the menu
     SetBackgroundColor(60, 60, 90);
-    
+
 	// Initialse the light
 	InitialiseLight(&flLights[0], 0, -100, -100, -100, 0xff, 0xff, 0xff);
     InitialiseLight(&flLights[1], 1, 1000, 1000, 1000, 0xcc, 0xcc, 0xcc);
     GsSetAmbient(0x200, 0x200, 0x200);
     GsSetLightMode(0);
 
-	// Initialise the vehicle
+	// Initialise the vehicle, load its texture and apply its colour, facing towards the screen
     InitialisePlayer(&showroomCar, 1, 0, 0, 0, (unsigned long*)carTmdAddr[selectedModelIndex][selectedVariantIndex]);
-	
-	// Load the texture for the vehicle and apply colour variant
-    LoadTexture(carTexAddr[selectedModelIndex][selectedVariantIndex]);
-    if (selectedModelIndex == 0) 
-	{
-        ApplyVehicleColour(carTexAddr[0][selectedVariantIndex], CAR3_BODY_CLUT_START, CAR3_BODY_CLUT_END, car3Colours[selectedVariantIndex]);
-    } else if (selectedModelIndex == 1) 
-	{
-        ApplyVehicleColour(carTexAddr[1][selectedVariantIndex], CAR2_BODY_CLUT_START_1, CAR2_BODY_CLUT_END_1, car2Colours[selectedVariantIndex]);
-        ApplyVehicleColour(carTexAddr[1][selectedVariantIndex], CAR2_BODY_CLUT_START_2, CAR2_BODY_CLUT_END_2, car2Colours[selectedVariantIndex]);
-    } else if (selectedModelIndex == 2) 
-	{
-        ApplyVehicleColour(carTexAddr[2][selectedVariantIndex], CAR5_BODY_CLUT_START_1, CAR5_BODY_CLUT_END_1, car5Colours[selectedVariantIndex]);
-        ApplyVehicleColour(carTexAddr[2][selectedVariantIndex], CAR5_BODY_CLUT_START_2, CAR5_BODY_CLUT_END_2, car5Colours[selectedVariantIndex]);
-        ApplyVehicleColour(carTexAddr[2][selectedVariantIndex], CAR5_BODY_CLUT_START_3, CAR5_BODY_CLUT_END_3, car5Colours[selectedVariantIndex]);
-    }
+	ColourModel(selectedModelIndex, selectedVariantIndex);
+	ApplyShowroomOrientation(&showroomCar);
 
-	// Set the vehicles rotation (facing towards the screen)
-	ApplyShowroomOrientation();
+	// If it is a two player race, initialise player 2's vehicle (the same model as player 1's has player 1's colour)
+	if (IsTwoPlayer())
+	{
+		SetScreenMode(SCREEN_MODE_SPLITSCREEN);
+		DecodeVehicle(player2VehicleIndex, &p2ModelIndex, &p2VariantIndex);
+		InitialisePlayer(&showroomCar2, 2, 0, 0, 0, (unsigned long*)carTmdAddr[p2ModelIndex][p2VariantIndex]);
+		ApplySelection2();
+	}
 }
 
 
 // Set the slected vehicle for the player
 static void ApplySelection(void)
 {
-    LoadTexture(carTexAddr[selectedModelIndex][selectedVariantIndex]);
-    if (selectedModelIndex == 0) 
-	{
-        ApplyVehicleColour(carTexAddr[0][selectedVariantIndex], CAR3_BODY_CLUT_START, CAR3_BODY_CLUT_END, car3Colours[selectedVariantIndex]);
-    } else if (selectedModelIndex == 1) 
-	{
-        ApplyVehicleColour(carTexAddr[1][selectedVariantIndex], CAR2_BODY_CLUT_START_1, CAR2_BODY_CLUT_END_1, car2Colours[selectedVariantIndex]);
-        ApplyVehicleColour(carTexAddr[1][selectedVariantIndex], CAR2_BODY_CLUT_START_2, CAR2_BODY_CLUT_END_2, car2Colours[selectedVariantIndex]);
-    } else if (selectedModelIndex == 2) 
-	{
-        ApplyVehicleColour(carTexAddr[2][selectedVariantIndex], CAR5_BODY_CLUT_START_1, CAR5_BODY_CLUT_END_1, car5Colours[selectedVariantIndex]);
-        ApplyVehicleColour(carTexAddr[2][selectedVariantIndex], CAR5_BODY_CLUT_START_2, CAR5_BODY_CLUT_END_2, car5Colours[selectedVariantIndex]);
-        ApplyVehicleColour(carTexAddr[2][selectedVariantIndex], CAR5_BODY_CLUT_START_3, CAR5_BODY_CLUT_END_3, car5Colours[selectedVariantIndex]);
-    }
-	
-    SwapTMD((unsigned long*)carTmdAddr[selectedModelIndex][selectedVariantIndex]);
-    ApplyShowroomOrientation();
+	ColourModel(selectedModelIndex, selectedVariantIndex);
+    SwapTMD(&showroomCar, (unsigned long*)carTmdAddr[selectedModelIndex][selectedVariantIndex]);
+    ApplyShowroomOrientation(&showroomCar);
     selectedVehicleIndex = modelOffset[selectedModelIndex] + selectedVariantIndex;
+
+	// If it is a two player race, player 2's follows (the same model shares the colour, another keeps its own)
+	if (IsTwoPlayer())
+	{
+		ApplySelection2();
+	}
 }
 
 
@@ -196,12 +227,96 @@ static void StateDeinitialise(void)
 {
 	// Reset the state initialised flag (so the showroom is set up again next time)
 	stateInitialised = 0;
+
+	// The two player half screens
+	if (gScreenMode == SCREEN_MODE_SPLITSCREEN)
+	{
+		SetScreenMode(SCREEN_MODE_FULLSCREEN);
+	}
 }
 
 
 static int IsLinkGame(void)
 {
 	return Link_GetStatus() != LINK_OFF;
+}
+
+
+// A two player race (not a link game) both players choose at once
+static int IsTwoPlayer(void)
+{
+	return NumberOfPlayers == 2 && !IsLinkGame();
+}
+
+
+// Two player race: (player 2 chooses with the second controller) 
+static void UpdateTwoPlayer(void)
+{
+	u_long savedPad = pad, savedOldPad = oldPad;
+
+	// Spin player 2's vehicle
+    RotModel(&showroomCar2.gsObjectCoord, &showroomCar2.rotation, 0, 20, 0);
+
+	// Player 1
+	if (BTN_PRESSED(PADcircle))
+	{
+		if (!localReady)
+		{
+			StateDeinitialise();
+			MenuMainReturnFromVehicleSelect();
+			gameState = STATE_MENU_MAIN;
+			return;
+		}
+		localReady = 0;
+	}
+	else if (BTN_PRESSED(PADstart))
+	{
+		localReady = 1;
+	}
+
+	// Player 2
+	pad = (pad >> 16) & 0xFFFF;
+	oldPad = (oldPad >> 16) & 0xFFFF;
+	if (!p2Ready)
+	{
+		if (BTN_PRESSED(PADLleft))
+		{
+			p2ModelIndex = (p2ModelIndex + NUM_MODELS - 1) % NUM_MODELS;
+			ApplySelection2();
+		}
+		else if (BTN_PRESSED(PADLright))
+		{
+			p2ModelIndex = (p2ModelIndex + 1) % NUM_MODELS;
+			ApplySelection2();
+		}
+		else if (p2ModelIndex != selectedModelIndex && BTN_PRESSED(PADLup))
+		{
+			p2VariantIndex = (p2VariantIndex + numVariants[p2ModelIndex] - 1) % numVariants[p2ModelIndex];
+			ApplySelection2();
+		}
+		else if (p2ModelIndex != selectedModelIndex && BTN_PRESSED(PADLdown))
+		{
+			p2VariantIndex = (p2VariantIndex + 1) % numVariants[p2ModelIndex];
+			ApplySelection2();
+		}
+	}
+	if (BTN_PRESSED(PADstart))
+	{
+		p2Ready = 1;
+	}
+	else if (BTN_PRESSED(PADcircle))
+	{
+		p2Ready = 0;
+	}
+	pad = savedPad;
+	oldPad = savedOldPad;
+
+	// Both ready: player 1 chooses the track
+	if (localReady && p2Ready)
+	{
+		StateDeinitialise();
+		gameState = STATE_MENU_TRACK_SELECT;
+	}
 }
 
 
@@ -282,10 +397,18 @@ static void UpdateMenuVehicleSelect(void)
 		return;
 	}
 
+	// Two player race (both players choose at once)
+	if (IsTwoPlayer())
+	{
+		UpdateTwoPlayer();
+		return;
+	}
+
 	// Return to the main menu
     if (BTN_PRESSED(PADcircle))
 	{
 		StateDeinitialise();
+		MenuMainReturnFromVehicleSelect();
         gameState = STATE_MENU_MAIN;
 	}
 
@@ -298,12 +421,96 @@ static void UpdateMenuVehicleSelect(void)
 }
 
 
+// Two player race: (a players choice in their half of the screen)
+static void RenderHalf(int p, GsOT *ot)
+{
+	static char title[] = "PLAYER 0";
+	PlayerStruct *car = p ? &showroomCar2 : &showroomCar;
+	int model = p ? p2ModelIndex : selectedModelIndex;
+	int ready = p ? p2Ready : localReady;
+	VehicleAttributes *attribs = (model == 0) ? &car3Attribs : (model == 1) ? &car2Attribs : &car5Attribs;
+
+	DrawPlayer(car, ot);
+
+	FontFX_FontBegin();
+	FontFX_SetStyle(FONT_STYLE_2);
+	FontFX_SetColour(COL_DARKGREEN);
+	FontFX_SetOutline(COL_WHITE);
+	title[sizeof(title) - 2] = '1' + p;
+	FontFX_Print(12, 6, title, ot, OT_UI);
+	FontFX_FontEnd();
+
+	FontFX_FontBegin();
+	FontFX_SetColour(COL_WHITE);
+	FontFX_Print(12, 22, (char*)TXT(TXT_VEHICLE_MODEL), ot, OT_UI);
+	FontFX_Print(62, 22, (char*)TXT(modelNameID[model]), ot, OT_UI);
+	FontFX_Print(12, 46, (char*)TXT(TXT_VEHICLE_SPEED), ot, OT_UI);
+	FontFX_Print(12, 56, (char*)TXT(TXT_VEHICLE_ACCELERATION), ot, OT_UI);
+	FontFX_Print(12, 66, (char*)TXT(TXT_VEHICLE_BRAKES), ot, OT_UI);
+	FontFX_Print(12, 76, (char*)TXT(TXT_VEHICLE_GRIP), ot, OT_UI);
+	FontFX_FontEnd();
+
+	DrawBarSegmented(62, 47, 90, 6, attribs->maxSpeed, 400, 10, 2, 0, 180, 0, 40, 40, 40, ot, OT_UI);
+	DrawBarSegmented(62, 57, 90, 6, attribs->acceleration, 10, 10, 2, 0, 180, 0, 40, 40, 40, ot, OT_UI);
+	DrawBarSegmented(62, 67, 90, 6, attribs->brakeDeceleration, 15, 10, 2, 0, 180, 0, 40, 40, 40, ot, OT_UI);
+	DrawBarSegmented(62, 77, 90, 6, attribs->maxGrip, 250, 10, 2, 0, 180, 0, 40, 40, 40, ot, OT_UI);
+
+	FontFX_FontBegin();
+	FontFX_SetColour(COL_WHITE);
+	if (ready)
+	{
+		FontFX_SetPulse(0, 255, 20);
+		FontFX_Print(12, 96, "READY", ot, OT_UI);
+	}
+	else
+	{
+		FontFX_Print(12, 96, "PRESS START WHEN READY", ot, OT_UI);
+	}
+	FontFX_FontEnd();
+}
+
+
+static void RenderTwoPlayer(void)
+{
+	// The camera (to the left of the vehicles, so they show on the right of each half)
+    GsSetProjection(187);
+    Camera[0].vpx = -720;
+    Camera[0].vpy = -580;
+    Camera[0].vpz = -1500;
+    Camera[0].vrx = -720;
+    Camera[0].vry = -80;
+    Camera[0].vrz = 0;
+    Camera[0].rz  = 0;
+    Camera[0].super = WORLD;
+    GsSetRefView2(&Camera[0]);
+
+	RenderHalf(0, &WorldOrderingTable[activeBuffer]);
+
+	// A thin black line between the halves (the bottom row of the top half, the top row of the bottom)
+	DrawRect(0, gScreenHeight / 2 - 1, gScreenWidth, 1, COL_BLACK, SOLID, &WorldOrderingTable[activeBuffer], OT_UI);
+	DrawRect(0, 0, gScreenWidth, 1, COL_BLACK, SOLID, &WorldOrderingTable[activeBuffer + 2], OT_UI);
+
+	// The bottom half (with its own packet area, as in the race)
+	GsSetWorkBase((PACKET *)GpuPacketArea[activeBuffer + 2]);
+	RenderHalf(1, &WorldOrderingTable[activeBuffer + 2]);
+}
+
+
 static void RenderMenuVehicleSelect(void)
 {
 	static char playerText[] = "PLAYER 0";
 
 	// Get the attributes for the currently selected vehicle
-    VehicleAttributes *attribs = (selectedModelIndex == 0) ? &car3Attribs
+    VehicleAttributes *attribs;
+
+	// Two player race: (each player in their half of the screen)
+	if (IsTwoPlayer())
+	{
+		RenderTwoPlayer();
+		return;
+	}
+
+    attribs = (selectedModelIndex == 0) ? &car3Attribs
                                : (selectedModelIndex == 1) ? &car2Attribs
                                :                            &car5Attribs;
 

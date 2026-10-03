@@ -7,6 +7,7 @@
 #include "world.h"
 #include "ground.h"
 #include "../engine/model.h"
+#include "link_race.h"
 
 #define LOOKAHEAD_DIST 1800
 #define ADVANCE_DIST 600
@@ -1188,6 +1189,20 @@ void InitialiseOpponentRaceProgress(long startX, long startZ)
     opponentRaceSegIdx = FindNearestWaypoint(startX, startZ);
     opponentRaceLapCount = 0;
     opponentRaceSegDistSinceLap = 0;
+}
+
+
+// The other players laps (a link race or a two player race)
+int OpponentRaceLapCount(void)
+{
+    return opponentRaceLapCount;
+}
+
+
+// Whether there are AI racers (only in a one player race, not a link race or a two player race)
+int AIRacersActive(void)
+{
+    return !LinkRace_IsActive() && NumberOfPlayers == 1;
 }
 
 

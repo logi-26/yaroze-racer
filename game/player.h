@@ -29,6 +29,7 @@ extern PlayerStruct player2;
 // 0-2 = car3 (green/red/yellow), 3-5 = car2 (black/blue/red)
 extern int selectedVehicleIndex;
 extern int remoteVehicleIndex;
+extern int player2VehicleIndex;
 
 
 /************* FUNCTION PROTOTYPES *******************/
