@@ -11,6 +11,7 @@
 #include "../game/car_controls.h"
 #include "../game/player.h"
 #include "../game/game.h"
+#include "../game/minimap.h"
 #include "../game/world.h"
 #include "../game/hud.h"
 #include "../game/brakelights.h"
@@ -147,6 +148,9 @@ static void StateInit(void)
 
 	// Initialise the world (this initialises the vehicle and textures)
 	InitialiseWorld();
+
+	// The tracks mini-map (after the track and the screen mode are set)
+	InitialiseMiniMap();
 
 	// Load the vehicle texture (car3 variants all share the yellow base)
     LoadTexture(playerTexAddr[selectedVehicleIndex]);
@@ -465,12 +469,15 @@ static void RenderGameplay(void)
 		int raceOver = finishPlace && finishPlace2;
 		DrawGameplayHUD(1, Player1Position(), &WorldOrderingTable[activeBuffer]);
 		DrawGameplayHUD(2, Player2Position(), &WorldOrderingTable[activeBuffer + 2]);
+		DrawMiniMap(&player1, &WorldOrderingTable[activeBuffer]);
+		DrawMiniMap(&player2, &WorldOrderingTable[activeBuffer + 2]);
 		DrawRaceResult(finishPlace, raceOver, &WorldOrderingTable[activeBuffer]);
 		DrawRaceResult(finishPlace2, raceOver, &WorldOrderingTable[activeBuffer + 2]);
 		return;
 	}
 
 	DrawGameplayHUD(1, playerRacePosition, &WorldOrderingTable[activeBuffer]);
+	DrawMiniMap(&player1, &WorldOrderingTable[activeBuffer]);
 	LinkRace_DrawHUD(&WorldOrderingTable[activeBuffer]);
 	DrawRaceResult(finishPlace, 1, &WorldOrderingTable[activeBuffer]);
 }

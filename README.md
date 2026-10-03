@@ -28,14 +28,18 @@ Yaroze Racer is a 3D racing game written in C targeting the original PlayStation
 
 - **Three vehicles** with auto/manual gearbox
 - **Five AI opponents**
+- **Six race tracks**
 - **Race position tracking**
 - **Lap counter**
 - **Multiple camera modes**
 - **Split-screen multiplayer**
-- **Dynamic vehicle colours**
-- **Brake lights**
+- **Dynamic vehicle colours** CLUT swapping
+- **Brake lights** CLUT swap and light halo for tail lights
+- **Headlights** beams that light the road and halo for head lights at night
+- **Day and night races** fog, sky and lighting for each
 - **Scrolling skybox**
 - **HUD** speed, gear, lap timer, best/last lap, race position
+- **Mini-map** the track with every racers position
 - **Menu system**
 - **Memory card support** 6 save slots with animated icons
 - **Localisation framework** multi-language support
@@ -97,8 +101,10 @@ yaroze-racer/
 │   ├── ground           Tile-based terrain
 │   ├── sky              Scrolling skybox
 │   ├── hud              In-race HUD
-│   ├── brakelights      CLUT-swap effect
-│   └── vehicle_colour   Body colour
+│   ├── brakelights      CLUT-swap effect and halo light
+│   ├── headlights       Headlight beams and halo light
+│   ├── minimap          In-race mini-map
+│   └── vehicle_colour   Body colour (single texture CLUT swap)
 │
 ├── states/              Game flow
 │   ├── gameplay         Main race loop
@@ -195,6 +201,12 @@ See [tools/map_editor.md](tools/map_editor.md) for how to use it and how to add 
 | Start | Pause |
 
 
+
+---
+
+## Credits
+
+- **Vehicle models**: [PSX Style Cars](https://ggbot.itch.io/psx-style-cars) by ggbot
 
 ---
 

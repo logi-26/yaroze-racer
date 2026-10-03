@@ -26,7 +26,7 @@ LINK_STAMP := .link_own_driver_$(LINK_OWN_DRIVER)
 endif
 
 PROG = main.exe
-OBJS = main.o state_manager.o graphics.o controller.o memcard.o audio.o font.o timer.o lang.o ui.o sincos.o menu_main.o menu_memcard.o menu_memcard_load.o menu_memcard_save.o menu_options.o menu_lobby.o menu_vehicle_select.o menu_track_select.o menu_pause.o gameplay.o gameover.o memcard_context.o message.o keyboard.o world.o light.o player.o model.o game.o suspension.o gear.o hud.o ground.o calculations.o car_controls.o brakelights.o vehicle_colour.o sky.o ai_racer.o link.o yario.o yario_emu.o link_race.o headlights.o
+OBJS = main.o state_manager.o graphics.o controller.o memcard.o audio.o font.o timer.o lang.o ui.o sincos.o menu_main.o menu_memcard.o menu_memcard_load.o menu_memcard_save.o menu_options.o menu_lobby.o menu_vehicle_select.o menu_track_select.o menu_pause.o gameplay.o gameover.o memcard_context.o message.o keyboard.o world.o light.o player.o model.o game.o suspension.o gear.o hud.o ground.o calculations.o car_controls.o brakelights.o vehicle_colour.o sky.o ai_racer.o link.o yario.o yario_emu.o link_race.o headlights.o minimap.o
 
 all: $(PROG) psx.exe
 
@@ -156,6 +156,9 @@ brakelights.o: game/brakelights.c game/brakelights.h
 
 vehicle_colour.o: game/vehicle_colour.c game/vehicle_colour.h
 	$(CC) $(CFLAGS) -I. -c game/vehicle_colour.c
+
+minimap.o: game/minimap.c game/minimap.h game/game.h game/ground.h game/ai_racer.h game/link_race.h game/player.h engine/graphics.h engine/ui.h
+	$(CC) $(CFLAGS) -I. -c game/minimap.c
 
 sky.o: game/sky.c game/sky.h game/world.h game/player.h engine/graphics.h
 	$(CC) $(CFLAGS) -I. -c game/sky.c
