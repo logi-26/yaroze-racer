@@ -242,6 +242,7 @@ static void LeaveRace(void)
 static void UpdateTwoPlayerRace(void)
 {
 	UpdateOpponentRaceProgress(player2.gsObjectCoord.coord.t[0], player2.gsObjectCoord.coord.t[2]);
+	UpdateWrongWay(1, &player2);
 	UpdateLinkRacePositions(player2.gsObjectCoord.coord.t[0], player2.gsObjectCoord.coord.t[2]);
 
 	if (!finishPlace && playerRaceLapCount >= NUM_RACE_LAPS)

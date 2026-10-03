@@ -64,6 +64,11 @@ typedef enum
 	TXT_VEHICLE_SALOON,
 	TXT_VEHICLE_AMERICAN,
 
+    /*****************************************************
+    RACE
+    *****************************************************/
+	TXT_WRONG_WAY,
+
     TXT_COUNT
 
 } TextID;

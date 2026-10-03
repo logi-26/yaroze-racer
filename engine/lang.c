@@ -68,7 +68,12 @@ static const char* strings_english[TXT_COUNT] =
 	"GRIP",
 	"HATCHBACK",
 	"SALOON",
-	"AMERICAN"
+	"AMERICAN",
+
+	/*****************************************************
+    RACE
+    *****************************************************/
+	"WRONG WAY"
 };
 
 
@@ -135,7 +140,12 @@ static const char* strings_french[TXT_COUNT] =
 	"GRIP",
 	"COMPACTE",
 	"BERLINE",
-	"AMERICAINE"
+	"AMERICAINE",
+
+	/*****************************************************
+    RACE
+    *****************************************************/
+	"MAUVAIS SENS"
 
 };
 
@@ -203,7 +213,12 @@ static const char* strings_dutch[TXT_COUNT] =
 	"GRIP",
 	"HATCHBACK",
 	"SEDAN",
-	"AMERIKAANS"
+	"AMERIKAANS",
+
+	/*****************************************************
+    RACE
+    *****************************************************/
+	"VERKEERDE RICHTING"
 
 };
 
@@ -271,7 +286,12 @@ static const char* strings_german[TXT_COUNT] =
 	"GRIP",
 	"SCHRAGHECK",
 	"LIMOUSINE",
-	"AMERIKANISCH"
+	"AMERIKANISCH",
+
+	/*****************************************************
+    RACE
+    *****************************************************/
+	"FALSCHE RICHTUNG"
 
 };
 

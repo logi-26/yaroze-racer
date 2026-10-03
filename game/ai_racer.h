@@ -65,6 +65,9 @@ void DrawAIRacers(PlayerStruct *cameraPlayer, GsOT *ot);
 void InitialiseOpponentRaceProgress(long startX, long startZ);
 void UpdateOpponentRaceProgress(long x, long z);
 void UpdateLinkRacePositions(long opponentX, long opponentZ);
+void InitialiseWrongWay(int car, long x, long z);
+void UpdateWrongWay(int car, PlayerStruct *player);
+int IsWrongWay(int car);
 /*****************************************************/
 
 

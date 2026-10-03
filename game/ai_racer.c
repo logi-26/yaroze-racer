@@ -873,6 +873,7 @@ void InitialisePlayerRaceProgress(long startX, long startZ)
     playerRaceSegIdx = playerWaypointIndex;
     playerRaceLapCount = 0;
     playerRaceSegDistSinceLap = 0;
+    InitialiseWrongWay(0, startX, startZ);
 }
 
 
@@ -915,6 +916,9 @@ void UpdatePlayerRaceProgress(void)
 
     // Update the scan-based race-segment tracker (used for race-position scoring)
     UpdateRaceSegTracker(px, pz, &playerRaceSegIdx, &playerRaceLapCount, &playerRaceSegDistSinceLap);
+
+    // Whether player 1 is going the wrong way
+    UpdateWrongWay(0, &player1);
 }
 
 
@@ -1189,6 +1193,7 @@ void InitialiseOpponentRaceProgress(long startX, long startZ)
     opponentRaceSegIdx = FindNearestWaypoint(startX, startZ);
     opponentRaceLapCount = 0;
     opponentRaceSegDistSinceLap = 0;
+    InitialiseWrongWay(1, startX, startZ);
 }
 
 
@@ -1210,6 +1215,192 @@ int AIRacersActive(void)
 void UpdateOpponentRaceProgress(long x, long z)
 {
     UpdateRaceSegTracker(x, z, &opponentRaceSegIdx, &opponentRaceLapCount, &opponentRaceSegDistSinceLap);
+}
+
+
+/*****************************************************
+Wrong way detection
+
+Each players car has its own segment of the track (from a waypoint to the next one) 
+These segments are used to measure how far the car has driven along the track, and whether it is facing the right way or not.
+If the car is facing the wrong way and driving forwards, the distance driven along the segments is added to a counter. 
+If the car is facing the right way and driving forwards, the distance driven along the segments is subtracted from the counter.
+If the counter exceeds a threshold a "WRONG WAY" warning is displayed on the screen.
+*****************************************************/
+#define WRONG_WAY_DISTANCE    3600          // Distance driven back along the track before the warning (3 tiles)
+#define WRONG_WAY_MIN_SPEED   20            // Driving forwards at least this fast (10 MPH)
+#define WRONG_WAY_CLEAR       25            // Frames facing the right way that clear it (half a second)
+#define WRONG_WAY_SEARCH      3             // The segments either side of the last one looked at
+#define WRONG_WAY_LOST        (4000L >> 3)  // Further than this from them: look at them all (lost)
+
+typedef struct {
+    int seg;            // The segment the car is on (from waypoint seg - 1 to seg)
+    long backDistance;  // Distance driven back along the track the wrong way (less any driven on)
+    int rightFrames;    // Frames driving the right way since
+    long lastX, lastZ;  // Where the car was the last frame
+} WrongWayTracker;
+
+static WrongWayTracker wrongWay[2];     // Player 1, player 2
+
+
+// How far (squared, in 1/8ths) a point is from a segment (from waypoint seg - 1 to seg)
+static long DistanceToSegmentSq(long px, long pz, int seg)
+{
+    int prev = (seg - 1 + numTrackWaypoints) % numTrackWaypoints;
+    long ax = trackWaypoints[prev].x >> 3, az = trackWaypoints[prev].z >> 3;
+    long segDX = (trackWaypoints[seg].x >> 3) - ax;
+    long segDZ = (trackWaypoints[seg].z >> 3) - az;
+    long toDX = (px >> 3) - ax;
+    long toDZ = (pz >> 3) - az;
+    long lenSq = segDX * segDX + segDZ * segDZ;
+    long t = 0, dx, dz;
+
+    if (lenSq > 0)
+    {
+        t = (segDX * toDX + segDZ * toDZ) / (lenSq >> 10 > 0 ? lenSq >> 10 : 1);
+        if (t < 0) t = 0;
+        if (t > 1024) t = 1024;
+    }
+
+    dx = toDX - segDX * t / 1024;
+    dz = toDZ - segDZ * t / 1024;
+
+    return dx * dx + dz * dz;
+}
+
+
+// The nearest segment to a point
+static int NearestSegment(long px, long pz, int first, int count, long *distSq)
+{
+    int i, best = first;
+    long bestDist = 0x7FFFFFFF;
+
+    for (i = 0; i < count; i++)
+    {
+        int seg = (first + i + numTrackWaypoints) % numTrackWaypoints;
+        long d = DistanceToSegmentSq(px, pz, seg);
+        if (d < bestDist)
+        {
+            bestDist = d;
+            best = seg;
+        }
+    }
+
+    *distSq = bestDist;
+    return best;
+}
+
+
+void InitialiseWrongWay(int car, long x, long z)
+{
+    long d;
+    wrongWay[car].seg = (numTrackWaypoints >= 2) ? NearestSegment(x, z, 0, numTrackWaypoints, &d) : 0;
+    wrongWay[car].backDistance = 0;
+    wrongWay[car].rightFrames = 0;
+    wrongWay[car].lastX = x;
+    wrongWay[car].lastZ = z;
+}
+
+
+// The square root of a whole number (rounded down)
+static long SquareRoot(long n)
+{
+    long x = n, y;
+
+    if (n <= 0) 
+    {
+        return 0;
+    }
+
+    y = (x + 1) / 2;
+
+    while (y < x)
+    {
+        x = y;
+        y = (x + n / x) / 2;
+    }
+
+    return x;
+}
+
+
+// Call once per frame for each player's car (after it has moved)
+void UpdateWrongWay(int car, PlayerStruct *player)
+{
+    WrongWayTracker *w = &wrongWay[car];
+    long px = player->gsObjectCoord.coord.t[0];
+    long pz = player->gsObjectCoord.coord.t[2];
+    int forwards = player->speed > WRONG_WAY_MIN_SPEED;
+    int facingWrong, seg;
+    long distSq, along;
+
+    if (numTrackWaypoints < 2) {
+        return;
+    }
+
+    // The nearest segment of those around the last one (or of all of them, if the car is far from those)
+    seg = NearestSegment(px, pz, w->seg - WRONG_WAY_SEARCH, WRONG_WAY_SEARCH * 2 + 1, &distSq);
+    if (distSq > WRONG_WAY_LOST * WRONG_WAY_LOST)
+    {
+        // Lost: start again from where the car is, without counting it
+        w->seg = NearestSegment(px, pz, 0, numTrackWaypoints, &distSq);
+        w->lastX = px;
+        w->lastZ = pz;
+        return;
+    }
+
+    w->seg = seg;
+
+    // The way the segment goes, whether the car faces against it (its forward direction is its
+    // local Z), and how far the car has moved along it since the last frame (+ on, - back)
+    {
+        int prev = (seg - 1 + numTrackWaypoints) % numTrackWaypoints;
+        long segDX = (trackWaypoints[seg].x - trackWaypoints[prev].x) >> 3;
+        long segDZ = (trackWaypoints[seg].z - trackWaypoints[prev].z) >> 3;
+        long len = SquareRoot(segDX * segDX + segDZ * segDZ);
+        MATRIX *m = &player->gsObjectCoord.coord;
+
+        facingWrong = (segDX * m->m[0][2] + segDZ * m->m[2][2]) < 0;
+        along = (len > 0) ? ((px - w->lastX) * segDX + (pz - w->lastZ) * segDZ) / len : 0;
+    }
+
+    w->lastX = px;
+    w->lastZ = pz;
+
+    // Add up the distance driven back the wrong way (less any driven on)
+    if (along < 0 && forwards && facingWrong)
+    {
+        w->backDistance -= along;
+    }
+        else if (along > 0)
+    {
+        w->backDistance -= along;
+        if (w->backDistance < 0)
+        {
+            w->backDistance = 0;
+        }
+    }
+
+    // Driving forwards the right way for a moment clears it
+    if (forwards && !facingWrong)
+    {
+        if (++w->rightFrames >= WRONG_WAY_CLEAR)
+        {
+            w->backDistance = 0;
+        }
+    }
+    else if (forwards)
+    {
+        w->rightFrames = 0;
+    }
+}
+
+
+// Whether to show "WRONG WAY" for a players car (0 = player 1, 1 = player 2)
+int IsWrongWay(int car)
+{
+    PlayerStruct *player = car ? &player2 : &player1;
+    return wrongWay[car].backDistance >= WRONG_WAY_DISTANCE && player->speed > WRONG_WAY_MIN_SPEED;
 }
 
 

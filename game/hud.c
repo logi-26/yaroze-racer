@@ -11,6 +11,7 @@
 #include "../engine/colours.h"
 #include "../engine/ui.h"
 #include "../engine/timer.h"
+#include "../engine/lang.h"
 
 // Each players lap times (two in a two player race). The timer runs for the whole race, and each
 // players lap is timed from when they last crossed the line
@@ -23,6 +24,9 @@ typedef struct {
 } LapTimer;
 
 static LapTimer lapTimers[2];
+
+// Frames the HUD has been drawn (for the flashing)
+static int hudFrames = 0;
 
 
 static void FormatLapTime(char *buf, int ms) {
@@ -201,4 +205,20 @@ void DrawGameplayHUD(int playerNo, int position, GsOT *ot) {
     }
 
     FontFX_FontEnd();
+
+	// Going the wrong way (display the wrong way text)
+	if (playerNo == 1)
+		hudFrames++;
+	if (laps < NUM_RACE_LAPS && IsWrongWay(playerNo == 2) && (hudFrames & 16))
+	{
+		FontFX_FontBegin();
+		FontFX_SetStyle(FONT_STYLE_2);
+		FontFX_SetSize(2);
+		FontFX_SetColour(COL_RED);
+		FontFX_SetOutline(COL_WHITE);
+		FontFX_SetCenter(SCREEN_X_OFFSET, gScreenWidth);
+		FontFX_Print(20, split ? 44 : 90, (char *)TXT(TXT_WRONG_WAY), ot, OT_UI);
+		FontFX_SetSize(1);
+		FontFX_FontEnd();
+	}
 }
