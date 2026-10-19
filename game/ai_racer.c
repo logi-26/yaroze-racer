@@ -339,7 +339,8 @@ static const int aiVehicleIndex[NUM_AI_RACERS] = {
     9,      // car2 white
 };
 
-static int AIVehicle(int racer)
+// The AI racers vehicle (model and colour)
+static int AIVehicle(int racer, const int vehicles[NUM_AI_RACERS])
 {
     int model = aiVehicleIndex[racer] / 5;
     int variant = aiVehicleIndex[racer] % 5;
@@ -352,7 +353,7 @@ static int AIVehicle(int racer)
         taken = (v == selectedVehicleIndex);
         for (j = 0; j < racer && !taken; j++)
         {
-            if (aiRacers[j].vehicleIndex == v)
+            if (vehicles[j] == v)
             {
                 taken = 1;
             }
@@ -366,9 +367,24 @@ static int AIVehicle(int racer)
 }
 
 
+// Every AI racers vehicle (model and colour) for the players selected vehicle
+void ResolveAIVehicles(int vehicles[NUM_AI_RACERS])
+{
+    int i;
+
+    for (i = 0; i < NUM_AI_RACERS; i++)
+    {
+        vehicles[i] = AIVehicle(i, vehicles);
+    }
+}
+
+
 // Initialise all AI-controlled racers at their starting positions and reset their runtime state
 void InitialiseAIRacers(void) {
     int i;
+    int vehicles[NUM_AI_RACERS];
+
+    ResolveAIVehicles(vehicles);
 
 	// Create and configure each AI racer
     for (i = 0; i < NUM_AI_RACERS; i++) 
@@ -379,7 +395,7 @@ void InitialiseAIRacers(void) {
         SetPlayerHeading(&aiRacers[i].player, start->heading);
 
 		// Its own colour and brake lights (paint slots 2 onwards: 0 and 1 are the players)
-        aiRacers[i].vehicleIndex = AIVehicle(i);
+        aiRacers[i].vehicleIndex = vehicles[i];
         PaintCar(&aiRacers[i].player, 2 + i, aiRacers[i].vehicleIndex);
 
 		// Set the models initial orientation so all AI racers start facing the correct direction on the track
