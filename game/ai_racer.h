@@ -24,6 +24,7 @@ typedef struct {
     int lapCount;            	// Completed laps (navigation system)
     int waypointsSinceLap;   	// Waypoints passed since last lap (must hit 3/4 circuit before crossing counts)
     int racePosition;        	// Current race position (1 = leading)
+    int finishPlace;         	// Where it finished (0 while still racing)
     int raceSegIdx;          	// Current circuit segment for race-progress scoring (scan-based, independent of waypointIndex)
     int raceLapCount;        	// Laps completed per race-progress tracker
     int raceSegDistSinceLap; 	// Segments advanced by race tracker since last lap start
@@ -55,6 +56,7 @@ extern int playerLapCount;
 extern int playerRacePosition;
 extern int playerRaceSegIdx;
 extern int playerRaceLapCount;
+extern int playerFinishPlace;
 
 /************* FUNCTION PROTOTYPES *******************/
 void InitialiseAIRacers(void);
@@ -63,6 +65,7 @@ void InitialisePlayerRaceProgress(long startX, long startZ);
 void UpdateAIRacers(void);
 void UpdatePlayerRaceProgress(void);
 void UpdateRacePositions(void);
+void GetRaceFinishOrder(int order[1 + NUM_AI_RACERS]);
 void DrawAIRacers(PlayerStruct *cameraPlayer, GsOT *ot);
 void InitialiseOpponentRaceProgress(long startX, long startZ);
 void UpdateOpponentRaceProgress(long x, long z);

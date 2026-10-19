@@ -7,7 +7,11 @@
 #include "../engine/graphics.h"
 #include "../engine/link.h"
 #include "../engine/ui.h"
+#include "../engine/lang.h"
+#include "../engine/audio.h"
+#include "../engine/message.h"
 #include "../game/ground.h"
+#include "../game/tournament.h"
 
 static int stateInitialised = 0;
 static int selectedItem = 0;
@@ -173,6 +177,14 @@ static void InitialisePreviews(void)
 static void StateInit(void)
 {
     selectedItem = (selectedTrackIndex >= 0 && selectedTrackIndex < NUM_TRACKS) ? selectedTrackIndex : 0;
+
+    // A tournament (its next track which can't be changed)
+    if (Tournament_IsActive())
+    {
+        selectedItem = Tournament_Track();
+        Message_Dismiss();
+    }
+
     shownItem = selectedItem;
     slideFrames = 0;
     arrowFlash[0] = arrowFlash[1] = 0;
@@ -243,6 +255,51 @@ static void UpdateSlide(void)
 }
 
 
+// A tournament: its next track is shown (START RACE for the first race, then NEXT RACE)
+// X or Start races on it, in the tournaments day or night. Before the first race Circle goes back
+// to the vehicle select, after it Select asks to quit the tournament
+static void UpdateTournament(void)
+{
+    int promptWasOpen = Message_IsActive();
+
+    Message_Update();
+
+    // While the quit prompt is open (and the frame it closes) the buttons are only for the prompt
+    if (promptWasOpen)
+    {
+        // Yes: back to the main menu (which ends the tournament)
+        if (!Message_IsActive() && Message_GetResult() == MSG_RESULT_YES)
+        {
+            stateInitialised = 0;
+            gameState = STATE_MENU_MAIN;
+            RestartMusic();
+            PauseMusic();
+        }
+        return;
+    }
+
+    if (BTN_PRESSED(PADcross) || BTN_PRESSED(PADstart))
+    {
+        StartRace(Tournament_Track(), Tournament_IsNight());
+        return;
+    }
+
+    if (tournament.raceIndex == 0)
+    {
+        if (BTN_PRESSED(PADcircle))
+        {
+            stateInitialised = 0;
+            gameState = STATE_MENU_VEHICLE_SELECT;
+        }
+    }
+    else if (BTN_PRESSED(PADselect))
+    {
+        MSG_SetPredefinedTheme(MSG_THEME_DEFAULT);
+        Message_Prompt(TXT(TXT_QUIT_TOURNAMENT), MSG_YES_NO);
+    }
+}
+
+
 static void UpdateMenuTrackSelect(void)
 {
     int remote = Link_GetRemoteData();
@@ -250,6 +307,12 @@ static void UpdateMenuTrackSelect(void)
     if (!stateInitialised)
     {
         StateInit();
+    }
+
+    if (Tournament_IsActive())
+    {
+        UpdateTournament();
+        return;
     }
 
     // The connection with the other console has been lost, return to the lobby
@@ -410,12 +473,70 @@ static void DrawArrow(int dir, GsOT *ot)
 }
 
 
+// A tournament: START RACE or NEXT RACE, the track (no arrows, it can't be changed)
+// the tournament and which race it is and how to start it
+static void RenderTournament(GsOT *ot)
+{
+    char text[64];
+    TextID name = (tournament.id == 1) ? TXT_TOURNAMENT_2 : TXT_TOURNAMENT_1;
+
+    FontFX_FontBegin();
+    FontFX_SetStyle(FONT_STYLE_2);
+    FontFX_SetSize(2);
+    FontFX_SetColour(COL_GOLD);
+    FontFX_SetOutline(COL_WHITE);
+    FontFX_SetCenter(SCREEN_X_OFFSET, gScreenWidth);
+    FontFX_Print(20, 12, (char *)TXT(tournament.raceIndex == 0 ? TXT_START_RACE : TXT_NEXT_RACE), ot, OT_UI);
+    FontFX_SetSize(1);
+    FontFX_FontEnd();
+
+    DrawPreview(shownItem, 0, ot);
+
+    // The tracks name
+    FontFX_FontBegin();
+    FontFX_SetStyle(FONT_STYLE_2);
+    FontFX_SetSize(2);
+    FontFX_SetColour(COL_GREEN);
+    FontFX_SetOutline(COL_DARKGREY);
+    FontFX_SetCenter(SCREEN_X_OFFSET, gScreenWidth);
+    FontFX_Print(20, PANEL_Y + PANEL_H + 8, (char *)trackNames[shownItem], ot, OT_UI);
+    FontFX_SetSize(1);
+    FontFX_FontEnd();
+
+    // The tournament and which of its races this is
+    sprintf(text, "%s  %s %d/%d", TXT(name), TXT(TXT_RACE), tournament.raceIndex + 1, TOURNAMENT_RACES);
+    FontFX_FontBegin();
+    FontFX_SetColour(COL_WHITE);
+    FontFX_SetOutline(COL_DARKGREY);
+    FontFX_SetCenter(SCREEN_X_OFFSET, gScreenWidth);
+    FontFX_Print(20, PANEL_Y + PANEL_H + 28, text, ot, OT_UI);
+    FontFX_FontEnd();
+
+    // How to start the race (and go back or quit the tournament)
+    FontFX_FontBegin();
+    FontFX_SetColour(COL_WHITE);
+    FontFX_SetOutline(COL_DARKGREY);
+    FontFX_SetCenter(SCREEN_X_OFFSET, gScreenWidth);
+    FontFX_SetPulse(0, 255, 20);
+    FontFX_Print(20, PANEL_Y + PANEL_H + 40, (char *)TXT(tournament.raceIndex == 0 ? TXT_TOURNAMENT_PROMPT_FIRST : TXT_TOURNAMENT_PROMPT_NEXT), ot, OT_UI);
+    FontFX_FontEnd();
+
+    Message_Render(ot, OT_POPUP);
+}
+
+
 static void RenderMenuTrackSelect(void)
 {
     int i, dotsX;
     GsOT *ot = &WorldOrderingTable[activeBuffer];
 
     frameCount++;
+
+    if (Tournament_IsActive())
+    {
+        RenderTournament(ot);
+        return;
+    }
 
     FontFX_FontBegin();
     FontFX_SetStyle(FONT_STYLE_2);

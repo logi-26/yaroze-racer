@@ -47,6 +47,14 @@ int playerRaceSegIdx = 1;
 int playerRaceLapCount = 0;
 int playerRaceSegDistSinceLap = 0;
 
+// Where the player finished (0 while still racing)
+int playerFinishPlace = 0;
+
+// Finishing the race (each car is numbered 0 = player 1, 1 + i = AI racer i)
+#define NUM_RACE_CARS (1 + NUM_AI_RACERS)
+static int finishedCount = 0;                   // The cars that have finished so far
+static long raceProgress[NUM_RACE_CARS];        // Each cars race progress (from the last UpdateRacePositions)
+
 // Returns the index of the waypoint nearest to (px, pz) using Manhattan distance,
 // then adds 1 so the result is the NEXT waypoint the vehicle should target
 // Used once at spawn to align waypointIndex with physical grid position
@@ -417,6 +425,7 @@ void InitialiseAIRacers(void) {
         aiRacers[i].lapCount = 0;
         aiRacers[i].waypointsSinceLap = 0;
         aiRacers[i].racePosition = 1;
+        aiRacers[i].finishPlace = 0;
 
         // Race-segment tracker starts at the same position as navigation
         aiRacers[i].raceSegIdx = aiRacers[i].waypointIndex;
@@ -914,6 +923,10 @@ void InitialisePlayerRaceProgress(long startX, long startZ)
     playerRaceLapCount = 0;
     playerRaceSegDistSinceLap = 0;
     InitialiseWrongWay(0, startX, startZ);
+
+    // Nobody has finished yet
+    playerFinishPlace = 0;
+    finishedCount = 0;
 }
 
 
@@ -961,45 +974,128 @@ void UpdatePlayerRaceProgress(void)
 }
 
 
-// Computes a continuous race-distance score for every vehicle then ranks
-// them by counting how many others are further ahead.  O(N²) over 6
-// vehicles = 36 comparisons — trivial on PS1
+// A cars finishing place (0 while still racing) and its laps
+static int *CarFinishPlace(int car)
+{
+    return (car == 0) ? &playerFinishPlace : &aiRacers[car - 1].finishPlace;
+}
+
+static int CarLaps(int car)
+{
+    return (car == 0) ? playerRaceLapCount : aiRacers[car - 1].raceLapCount;
+}
+
+
+// Is car a ahead of car b in the race
+// The finished cars are ahead (in the order they finished), then the cars still racing
+// by their race progress (the same progress: the lower car number, so no two cars share a position)
+static int IsAheadInRace(int a, int b)
+{
+    int finishA = *CarFinishPlace(a);
+    int finishB = *CarFinishPlace(b);
+
+    if (finishA || finishB)
+    {
+        if (finishA && finishB)
+        {
+            return finishA < finishB;
+        }
+        return finishA != 0;
+    }
+
+    if (raceProgress[a] != raceProgress[b])
+    {
+        return raceProgress[a] > raceProgress[b];
+    }
+    return a < b;
+}
+
+
+// The cars that have just finished their last lap get the next finishing places
+// Cars finishing on the same frame: the one furthest past the line first
+static void UpdateRaceFinishes(void)
+{
+    int finishing[NUM_RACE_CARS];
+    int count = 0, car, i, j;
+
+    for (car = 0; car < NUM_RACE_CARS; car++)
+    {
+        if (!*CarFinishPlace(car) && CarLaps(car) >= NUM_RACE_LAPS)
+        {
+            // Insert it after the cars further past the line
+            for (j = count; j > 0 && raceProgress[car] > raceProgress[finishing[j - 1]]; j--)
+            {
+                finishing[j] = finishing[j - 1];
+            }
+            finishing[j] = car;
+            count++;
+        }
+    }
+
+    for (i = 0; i < count; i++)
+    {
+        *CarFinishPlace(finishing[i]) = ++finishedCount;
+    }
+}
+
+
+// Computes a continuous race-distance score for every vehicle, records the cars
+// that have finished, then ranks them by counting how many others are ahead
 void UpdateRacePositions(void)
 {
-    long progress[1 + NUM_AI_RACERS];
     int i, j;
 
-    progress[0] = ComputeRaceProgress(player1.gsObjectCoord.coord.t[0], player1.gsObjectCoord.coord.t[2], playerRaceSegIdx, playerRaceLapCount);
+    raceProgress[0] = ComputeRaceProgress(player1.gsObjectCoord.coord.t[0], player1.gsObjectCoord.coord.t[2], playerRaceSegIdx, playerRaceLapCount);
 
     for (i = 0; i < NUM_AI_RACERS; i++)
 	{
-        progress[1 + i] = ComputeRaceProgress(
+        raceProgress[1 + i] = ComputeRaceProgress(
             aiRacers[i].player.gsObjectCoord.coord.t[0],
             aiRacers[i].player.gsObjectCoord.coord.t[2],
             aiRacers[i].raceSegIdx, aiRacers[i].raceLapCount);
 	}
 
-    // Player position: count AI racers with higher progress
+    UpdateRaceFinishes();
+
+    // Player position: count the cars ahead of it
     playerRacePosition = 1;
-    for (j = 1; j <= NUM_AI_RACERS; j++)
+    for (j = 1; j < NUM_RACE_CARS; j++)
 	{
-        if (progress[j] > progress[0])
+        if (IsAheadInRace(j, 0))
 		{
             playerRacePosition++;
 		}
 	}
 
-    // Each AI racers position: count everyone else with higher progress
+    // Each AI racers position: count the cars ahead of it
     for (i = 0; i < NUM_AI_RACERS; i++)
     {
         aiRacers[i].racePosition = 1;
-        for (j = 0; j <= NUM_AI_RACERS; j++)
+        for (j = 0; j < NUM_RACE_CARS; j++)
 		{
-            if (j != (1 + i) && progress[j] > progress[1 + i])
+            if (j != (1 + i) && IsAheadInRace(j, 1 + i))
 			{
                 aiRacers[i].racePosition++;
 			}
 		}
+    }
+}
+
+
+// The finishing order (the car in each position, 1st first: 0 = player 1, 1 + i = AI racer i)
+// The finished cars in the order they finished, then the cars still racing where they are now
+// (their progress from the last UpdateRacePositions, so it doesn't change once the race has stopped)
+void GetRaceFinishOrder(int order[NUM_RACE_CARS])
+{
+    int car, j;
+
+    for (car = 0; car < NUM_RACE_CARS; car++)
+    {
+        for (j = car; j > 0 && IsAheadInRace(car, order[j - 1]); j--)
+        {
+            order[j] = order[j - 1];
+        }
+        order[j] = car;
     }
 }
 

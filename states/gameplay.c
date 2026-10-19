@@ -234,16 +234,12 @@ static int Player2Position(void)
 
 
 // Single player race: crossing the line after the last lap finishes the
-// race in the current position, which then stays
+// race in the next finishing place (UpdateRacePositions records it), which then stays
 static void UpdateRaceFinish(void)
 {
-	if (!finishPlace && playerRaceLapCount >= NUM_RACE_LAPS)
+	if (!finishPlace && playerFinishPlace)
 	{
-		finishPlace = playerRacePosition;
-	}
-	if (finishPlace)
-	{
-		playerRacePosition = finishPlace;
+		finishPlace = playerFinishPlace;
 	}
 }
 

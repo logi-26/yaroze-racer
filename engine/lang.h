@@ -18,6 +18,8 @@ typedef enum
     *****************************************************/
     TXT_SINGLE_RACE,
     TXT_TOURNAMENT,
+    TXT_TOURNAMENT_1,
+    TXT_TOURNAMENT_2,
 
     /*****************************************************
     MEMORY CARD MENU
@@ -70,6 +72,16 @@ typedef enum
 	TXT_WRONG_WAY,
 	TXT_GO,
 	TXT_WAITING_FOR_PLAYER,
+
+    /*****************************************************
+    TOURNAMENT
+    *****************************************************/
+	TXT_START_RACE,
+	TXT_NEXT_RACE,
+	TXT_RACE,
+	TXT_TOURNAMENT_PROMPT_FIRST,
+	TXT_TOURNAMENT_PROMPT_NEXT,
+	TXT_QUIT_TOURNAMENT,
 
     TXT_COUNT
 

@@ -85,7 +85,7 @@ yario_emu.o: engine/yario_emu.c engine/yario_emu.h
 state_manager.o: engine/state_manager.c engine/state_manager.h engine/link.h engine/ui.h
 	$(CC) $(CFLAGS) -I. -c engine/state_manager.c
 
-menu_main.o: states/menu_main.c engine/state_manager.h engine/font.h engine/colours.h engine/controller.h engine/audio.h engine/graphics.h
+menu_main.o: states/menu_main.c engine/state_manager.h engine/font.h engine/colours.h engine/controller.h engine/audio.h engine/graphics.h engine/lang.h game/tournament.h game/ai_racer.h
 	$(CC) $(CFLAGS) -I. -c states/menu_main.c
 
 menu_memcard.o: states/menu_memcard.c engine/state_manager.h engine/font.h engine/colours.h engine/controller.h engine/audio.h engine/graphics.h
@@ -103,16 +103,16 @@ menu_options.o: states/menu_options.c engine/state_manager.h engine/font.h engin
 menu_lobby.o: states/menu_lobby.c engine/link.h engine/state_manager.h engine/font.h engine/colours.h engine/controller.h engine/audio.h engine/graphics.h engine/ui.h
 	$(CC) $(CFLAGS) -c states/menu_lobby.c
 
-menu_vehicle_select.o: states/menu_vehicle_select.c engine/state_manager.h engine/link.h engine/font.h engine/colours.h engine/controller.h engine/graphics.h engine/light.h engine/model.h game/player.h game/world.h
+menu_vehicle_select.o: states/menu_vehicle_select.c engine/state_manager.h engine/link.h engine/font.h engine/colours.h engine/controller.h engine/graphics.h engine/light.h engine/model.h game/player.h game/world.h engine/lang.h game/tournament.h game/ai_racer.h
 	$(CC) $(CFLAGS) -I. -c states/menu_vehicle_select.c
 
-menu_track_select.o: states/menu_track_select.c states/menu_track_select.h engine/link.h engine/state_manager.h engine/font.h engine/colours.h engine/controller.h engine/graphics.h game/ground.h
+menu_track_select.o: states/menu_track_select.c states/menu_track_select.h engine/link.h engine/state_manager.h engine/font.h engine/colours.h engine/controller.h engine/graphics.h game/ground.h engine/lang.h engine/audio.h engine/message.h game/tournament.h game/ai_racer.h
 	$(CC) $(CFLAGS) -I. -c states/menu_track_select.c
 
 menu_pause.o: states/menu_pause.c engine/state_manager.h engine/font.h engine/colours.h engine/controller.h engine/audio.h engine/graphics.h
 	$(CC) $(CFLAGS) -c states/menu_pause.c
 
-gameplay.o: states/gameplay.c game/link_race.h engine/audio.h engine/font.h engine/colours.h engine/state_manager.h engine/controller.h engine/graphics.h engine/model.h engine/light.h game/car_controls.h game/player.h game/game.h game/world.h game/hud.h game/brakelights.h
+gameplay.o: states/gameplay.c game/link_race.h engine/audio.h engine/font.h engine/colours.h engine/state_manager.h engine/controller.h engine/graphics.h engine/model.h engine/light.h game/car_controls.h game/player.h game/game.h game/world.h game/hud.h game/brakelights.h game/ai_racer.h
 	$(CC) $(CFLAGS) -I. -c states/gameplay.c
 
 gameover.o: states/gameover.c engine/state_manager.h engine/font.h engine/colours.h engine/controller.h engine/audio.h engine/graphics.h

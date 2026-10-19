@@ -21,9 +21,10 @@ void Tournament_Begin(int id)
 
 
 // The player and the AI racers keep the same vehicles for the whole tournament
+// (they can only be chosen before the first race)
 void Tournament_LockVehicles(void)
 {
-    if (!tournament.active)
+    if (!tournament.active || tournament.raceIndex > 0 || tournament.raceFinalised)
     {
         return;
     }

@@ -15,6 +15,7 @@
 #include "../game/player.h"
 #include "../game/world.h"
 #include "../game/game.h"
+#include "../game/tournament.h"
 
 #define NUM_MODELS   3
 #define MAX_VARIANTS 5
@@ -386,9 +387,10 @@ static void UpdateMenuVehicleSelect(void)
         gameState = STATE_MENU_MAIN;
 	}
 
-	// Advance to track selection
+	// Advance to track selection (a tournament keeps this vehicle, and the AI racers, for all its races)
 	else if (BTN_PRESSED(PADstart))
 	{
+		Tournament_LockVehicles();
 		StateDeinitialise();
         gameState = STATE_MENU_TRACK_SELECT;
 	}

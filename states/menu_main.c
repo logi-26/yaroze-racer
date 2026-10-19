@@ -8,30 +8,34 @@
 #include "../engine/graphics.h"
 #include "../engine/lang.h"
 #include "../game/game.h"
+#include "../game/tournament.h"
 
 /*****************************************************
-The main menu has two pages of options (the main options, and the one player game modes)
-Going between them, one page slides off to the left while the other slides in from the right.
+The main menu has three pages of options (the main options, the one player game modes,
+and the tournaments), side by side. Going to the next page, the page slides off to the
+left while the next one slides in from the right (and the other way going back).
 *****************************************************/
 
 #define MENU_ITEM_COUNT 4
 #define MODE_ITEM_COUNT 2
+#define TOURNAMENT_ITEM_COUNT TOURNAMENT_COUNT
 
-// How long the pages take to slide across (in frames)
+// How long a page takes to slide across (in frames)
 #define SLIDE_FRAMES 10
 
-enum { PAGE_MAIN, PAGE_MODES };
+enum { PAGE_MAIN, PAGE_MODES, PAGE_TOURNAMENTS };
 
 static int stateInitialised = 0;
 static int selectedItem = 0;       // On the main page
 static int selectedMode;           // On the game modes page
+static int selectedTournament = 0; // On the tournaments page
 
 static int page;                   // The page the options are on (or are sliding to)
-static int slide;                  // How far the pages have slid: 0 = main page, SLIDE_FRAMES = game modes
+static int slide;                  // How far the pages have slid (SLIDE_FRAMES for each page)
 
-// Single Race was chosen (so going back from the vehicle select returns to the game modes)
-static int singleRaceChosen = 0;
-static int returnToModes = 0;
+// The page the race was chosen on (going back from the vehicle select returns to it)
+static int chosenPage = PAGE_MAIN;
+static int returnPage = PAGE_MAIN;
 
 
 // Menu items
@@ -64,10 +68,24 @@ static const short modeY[MODE_ITEM_COUNT] =
 };
 
 
-// Going back from the vehicle select (to the game modes if Single Race was chosen)
+// The tournaments (all day races, or all night races)
+static const TextID tournamentItems[TOURNAMENT_ITEM_COUNT] =
+{
+	TXT_TOURNAMENT_1,
+	TXT_TOURNAMENT_2
+};
+
+
+static const short tournamentY[TOURNAMENT_ITEM_COUNT] =
+{
+	115, 130
+};
+
+
+// Going back from the vehicle select (to the page the race was chosen on)
 void MenuMainReturnFromVehicleSelect(void)
 {
-	returnToModes = singleRaceChosen;
+	returnPage = chosenPage;
 }
 
 
@@ -76,13 +94,16 @@ Called once when state is entered
 *****************************************************/
 static void StateInit(void)
 {
-	// The selected main option is kept from last time
-	selectedMode = 0;
+	// Any tournament has ended (so it can't be carried on by mistake)
+	Tournament_Clear();
 
-	// On the main page (or back on the game modes)
-	page  = returnToModes ? PAGE_MODES : PAGE_MAIN;
-	slide = returnToModes ? SLIDE_FRAMES : 0;
-	returnToModes = 0;
+	// The selected main option is kept from last time (and the selected tournament when going back to it)
+	selectedMode = (returnPage == PAGE_TOURNAMENTS) ? 1 : 0;
+
+	// On the main page (or back on the page the race was chosen on)
+	page = returnPage;
+	slide = returnPage * SLIDE_FRAMES;
+	returnPage = PAGE_MAIN;
 
 	SetBackgroundColor(COL_LIGHTBLUE);
 
@@ -113,10 +134,17 @@ static int IsControllerMenuItemSelectable(int index)
 }
 
 
-// Check if the game mode is selectable (tournament not done yet)
+// Check if the game mode is selectable (they all are)
 static int IsModeSelectable(int index)
 {
-	return index == 0;
+	return index >= 0 && index < MODE_ITEM_COUNT;
+}
+
+
+// Check if the tournament is selectable (they all are at the moment)
+static int IsTournamentSelectable(int index)
+{
+	return index >= 0 && index < TOURNAMENT_ITEM_COUNT;
 }
 
 
@@ -153,11 +181,11 @@ static void UpdateMainPage(void)
 
 		switch (selectedItem)
 		{
-			case 0:  page = PAGE_MODES; selectedMode = 0;		break;	// Slide to the game modes
-			case 1:  singleRaceChosen = 0; NumberOfPlayers = 2; StartNewGame();	break;	// Two player race
-			case 2:  NumberOfPlayers = 1; gameState = STATE_MENU_LOBBY;	break;
-			case 3:  gameState = STATE_MENU_OPTIONS;		break;
-			default:             		 	  				break;
+			case 0:  page = PAGE_MODES; selectedMode = 0; 							break;	// Slide to the game modes
+			case 1:  chosenPage = PAGE_MAIN; NumberOfPlayers = 2; StartNewGame();	break;	// Two player race
+			case 2:  NumberOfPlayers = 1; gameState = STATE_MENU_LOBBY;				break;
+			case 3:  gameState = STATE_MENU_OPTIONS;								break;
+			default:             		 	  										break;
 		}
 	}
 }
@@ -182,47 +210,85 @@ static void UpdateModesPage(void)
 	{
 		switch (selectedMode)
 		{
-			case 0:  singleRaceChosen = 1; stateInitialised = 0; NumberOfPlayers = 1; StartNewGame();	break;	// Single Race (the vehicle select)
-			default:										break;	// Tournament (not made yet)
+			case 0:  chosenPage = PAGE_MODES; stateInitialised = 0; NumberOfPlayers = 1; StartNewGame();	break;	// Single Race (the vehicle select)
+			case 1:  page = PAGE_TOURNAMENTS;											break;	// Slide to the tournaments
+			default:																	break;
 		}
+	}
+}
+
+
+static void UpdateTournamentsPage(void)
+{
+	if (BTN_PRESSED(PADup))
+	{
+		selectedTournament = MoveSelection(selectedTournament, -1, TOURNAMENT_ITEM_COUNT, IsTournamentSelectable);
+	}
+
+	if (BTN_PRESSED(PADdown))
+	{
+		selectedTournament = MoveSelection(selectedTournament, 1, TOURNAMENT_ITEM_COUNT, IsTournamentSelectable);
+	}
+
+	// Circle (slide back to the game modes)
+	if (BTN_PRESSED(PADcircle))
+	{
+		page = PAGE_MODES;
+		return;
+	}
+
+	// Start a new tournament (the vehicle select first)
+	if (BTN_PRESSED(PADcross))
+	{
+		Tournament_Begin(selectedTournament);
+		chosenPage = PAGE_TOURNAMENTS;
+		stateInitialised = 0;
+		NumberOfPlayers = 1;
+		StartNewGame();
 	}
 }
 
 
 static void UpdateMenuMain(void)
 {
+	int target;
+
 	// First state entry
 	if (!stateInitialised)
 		StateInit();
 
 	// While the pages slide, the buttons wait
-	if (page == PAGE_MODES && slide < SLIDE_FRAMES)
+	target = page * SLIDE_FRAMES;
+	if (slide < target)
 	{
 		slide++;
 		return;
 	}
-	if (page == PAGE_MAIN && slide > 0)
+	if (slide > target)
 	{
 		slide--;
 		return;
 	}
 
-	if (page == PAGE_MAIN)
-		UpdateMainPage();
-	else
-		UpdateModesPage();
+	switch (page)
+	{
+		case PAGE_MAIN:   UpdateMainPage();          break;
+		case PAGE_MODES:  UpdateModesPage();         break;
+		default:          UpdateTournamentsPage();   break;
+	}
 }
 
 
 // Draw a page of options, moved across the screen by offsetX
-static void DrawItems(const TextID *items, const short *itemY, int count, int selected,
-                      int (*selectable)(int), int offsetX)
+static void DrawItems(const TextID *items, const short *itemY, int count, int selected, int (*selectable)(int), int offsetX)
 {
 	int i;
 
 	// Not on the screen
 	if (offsetX <= -gScreenWidth || offsetX >= gScreenWidth)
+	{
 		return;
+	}
 
 	for (i = 0; i < count; i++)
 	{
@@ -266,14 +332,16 @@ static void RenderMenuMain(void)
     FontFX_SetSize(1);
     FontFX_FontEnd();
 
-	// How far the pages have slid (eased in and out: t * t * (3 - 2t), with t from 0 to 256)
-	t = slide * 256 / SLIDE_FRAMES;
+	// How far the pages have slid
+	// (eased in and out: t * t * (3 - 2t), with t from 0 to 256)
+	t = (slide % SLIDE_FRAMES) * 256 / SLIDE_FRAMES;
 	eased = t * t * (768 - 2 * t) >> 16;
-	shift = gScreenWidth * eased >> 8;
+	shift = (slide / SLIDE_FRAMES) * gScreenWidth + (gScreenWidth * eased >> 8);
 
-	// The main options slide off to the left, the game modes come in from the right
+	// The pages side by side: each one slides off to the left as the next comes in from the right
 	DrawItems(menuItems, menuY, MENU_ITEM_COUNT, selectedItem, IsControllerMenuItemSelectable, -shift);
 	DrawItems(modeItems, modeY, MODE_ITEM_COUNT, selectedMode, IsModeSelectable, gScreenWidth - shift);
+	DrawItems(tournamentItems, tournamentY, TOURNAMENT_ITEM_COUNT, selectedTournament, IsTournamentSelectable, 2 * gScreenWidth - shift);
 }
 
 

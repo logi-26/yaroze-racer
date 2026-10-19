@@ -24,6 +24,8 @@ static const char* strings_english[TXT_COUNT] =
     *****************************************************/
     "SINGLE RACE",
     "TOURNAMENT",
+    "TOURNAMENT 1 - DAY",
+    "TOURNAMENT 2 - NIGHT",
 
     /*****************************************************
     MEMORY CARD MENU
@@ -75,7 +77,17 @@ static const char* strings_english[TXT_COUNT] =
     *****************************************************/
 	"WRONG WAY",
 	"GO",
-	"WAITING FOR THE OTHER PLAYER"
+	"WAITING FOR THE OTHER PLAYER",
+
+	/*****************************************************
+    TOURNAMENT
+    *****************************************************/
+	"START RACE",
+	"NEXT RACE",
+	"RACE",
+	"X/START: RACE  CIRCLE: BACK",
+	"X/START: RACE  SELECT: QUIT",
+	"QUIT THE TOURNAMENT"
 };
 
 
@@ -98,6 +110,8 @@ static const char* strings_french[TXT_COUNT] =
     *****************************************************/
     "COURSE SIMPLE",
     "TOURNOI",
+    "TOURNOI 1 - JOUR",
+    "TOURNOI 2 - NUIT",
 
     /*****************************************************
     MEMORY CARD MENU
@@ -149,7 +163,17 @@ static const char* strings_french[TXT_COUNT] =
     *****************************************************/
 	"MAUVAIS SENS",
 	"PARTEZ",
-	"EN ATTENTE DE L'AUTRE JOUEUR"
+	"EN ATTENTE DE L'AUTRE JOUEUR",
+
+	/*****************************************************
+    TOURNAMENT
+    *****************************************************/
+	"LANCER LA COURSE",
+	"COURSE SUIVANTE",
+	"COURSE",
+	"X/START: COURSE  ROND: RETOUR",
+	"X/START: COURSE  SELECT: QUITTER",
+	"QUITTER LE TOURNOI"
 
 };
 
@@ -173,6 +197,8 @@ static const char* strings_dutch[TXT_COUNT] =
     *****************************************************/
     "ENKELE RACE",
     "TOERNOOI",
+    "TOERNOOI 1 - DAG",
+    "TOERNOOI 2 - NACHT",
 
     /*****************************************************
     MEMORY CARD MENU
@@ -224,7 +250,17 @@ static const char* strings_dutch[TXT_COUNT] =
     *****************************************************/
 	"VERKEERDE RICHTING",
 	"START",
-	"WACHTEN OP DE ANDERE SPELER"
+	"WACHTEN OP DE ANDERE SPELER",
+
+	/*****************************************************
+    TOURNAMENT
+    *****************************************************/
+	"START RACE",
+	"VOLGENDE RACE",
+	"RACE",
+	"X/START: RACE  CIRKEL: TERUG",
+	"X/START: RACE  SELECT: STOPPEN",
+	"TOERNOOI STOPPEN"
 
 };
 
@@ -248,6 +284,8 @@ static const char* strings_german[TXT_COUNT] =
     *****************************************************/
     "EINZELRENNEN",
     "TURNIER",
+    "TURNIER 1 - TAG",
+    "TURNIER 2 - NACHT",
 
     /*****************************************************
     MEMORY CARD MENU
@@ -299,7 +337,17 @@ static const char* strings_german[TXT_COUNT] =
     *****************************************************/
 	"FALSCHE RICHTUNG",
 	"LOS",
-	"WARTEN AUF DEN ANDEREN SPIELER"
+	"WARTEN AUF DEN ANDEREN SPIELER",
+
+	/*****************************************************
+    TOURNAMENT
+    *****************************************************/
+	"RENNEN STARTEN",
+	"NACHSTES RENNEN",
+	"RENNEN",
+	"X/START: RENNEN  KREIS: ZURUCK",
+	"X/START: RENNEN  SELECT: BEENDEN",
+	"TURNIER BEENDEN"
 
 };
 
