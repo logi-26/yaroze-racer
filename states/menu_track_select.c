@@ -10,8 +10,8 @@
 #include "../game/ground.h"
 
 static int stateInitialised = 0;
-static int selectedItem     = 0;
-static int shownItem        = 0;    // The track the preview shows (follows selectedItem, with a slide)
+static int selectedItem = 0;
+static int shownItem = 0;    // The track the preview shows (follows selectedItem, with a slide)
 
 static const char *trackNames[NUM_TRACKS] = {
     "TRACK 1",
@@ -23,21 +23,21 @@ static const char *trackNames[NUM_TRACKS] = {
 };
 
 // The preview panel (each tracks map is fitted inside it)
-#define PANEL_X      56
-#define PANEL_Y      38
-#define PANEL_W      208
-#define PANEL_H      150
-#define MAX_TILE_PX  8
+#define PANEL_X 56
+#define PANEL_Y 38
+#define PANEL_W 208
+#define PANEL_H 150
+#define MAX_TILE_PX 8
 
 // Sliding to the next/previous track (the same speed as the main menus slide)
 #define SLIDE_FRAMES 10
 static int slideFrames = 0;         // Frames of the slide left (0 = not sliding)
-static int slideFrom   = 0;         // The track sliding out
-static int slideDir    = 1;         // 1 = to the next track (comes in from the right), -1 = to the previous
+static int slideFrom = 0;           // The track sliding out
+static int slideDir = 1;            // 1 = to the next track (comes in from the right), -1 = to the previous
 
 // The arrows (they flash for a moment when pressed)
-#define ARROW_SIZE   12
-#define ARROW_FLASH  8
+#define ARROW_SIZE 12
+#define ARROW_FLASH 8
 static int arrowFlash[2];           // Left, right
 
 static int frameCount = 0;
@@ -67,11 +67,13 @@ static void InitialiseLetterColours(void)
     static const char road[] = "126789acdbefijklmnopqrstu";
     int i;
 
-    for (i = 0; i < 128; i++) {
+    for (i = 0; i < 128; i++) 
+    {
         letterColour[i] = -1;
     }
 
-    for (i = 0; road[i]; i++) {
+    for (i = 0; road[i]; i++) 
+    {
         letterColour[(int)road[i]] = PREVIEW_ROAD;
     }
 
@@ -126,13 +128,20 @@ static void InitialisePreview(int track)
     p->rows = r1 - r0 + 1;
     p->cols = c1 - c0 + 1;
 
-    // The biggest tile size this track fits the panel at
-    // (map rows go down the screen and columns across)
+    // The biggest tile size this track fits the panel at (map rows go down the screen and columns across)
     sizeW = PANEL_W / p->cols;
     sizeH = PANEL_H / p->rows;
     p->tilePx = (sizeW < sizeH) ? sizeW : sizeH;
-    if (p->tilePx > MAX_TILE_PX) p->tilePx = MAX_TILE_PX;
-    if (p->tilePx < 1) p->tilePx = 1;
+    
+    if (p->tilePx > MAX_TILE_PX) 
+    {
+        p->tilePx = MAX_TILE_PX;
+    }
+    
+    if (p->tilePx < 1) 
+    {
+        p->tilePx = 1;
+    }
 }
 
 
@@ -146,7 +155,9 @@ static void InitialisePreviews(void)
     {
         InitialisePreview(i);
         if (previews[i].tilePx < tilePx)
+        {
             tilePx = previews[i].tilePx;
+        }
     }
 
     for (i = 0; i < NUM_TRACKS; i++)
@@ -161,10 +172,10 @@ static void InitialisePreviews(void)
 
 static void StateInit(void)
 {
-    selectedItem     = (selectedTrackIndex >= 0 && selectedTrackIndex < NUM_TRACKS) ? selectedTrackIndex : 0;
-    shownItem        = selectedItem;
-    slideFrames      = 0;
-    arrowFlash[0]    = arrowFlash[1] = 0;
+    selectedItem = (selectedTrackIndex >= 0 && selectedTrackIndex < NUM_TRACKS) ? selectedTrackIndex : 0;
+    shownItem = selectedItem;
+    slideFrames = 0;
+    arrowFlash[0] = arrowFlash[1] = 0;
     stateInitialised = 1;
     SetBackgroundColor(20, 20, 40);
 
@@ -200,7 +211,7 @@ static void StartRace(int track, int night)
     }
 
     stateInitialised = 0;
-    gameState        = STATE_GAMEPLAY;
+    gameState = STATE_GAMEPLAY;
 }
 
 
@@ -208,7 +219,9 @@ static void StartRace(int track, int night)
 static void UpdateSlide(void)
 {
     if (slideFrames > 0)
+    {
         slideFrames--;
+    }
 
     if (selectedItem != shownItem)
     {
@@ -218,8 +231,15 @@ static void UpdateSlide(void)
         slideFrames = SLIDE_FRAMES;
     }
 
-    if (arrowFlash[0] > 0) arrowFlash[0]--;
-    if (arrowFlash[1] > 0) arrowFlash[1]--;
+    if (arrowFlash[0] > 0) 
+    {
+        arrowFlash[0]--;
+    }
+    
+    if (arrowFlash[1] > 0) 
+    {
+        arrowFlash[1]--;
+    }
 }
 
 
@@ -228,7 +248,9 @@ static void UpdateMenuTrackSelect(void)
     int remote = Link_GetRemoteData();
 
     if (!stateInitialised)
+    {
         StateInit();
+    }
 
     // The connection with the other console has been lost, return to the lobby
     if (IsLinkGame() && Link_GetStatus() != LINK_CONNECTED)
@@ -240,7 +262,7 @@ static void UpdateMenuTrackSelect(void)
 
     if (ChoosesTrack())
     {
-        // Left/right (he previous/next track)
+        // Left/right (the previous/next track)
         if (BTN_PRESSED(PADLleft))
         {
             selectedItem = (selectedItem + NUM_TRACKS - 1) % NUM_TRACKS;
@@ -252,8 +274,7 @@ static void UpdateMenuTrackSelect(void)
             arrowFlash[1] = ARROW_FLASH;
         }
     }
-    else if (remote >= 0 && LINK_STATUS_STAGE(remote) == LINK_STAGE_TRACK &&
-             LINK_STATUS_VALUE(remote) < NUM_TRACKS)
+    else if (remote >= 0 && LINK_STATUS_STAGE(remote) == LINK_STAGE_TRACK && LINK_STATUS_VALUE(remote) < NUM_TRACKS)
     {
         // Player 2 follows player 1's choice
         selectedItem = LINK_STATUS_VALUE(remote);
@@ -291,8 +312,7 @@ static void UpdateMenuTrackSelect(void)
             return;
         }
     }
-    else if (remote >= 0 && LINK_STATUS_STAGE(remote) == LINK_STAGE_RACE &&
-             LINK_RACE_TRACK(Link_GetRemoteExtra()) < NUM_TRACKS)
+    else if (remote >= 0 && LINK_STATUS_STAGE(remote) == LINK_STAGE_RACE && LINK_RACE_TRACK(Link_GetRemoteExtra()) < NUM_TRACKS)
     {
         // Player 1 has chosen (race on that track, day or night)
         StartRace(LINK_RACE_TRACK(Link_GetRemoteExtra()), LINK_RACE_NIGHT(Link_GetRemoteExtra()));
@@ -301,7 +321,9 @@ static void UpdateMenuTrackSelect(void)
 
     // Tell the other console we're here, and which track is highlighted
     if (IsLinkGame())
+    {
         Link_SetLocalData(LINK_STATUS(LINK_STAGE_TRACK, selectedItem, 0));
+    }
 }
 
 
@@ -330,7 +352,8 @@ static void DrawPreview(int track, int offsetX, GsOT *ot)
     int r, c, start, colour;
 
     // If it is off the screen, there is nothing to draw
-    if (PANEL_X + offsetX >= gScreenWidth || PANEL_X + PANEL_W + offsetX <= 0) {
+    if (PANEL_X + offsetX >= gScreenWidth || PANEL_X + PANEL_W + offsetX <= 0) 
+    {
         return;
     }
 
@@ -352,7 +375,8 @@ static void DrawPreview(int track, int offsetX, GsOT *ot)
                 continue;
             }
             start = c;
-            while (c < p->cols && TileColour(row[c]) == colour) {
+            while (c < p->cols && TileColour(row[c]) == colour) 
+            {
                 c++;
             }
 
@@ -439,9 +463,13 @@ static void RenderMenuTrackSelect(void)
     for (i = 0; i < NUM_TRACKS; i++)
     {
         if (i == selectedItem)
+        {
             DrawRect(dotsX + i * 10, PANEL_Y + PANEL_H + 28, 6, 6, COL_WHITE, SOLID, ot, OT_UI);
+        }
         else
+        {
             DrawRect(dotsX + i * 10, PANEL_Y + PANEL_H + 28, 6, 6, 70, 70, 90, SOLID, ot, OT_UI);
+        }
     }
 
     FontFX_FontBegin();
