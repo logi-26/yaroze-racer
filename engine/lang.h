@@ -68,6 +68,8 @@ typedef enum
     RACE
     *****************************************************/
 	TXT_WRONG_WAY,
+	TXT_GO,
+	TXT_WAITING_FOR_PLAYER,
 
     TXT_COUNT
 

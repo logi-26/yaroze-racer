@@ -73,7 +73,9 @@ static const char* strings_english[TXT_COUNT] =
 	/*****************************************************
     RACE
     *****************************************************/
-	"WRONG WAY"
+	"WRONG WAY",
+	"GO",
+	"WAITING FOR THE OTHER PLAYER"
 };
 
 
@@ -145,7 +147,9 @@ static const char* strings_french[TXT_COUNT] =
 	/*****************************************************
     RACE
     *****************************************************/
-	"MAUVAIS SENS"
+	"MAUVAIS SENS",
+	"PARTEZ",
+	"EN ATTENTE DE L'AUTRE JOUEUR"
 
 };
 
@@ -218,7 +222,9 @@ static const char* strings_dutch[TXT_COUNT] =
 	/*****************************************************
     RACE
     *****************************************************/
-	"VERKEERDE RICHTING"
+	"VERKEERDE RICHTING",
+	"START",
+	"WACHTEN OP DE ANDERE SPELER"
 
 };
 
@@ -291,7 +297,9 @@ static const char* strings_german[TXT_COUNT] =
 	/*****************************************************
     RACE
     *****************************************************/
-	"FALSCHE RICHTUNG"
+	"FALSCHE RICHTUNG",
+	"LOS",
+	"WARTEN AUF DEN ANDEREN SPIELER"
 
 };
 
