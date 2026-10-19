@@ -59,7 +59,7 @@ extern int playerRaceLapCount;
 extern int playerFinishPlace;
 
 /************* FUNCTION PROTOTYPES *******************/
-void InitialiseAIRacers(void);
+void InitialiseAIRacers(const int *lockedVehicles);
 void ResolveAIVehicles(int vehicles[NUM_AI_RACERS]);
 void InitialisePlayerRaceProgress(long startX, long startZ);
 void UpdateAIRacers(void);

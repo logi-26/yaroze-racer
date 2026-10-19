@@ -26,7 +26,7 @@ LINK_STAMP := .link_own_driver_$(LINK_OWN_DRIVER)
 endif
 
 PROG = main.exe
-OBJS = main.o state_manager.o graphics.o controller.o memcard.o audio.o font.o timer.o lang.o ui.o sincos.o menu_main.o menu_memcard.o menu_memcard_load.o menu_memcard_save.o menu_options.o menu_lobby.o menu_vehicle_select.o menu_track_select.o menu_pause.o gameplay.o gameover.o memcard_context.o message.o keyboard.o world.o light.o player.o model.o game.o suspension.o gear.o hud.o ground.o calculations.o car_controls.o brakelights.o vehicle_colour.o sky.o ai_racer.o link.o yario.o yario_emu.o link_race.o headlights.o minimap.o tournament.o ai_drivers.o
+OBJS = main.o state_manager.o graphics.o controller.o memcard.o audio.o font.o timer.o lang.o ui.o sincos.o menu_main.o menu_memcard.o menu_memcard_load.o menu_memcard_save.o menu_options.o menu_lobby.o menu_vehicle_select.o menu_track_select.o menu_pause.o gameplay.o gameover.o memcard_context.o message.o keyboard.o world.o light.o player.o model.o game.o suspension.o gear.o hud.o ground.o calculations.o car_controls.o brakelights.o vehicle_colour.o sky.o ai_racer.o link.o yario.o yario_emu.o link_race.o headlights.o minimap.o tournament.o ai_drivers.o menu_tournament_results.o
 
 all: $(PROG) psx.exe
 
@@ -82,10 +82,10 @@ yario.o: engine/yario.c engine/yario.h engine/yario_emu.h $(LINK_STAMP)
 yario_emu.o: engine/yario_emu.c engine/yario_emu.h
 	$(CC) $(CFLAGS) -G 0 -c engine/yario_emu.c
 
-state_manager.o: engine/state_manager.c engine/state_manager.h engine/link.h engine/ui.h
+state_manager.o: engine/state_manager.c engine/state_manager.h engine/link.h engine/ui.h states/menu_tournament_results.h
 	$(CC) $(CFLAGS) -I. -c engine/state_manager.c
 
-menu_main.o: states/menu_main.c engine/state_manager.h engine/font.h engine/colours.h engine/controller.h engine/audio.h engine/graphics.h engine/lang.h game/tournament.h game/ai_racer.h
+menu_main.o: states/menu_main.c engine/state_manager.h engine/font.h engine/colours.h engine/controller.h engine/audio.h engine/graphics.h engine/lang.h game/tournament.h game/ai_racer.h states/menu_main.h
 	$(CC) $(CFLAGS) -I. -c states/menu_main.c
 
 menu_memcard.o: states/menu_memcard.c engine/state_manager.h engine/font.h engine/colours.h engine/controller.h engine/audio.h engine/graphics.h
@@ -109,10 +109,13 @@ menu_vehicle_select.o: states/menu_vehicle_select.c engine/state_manager.h engin
 menu_track_select.o: states/menu_track_select.c states/menu_track_select.h engine/link.h engine/state_manager.h engine/font.h engine/colours.h engine/controller.h engine/graphics.h game/ground.h engine/lang.h engine/audio.h engine/message.h game/tournament.h game/ai_racer.h
 	$(CC) $(CFLAGS) -I. -c states/menu_track_select.c
 
+menu_tournament_results.o: states/menu_tournament_results.c states/menu_tournament_results.h states/menu_main.h engine/state_manager.h engine/font.h engine/colours.h engine/controller.h engine/audio.h engine/graphics.h engine/ui.h engine/lang.h game/tournament.h game/ai_racer.h game/ai_drivers.h
+	$(CC) $(CFLAGS) -I. -c states/menu_tournament_results.c
+
 menu_pause.o: states/menu_pause.c engine/state_manager.h engine/font.h engine/colours.h engine/controller.h engine/audio.h engine/graphics.h
 	$(CC) $(CFLAGS) -c states/menu_pause.c
 
-gameplay.o: states/gameplay.c game/link_race.h engine/audio.h engine/font.h engine/colours.h engine/state_manager.h engine/controller.h engine/graphics.h engine/model.h engine/light.h game/car_controls.h game/player.h game/game.h game/world.h game/hud.h game/brakelights.h game/ai_racer.h
+gameplay.o: states/gameplay.c game/link_race.h engine/audio.h engine/font.h engine/colours.h engine/state_manager.h engine/controller.h engine/graphics.h engine/model.h engine/light.h game/car_controls.h game/player.h game/game.h game/world.h game/hud.h game/brakelights.h game/ai_racer.h game/tournament.h
 	$(CC) $(CFLAGS) -I. -c states/gameplay.c
 
 gameover.o: states/gameover.c engine/state_manager.h engine/font.h engine/colours.h engine/controller.h engine/audio.h engine/graphics.h
@@ -172,7 +175,7 @@ link_race.o: game/link_race.c game/link_race.h engine/link.h engine/font.h engin
 headlights.o: game/headlights.c game/headlights.h game/player.h game/game.h game/world.h game/ai_racer.h game/link_race.h engine/graphics.h engine/model.h
 	$(CC) $(CFLAGS) -I. -c game/headlights.c
 
-tournament.o: game/tournament.c game/tournament.h game/ai_racer.h game/player.h game/vehicle_attribs.h game/suspension.h
+tournament.o: game/tournament.c game/tournament.h game/ai_racer.h game/player.h game/vehicle_attribs.h game/suspension.h game/ai_drivers.h
 	$(CC) $(CFLAGS) -I. -c game/tournament.c
 
 ai_drivers.o: game/ai_drivers.c game/ai_drivers.h game/ai_racer.h game/player.h game/vehicle_attribs.h game/suspension.h

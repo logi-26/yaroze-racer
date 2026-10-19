@@ -36,6 +36,7 @@ static int slide;                  // How far the pages have slid (SLIDE_FRAMES 
 // The page the race was chosen on (going back from the vehicle select returns to it)
 static int chosenPage = PAGE_MAIN;
 static int returnPage = PAGE_MAIN;
+static int tournamentFinished = 0;     // A tournament has just finished (Tournament is selected on the game modes)
 
 
 // Menu items
@@ -89,6 +90,14 @@ void MenuMainReturnFromVehicleSelect(void)
 }
 
 
+// Returning to the main menu after a tournament has finished
+void MenuMainReturnFromTournament(void)
+{
+	returnPage = PAGE_MODES;
+	tournamentFinished = 1;
+}
+
+
 /*****************************************************
 Called once when state is entered
 *****************************************************/
@@ -98,7 +107,8 @@ static void StateInit(void)
 	Tournament_Clear();
 
 	// The selected main option is kept from last time (and the selected tournament when going back to it)
-	selectedMode = (returnPage == PAGE_TOURNAMENTS) ? 1 : 0;
+	selectedMode = (returnPage == PAGE_TOURNAMENTS || tournamentFinished) ? 1 : 0;
+	tournamentFinished = 0;
 
 	// On the main page (or back on the page the race was chosen on)
 	page = returnPage;

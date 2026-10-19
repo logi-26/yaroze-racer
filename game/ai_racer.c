@@ -388,11 +388,22 @@ void ResolveAIVehicles(int vehicles[NUM_AI_RACERS])
 
 
 // Initialise all AI-controlled racers at their starting positions and reset their runtime state
-void InitialiseAIRacers(void) {
+// Each AI racer uses the same vehicle throughout the tournament
+void InitialiseAIRacers(const int *lockedVehicles) {
     int i;
     int vehicles[NUM_AI_RACERS];
 
-    ResolveAIVehicles(vehicles);
+    if (lockedVehicles)
+    {
+        for (i = 0; i < NUM_AI_RACERS; i++)
+        {
+            vehicles[i] = lockedVehicles[i];
+        }
+    }
+    else
+    {
+        ResolveAIVehicles(vehicles);
+    }
 
 	// Create and configure each AI racer
     for (i = 0; i < NUM_AI_RACERS; i++) 

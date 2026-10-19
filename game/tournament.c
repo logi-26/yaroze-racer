@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include "tournament.h"
+#include "ai_drivers.h"
 #include "player.h"
 
 TournamentState tournament;
@@ -225,5 +226,38 @@ void Tournament_GetStandings(int order[TOURNAMENT_COMPETITORS])
             order[j] = order[j - 1];
         }
         order[j] = c;
+    }
+}
+
+
+// A competitors name
+const char *Tournament_CompetitorName(int c)
+{
+    if (c > COMPETITOR_PLAYER && c < TOURNAMENT_COMPETITORS)
+    {
+        return aiDrivers[c - 1].name;
+    }
+    return "PLAYER";
+}
+
+
+// Print the last races result and the standings (for debugging, on the TTY)
+void Tournament_PrintResults(void)
+{
+    int order[TOURNAMENT_COMPETITORS];
+    int pos;
+
+    printf("Tournament %d race %d:\n", tournament.id + 1, tournament.raceIndex + 1);
+    for (pos = 0; pos < TOURNAMENT_COMPETITORS; pos++)
+    {
+        int c = tournament.lastOrder[pos];
+        printf("  %d %-16s +%d = %d\n", pos + 1, Tournament_CompetitorName(c), Tournament_RacePoints(pos + 1), tournament.scores[c]);
+    }
+
+    Tournament_GetStandings(order);
+    printf("Standings:\n");
+    for (pos = 0; pos < TOURNAMENT_COMPETITORS; pos++)
+    {
+        printf("  %d %-16s %d\n", pos + 1, Tournament_CompetitorName(order[pos]), tournament.scores[order[pos]]);
     }
 }

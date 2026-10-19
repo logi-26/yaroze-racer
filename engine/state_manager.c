@@ -22,6 +22,7 @@
 #include "../states/menu_vehicle_select.h"
 #include "../states/menu_track_select.h"
 #include "../states/menu_pause.h"
+#include "../states/menu_tournament_results.h"
 #include "../states/gameplay.h"
 
 #define ROUND_FRAMES (FRAME_RATE * 60)
@@ -161,18 +162,19 @@ void GameUpdate(void)
 	// Game State Manager
     switch (gameState)
     {
-        case STATE_MENU_MAIN:     	   		StateMenuMain();     		break;
-		case STATE_MENU_MEMCARD:       		StateMenuMemcard();     	break;
-		case STATE_MENU_MEMCARD_LOAD:  		StateMenuMemcardLoad();  	break;
-		case STATE_MENU_MEMCARD_SAVE:  		StateMenuMemcardSave();  	break;
-		case STATE_MENU_OPTIONS:       		StateMenuOptions();     	break;
-		case STATE_MENU_LOBBY:    	   		StateMenuLobby();			break;
-		case STATE_MENU_VEHICLE_SELECT: 	StateMenuVehicleSelect();	break;
-		case STATE_MENU_TRACK_SELECT:   	StateMenuTrackSelect();		break;
-		case STATE_MENU_PAUSE:    	   		StateMenuPause();    		break;
-		case STATE_GAMEOVER: 		   		StateGameOver(); 			break;
-		case STATE_GAMEPLAY: 				StateGameplay(); 			break;
-        default:             						 					break;
+        case STATE_MENU_MAIN:     	   		StateMenuMain();     			break;
+		case STATE_MENU_MEMCARD:       		StateMenuMemcard();     		break;
+		case STATE_MENU_MEMCARD_LOAD:  		StateMenuMemcardLoad();  		break;
+		case STATE_MENU_MEMCARD_SAVE:  		StateMenuMemcardSave();  		break;
+		case STATE_MENU_OPTIONS:       		StateMenuOptions();     		break;
+		case STATE_MENU_LOBBY:    	   		StateMenuLobby();				break;
+		case STATE_MENU_VEHICLE_SELECT: 	StateMenuVehicleSelect();		break;
+		case STATE_MENU_TRACK_SELECT:   	StateMenuTrackSelect();			break;
+		case STATE_MENU_PAUSE:    	   		StateMenuPause();    			break;
+		case STATE_MENU_TOURNAMENT_RESULTS:	StateMenuTournamentResults();	break;
+		case STATE_GAMEOVER: 		   		StateGameOver(); 				break;
+		case STATE_GAMEPLAY: 				StateGameplay(); 				break;
+        default:             						 						break;
     }
 	
 	// Store the previous game state

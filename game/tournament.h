@@ -53,6 +53,8 @@ int Tournament_HasNextRace(void);
 void Tournament_AdvanceRace(void);
 void Tournament_GetStandings(int order[TOURNAMENT_COMPETITORS]);
 int Tournament_RacePoints(int position);
+const char *Tournament_CompetitorName(int c);
+void Tournament_PrintResults(void);
 /*****************************************************/
 
 #endif // TOURNAMENT_H

@@ -19,6 +19,10 @@
 #include "../game/ai_racer.h"
 #include "../game/link_race.h"
 #include "../game/ground.h"
+#include "../game/tournament.h"
+
+// Debug: hold L1 and press Triangle in a single player race to finish it at once
+// #define DEBUG_TOURNAMENT
 
 PlayerStruct player1;
 PlayerStruct player2;
@@ -105,6 +109,14 @@ static void StateInit(void)
 
     stateInitialised = 1;
 
+	// A tournament race (its track, day or night, and the players vehicle are the tournaments)
+	if (Tournament_IsActive())
+	{
+		selectedTrackIndex = Tournament_Track();
+		nightMode = Tournament_IsNight();
+		selectedVehicleIndex = tournament.playerVehicle;
+	}
+
 	// The selected tracks data (its start positions are needed before the world is initialised)
 	SelectTrack();
 
@@ -159,8 +171,8 @@ static void StateInit(void)
 	}
 	else
 	{
-		// Initialise the AI racers
-		InitialiseAIRacers();
+		// Initialise the AI racers (in a tournament with the vehicles they have for all its races)
+		InitialiseAIRacers(Tournament_IsActive() ? tournament.aiVehicle : NULL);
 	}
 
 	// Initialise player race-progress tracking to match their grid position
@@ -200,6 +212,22 @@ static void LeaveRace(void)
 	gameState = STATE_MENU_MAIN;
 	RestartMusic();
 	PauseMusic();
+}
+
+
+// A tournament race is over (the player has pressed Start after finishing)
+// The AI racers still racing are placed where they are now and everyone gets their points assigned
+// Then the race results are shown
+static void FinishTournamentRace(void)
+{
+	int order[1 + NUM_AI_RACERS];
+
+	GetRaceFinishOrder(order);
+	Tournament_FinaliseRace(order);
+	Tournament_PrintResults();
+
+	StateDeinitialise();
+	gameState = STATE_MENU_TOURNAMENT_RESULTS;
 }
 
 
@@ -317,6 +345,23 @@ static void UpdateGameplay(void)
 		UpdateAIRacers();
 	}
 
+#ifdef DEBUG_TOURNAMENT
+	// Debug: finish the race now (the player on their last lap and each AI racer on its last
+	// lap or the one before, so some finish now and the others are still racing)
+	if (AIRacersActive() && BTN_HELD(PADL1) && BTN_PRESSED(PADtriangle))
+	{
+		int i;
+		playerRaceLapCount = NUM_RACE_LAPS;
+		for (i = 0; i < NUM_AI_RACERS; i++)
+		{
+			if (!aiRacers[i].finishPlace)
+			{
+				aiRacers[i].raceLapCount = NUM_RACE_LAPS - ((frameNumber + i) & 1);
+			}
+		}
+	}
+#endif
+
 	// Update race progress and positions
     UpdatePlayerRaceProgress();
 	if (AIRacersActive())
@@ -368,11 +413,19 @@ static void UpdateGameplay(void)
 	}
 
 	// Race finished (in a two player race both players start button returns to the main menu)
+	// In a tournament Start ends the race (the AI racers dont have to finish), or wait and they carry on
 	if (NumberOfPlayers == 2 ? (finishPlace && finishPlace2) : finishPlace)
 	{
 		if (BTN_PRESSED(PADstart))
 		{
-			LeaveRace();
+			if (Tournament_IsActive())
+			{
+				FinishTournamentRace();
+			}
+			else
+			{
+				LeaveRace();
+			}
 		}
 		return;
 	}
