@@ -111,6 +111,7 @@ yaroze-racer/
 │   ├── menu_main        Title / main menu
 │   ├── menu_lobby       Link-game lobby
 │   ├── menu_vehicle     Vehicle select
+│   ├── menu_track       Track select
 │   ├── menu_options     Settings screen
 │   ├── menu_pause       In-race pause
 │   ├── menu_memcard     Memory card browser
