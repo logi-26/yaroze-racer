@@ -83,7 +83,7 @@ yario_emu.o: engine/yario_emu.c engine/yario_emu.h
 	$(CC) $(CFLAGS) -G 0 -c engine/yario_emu.c
 
 state_manager.o: engine/state_manager.c engine/state_manager.h engine/link.h engine/ui.h
-	$(CC) $(CFLAGS) -c engine/state_manager.c
+	$(CC) $(CFLAGS) -I. -c engine/state_manager.c
 
 menu_main.o: states/menu_main.c engine/state_manager.h engine/font.h engine/colours.h engine/controller.h engine/audio.h engine/graphics.h
 	$(CC) $(CFLAGS) -I. -c states/menu_main.c

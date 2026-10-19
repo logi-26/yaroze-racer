@@ -13,6 +13,8 @@ typedef struct {
 	GsCOORDINATE2 gsObjectCoord;
 	GsCOORDINATE2 gsModelCoord;
 	int collisionRadius;
+	u_short paintClut[2];       // Its own CLUTs (its colour, with the brake lights lit)
+	int brakesOn;               // Its brake lights are lit
 } PlayerStruct;
 
 
@@ -20,9 +22,8 @@ typedef struct {
 extern PlayerStruct player1;
 extern PlayerStruct player2;
 
-// Height (Y) the cars are placed at: the car models are built up from their
-// origin, with the bottom of the tyres at model Z -4 to -6, so this puts the
-// tyres on the ground (the ground tiles are at Y = 0)
+// The car models are built up from their origin, with the bottom of the tyres at model Z -4 to -6
+// This puts the tyres on the ground (the ground tiles are at Y = 0)
 #define CAR_GROUND_Y (-6)
 
 // Index of the vehicle chosen on the vehicle select screen

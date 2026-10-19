@@ -14,9 +14,10 @@ static int active = 0;          // This race is a link race
 static int finishPlace;         // 0 while racing, then 1 or 2
 static int opponentFinished;    // The other player has finished
 static int connectionLost;      // The other console has gone
+static int opponentLoaded;      // The other console has loaded the race (its sending its cars position)
 
 
-// Place the other player's car where its console says it is
+// Place the other players car where its console says it is
 static void MoveOpponent(long x, long z, int heading)
 {
     MATRIX matTmp;
@@ -84,7 +85,7 @@ static void SendState(void)
     if (z < 0) z = 0;
     if (z > LINK_RACE_MAX_POS) z = LINK_RACE_MAX_POS;
 
-    Link_SetLocalData(LINK_RACE_STATUS(finishPlace != 0, player1.rotation.vy));
+    Link_SetLocalData(LINK_RACE_STATUS(finishPlace != 0, player1.rotation.vy, player1_isBraking));
     Link_SetLocalExtra(LINK_RACE_EXTRA(x, z, LINK_RACE_SETUP(selectedTrackIndex, nightMode)));
 }
 
@@ -100,12 +101,21 @@ void LinkRace_Begin(void)
     finishPlace = 0;
     opponentFinished = 0;
     connectionLost = 0;
+    opponentLoaded = 0;
 }
 
 
 int LinkRace_IsActive(void)
 {
     return active;
+}
+
+
+// Whether the race countdown can start (the other console has loaded the race)
+// Both consoles start their countdowns when they see the other has loaded, so they start together
+int LinkRace_OpponentReady(void)
+{
+    return !active || opponentLoaded || connectionLost;
 }
 
 
@@ -162,7 +172,12 @@ void LinkRace_Update(void)
         if (remote >= 0 && LINK_STATUS_STAGE(remote) == LINK_STAGE_RACE &&
             (LINK_RACE_X(extra) != 0 || LINK_RACE_Z(extra) != 0))
         {
+            opponentLoaded = 1;
             MoveOpponent(LINK_RACE_X(extra), LINK_RACE_Z(extra), LINK_RACE_HEADING(remote));
+
+            // Its brake lights (and its tail light glows)
+            player2_isBraking = LINK_RACE_BRAKING(remote);
+            player2.brakesOn = player2_isBraking;
             if (LINK_RACE_FINISHED(remote))
                 opponentFinished = 1;
         }

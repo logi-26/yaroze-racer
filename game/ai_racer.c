@@ -1,5 +1,6 @@
 #include <libps.h>
 #include "ai_racer.h"
+#include "vehicle_colour.h"
 #include "player.h"
 #include "game.h"
 #include "gear.h"
@@ -22,8 +23,8 @@
 
 // Maximum waypoints caught up in a single frame after going off-track
 // Prevents a skipped run of waypoints from stalling the index for several seconds.
-#define MAX_WP_SKIP 10  				// max waypoints caught up per frame after going off-track
-#define RACE_PROGRESS_LOOKAHEAD 15  	// segments scanned ahead when computing race-distance score
+#define MAX_WP_SKIP 10  				// Max waypoints caught up per frame after going off-track
+#define RACE_PROGRESS_LOOKAHEAD 15  	// Segments scanned ahead when computing race-distance score
 
 // Forward window for the scan-based race segment tracker (independent of navigation)
 #define RACE_SEG_SEARCH_AHEAD 20
@@ -101,9 +102,7 @@ static long ComputeRaceProgress(long px, long pz, int waypointIndex, int lapCoun
 	
     t = (lenSq > 0) ? (dot * 1024L / lenSq) : 0;
 
-    return (long)lapCount * ((long)numTrackWaypoints * 1024L)
-        + (long)waypointIndex * 1024L
-        + t;
+    return (long)lapCount * ((long)numTrackWaypoints * 1024L) + (long)waypointIndex * 1024L + t;
 }
 
 
@@ -115,8 +114,7 @@ static long ComputeRaceProgress(long px, long pz, int waypointIndex, int lapCoun
 // Falls back to the tracked index with T=0 if no segment matches
 static long ComputeBestRaceProgress(long px, long pz, int trackedWpIdx, int lapCount)
 {
-    long best = (long)lapCount * ((long)numTrackWaypoints * 1024L)
-             + (long)trackedWpIdx * 1024L;
+    long best = (long)lapCount * ((long)numTrackWaypoints * 1024L) + (long)trackedWpIdx * 1024L;
     int i;
 
     for (i = 0; i < RACE_PROGRESS_LOOKAHEAD; i++)
@@ -265,15 +263,8 @@ static const long aiTmdAddr[NUM_AI_RACERS] = {
     CAR_2B_MEM_ADDR,
 };
 
-// AI-specific attributes: grip (maxGrip, minGrip, slidingFriction,
-// lateralFriction), braking (brakeDeceleration) and steering
-// (steeringResponse, minSteeringResponse) are all +20% vs player equivalents
-// All other fields (maxSpeed, acceleration, etc.) are unchanged
-// slidingFriction and lateralFriction are per-frame retention multipliers
-// (/1000 applied to lateral speed each frame). Lower = faster decay = more grip
-// So "20% better grip" means these go DOWN by 20%, not up
-// brakeDeceleration, steeringResponse, minSteeringResponse, maxGrip, minGrip
-// are all direct-magnitude values where higher = better, so they go UP 20%
+// Some of the AI-specific attributes re +20% vs player equivalents but speed and 
+// acceleration are unchanged.  The AI cars are more grippy and responsive, and brake better.
 static VehicleAttributes aiCar3Attribs = {
     310,   // maxSpeed
     12,    // acceleration
@@ -339,6 +330,42 @@ static SuspensionConfig * const aiVehicleSuspensions[NUM_AI_RACERS] = {
 };
 
 
+// The AI racers usual vehicle (model and colour)
+static const int aiVehicleIndex[NUM_AI_RACERS] = {
+    2,      // car3 yellow
+    6,      // car2 blue
+    11,     // car5 green
+    1,      // car3 red
+    9,      // car2 white
+};
+
+static int AIVehicle(int racer)
+{
+    int model = aiVehicleIndex[racer] / 5;
+    int variant = aiVehicleIndex[racer] % 5;
+    int tries, j, taken;
+
+    for (tries = 0; tries < 5; tries++)
+    {
+        int v = model * 5 + (variant + tries) % 5;
+
+        taken = (v == selectedVehicleIndex);
+        for (j = 0; j < racer && !taken; j++)
+        {
+            if (aiRacers[j].vehicleIndex == v)
+            {
+                taken = 1;
+            }
+        }
+        if (!taken)
+        {
+            return v;
+        }
+    }
+    return aiVehicleIndex[racer];
+}
+
+
 // Initialise all AI-controlled racers at their starting positions and reset their runtime state
 void InitialiseAIRacers(void) {
     int i;
@@ -350,6 +377,10 @@ void InitialiseAIRacers(void) {
         const StartDef *start = &trackStarts[START_AI + i];
         InitialisePlayer(&aiRacers[i].player, 0, start->x, CAR_GROUND_Y, start->z, (unsigned long *)aiTmdAddr[i]);
         SetPlayerHeading(&aiRacers[i].player, start->heading);
+
+		// Its own colour and brake lights (paint slots 2 onwards: 0 and 1 are the players)
+        aiRacers[i].vehicleIndex = AIVehicle(i);
+        PaintCar(&aiRacers[i].player, 2 + i, aiRacers[i].vehicleIndex);
 
 		// Set the models initial orientation so all AI racers start facing the correct direction on the track
         {
@@ -367,24 +398,24 @@ void InitialiseAIRacers(void) {
 		
 		// Begin navigation at the waypoint nearest to this cars grid position
         aiRacers[i].waypointIndex = FindNearestWaypoint(start->x, start->z);
-        aiRacers[i].lapCount          = 0;
+        aiRacers[i].lapCount = 0;
         aiRacers[i].waypointsSinceLap = 0;
-        aiRacers[i].racePosition      = 1;
+        aiRacers[i].racePosition = 1;
 
         // Race-segment tracker starts at the same position as navigation
-        aiRacers[i].raceSegIdx          = aiRacers[i].waypointIndex;
-        aiRacers[i].raceLapCount        = 0;
+        aiRacers[i].raceSegIdx = aiRacers[i].waypointIndex;
+        aiRacers[i].raceLapCount = 0;
         aiRacers[i].raceSegDistSinceLap = 0;
 
 		// Clear steering interpolation/smoothing value
-        aiRacers[i].steerSmooth  = 0;
+        aiRacers[i].steerSmooth = 0;
         aiRacers[i].recoverTimer = 0;
         aiRacers[i].braking = 0;
 
         // Stagger stuck checks so all three racers don't fire the same frame
         aiRacers[i].stuckTimer = 60 + i * 20;
-        aiRacers[i].lastPosX   = start->x;
-        aiRacers[i].lastPosZ   = start->z;
+        aiRacers[i].lastPosX = start->x;
+        aiRacers[i].lastPosZ = start->z;
 		
 		// Assign vehicle-specific handling and suspension settings
         aiRacers[i].attribs = aiVehicleAttribs[i];
@@ -561,12 +592,7 @@ static int ComputeSteering(GsCOORDINATE2 *coord, long targetX, long targetZ) {
 }
 
 
-/* Returns 1 when position (px,pz) has passed waypoint wpIdx.
-   Two conditions, either is sufficient:
-   (a) within ADVANCE_DIST units in both X and Z — catches normal approach
-   (b) segment-dot < 0 — catches wide-arc passes that miss the proximity box
-   sX/sZ are >>5 to prevent int32 overflow; dX/dZ are unscaled so short
-   segments (< 32 units) are detected correctly. */
+// Returns 1 when position (px,pz) has passed waypoint wpIdx
 static int PassedWaypoint(long px, long pz, int wpIdx)
 {
     int prev = (wpIdx - 1 + numTrackWaypoints) % numTrackWaypoints;
@@ -832,10 +858,9 @@ static void RecoverFromStuck(AIRacer *ai)
 }
 
 
-// Artificial environment perception (paper section 3.3)
 // Projects two probe points ahead-left and ahead-right of the car using the
-// car's own transform axes (PS1 matrix values are 4096 = 1.0 fixed-point)
-// GetTerrainType checks the ground tile at each probe position — anything
+// cars own transform axes (4096 = 1.0 fixed-point)
+// GetTerrainType checks the ground tile at each probe position and anything
 // other than TERRAIN_TRACK means a boundary is about to be crossed
 // Returns a steering correction: +38 (steer right), -38 (steer left), 0 (clear)
 static int SenseWalls(AIRacer *ai)
@@ -860,7 +885,6 @@ static int SenseWalls(AIRacer *ai)
 }
 
 
-// Call once from StateInit, passing the player's spawn world position.
 // Sets waypointIndex to match the nearest circuit segment so the initial
 // race positions reflect the physical grid layout.
 void InitialisePlayerRaceProgress(long startX, long startZ)
@@ -877,8 +901,7 @@ void InitialisePlayerRaceProgress(long startX, long startZ)
 }
 
 
-// Call once per frame (before UpdateRacePositions).
-// Advances the player's waypoint index exactly as the AI system does, but
+// Advances the players waypoint index exactly as the AI system does, but
 // also requires the player to be on the track surface — grass shortcuts do
 // not earn waypoint credit.
 void UpdatePlayerRaceProgress(void)
@@ -922,7 +945,6 @@ void UpdatePlayerRaceProgress(void)
 }
 
 
-// Call once per frame after UpdatePlayerRaceProgress and UpdateAIRacers
 // Computes a continuous race-distance score for every vehicle then ranks
 // them by counting how many others are further ahead.  O(N²) over 6
 // vehicles = 36 comparisons — trivial on PS1
@@ -951,7 +973,7 @@ void UpdateRacePositions(void)
 		}
 	}
 
-    // Each AI racer's position: count everyone else with higher progress
+    // Each AI racers position: count everyone else with higher progress
     for (i = 0; i < NUM_AI_RACERS; i++)
     {
         aiRacers[i].racePosition = 1;
@@ -998,10 +1020,9 @@ void UpdateAIRacers(void) {
         // Recovery or Navigation
         if (ai->recoverTimer > 0)
         {
-            // Reverse away from the wall. SenseWalls detects which side the
-            // boundary is on; inverting the result rotates the rear of the car
-            // away from it as the car backs up. When both probes fire (head-on
-            // impact) steer=0 so the car reverses straight back
+            // Reverse away from the wall. SenseWalls detects which side the boundary is on.
+            // Inverting the result rotates the rear of the car away from it as the car backs up. 
+            // When both probes fire (head-on impact) steer=0 so the car reverses straight backwards.
             int ws = SenseWalls(ai);
             steer = (ws != 0) ? -ws : 0;
             ai->steerSmooth = steer;
@@ -1017,8 +1038,7 @@ void UpdateAIRacers(void) {
         absDZ = dZ < 0 ? -dZ : dZ;
 
         // Always steer toward 2 waypoints ahead of the current navigation target
-        // The extra lookahead means small heading deviations on straights dont
-        // produce a steering correction (the target direction barely changes),
+        // The extra lookahead means small heading deviations on straights dont produce a steering correction,
         // and corners are set up earlier so the car doesn't overshoot
         steerWpIdx = (ai->waypointIndex + 2) % numTrackWaypoints;
 
@@ -1046,7 +1066,7 @@ void UpdateAIRacers(void) {
 			}
 		}
 
-        // Brake for medium and sharp corners; also predict-brake before
+        // Brake for medium and sharp corners and also predict-brake before
         // the next waypoint when it requires a sharp turn.
         {
             int absRaw = steer < 0 ? -steer : steer;
@@ -1061,7 +1081,7 @@ void UpdateAIRacers(void) {
 			aiRacerBraking = 1;
 		}
 
-        // Avoidance: steer around any car ahead (AI or stopped player).
+        // Avoidance: steer around any car ahead (AI or stopped player)
         if (ai->player.speed > BRAKE_SPEED)
         {
             int avoid = ComputeAvoidance(ai, i);
@@ -1071,9 +1091,8 @@ void UpdateAIRacers(void) {
 			}
         }
 
-        // Wall sensing: nudges the steering target when a track boundary is
-        // detected ahead. Does not bypass steerSmooth so the correction
-        // blends in via the lerp rather than snapping instantly.
+        // Wall sensing: nudges the steering target when a track boundary is detected ahead. 
+        // Does not bypass steerSmooth so the correction blends in via the lerp rather than snapping instantly.
         {
             int wallSteer = SenseWalls(ai);
             if (wallSteer != 0)
@@ -1108,19 +1127,15 @@ void UpdateAIRacers(void) {
 
         if (ai->player.speed < 0 && speedBefore > 0)
         {
-            // Wall hit: begin reverse recovery so the car backs away rather
-            // than accelerating straight back into the same wall next frame
+            // Wall hit (begin reverse recovery so the car backs away rather than accelerating straight back into the same wall next frame)
             ai->player.speed = -30;
             ai->lateralSpeed = 0;
             ai->recoverTimer = 35;
         }
 
-        // Stuck recovery
-        // Every 20 frames, measure net displacement. Anything below 400
-        // units means the car is oscillating against a wall — it should be
-        // doing ~1600 units of movement in 20 frames at racing speed
-        // When stuck: skip 2 waypoints so the new target is past the wall,
-        // and kick the speed to 80 so steering has momentum to work with
+        // Stuck recovery (Every 20 frames, measure net displacement)
+        // Anything below 400 units means the car is oscillating against a wall. It should be doing ~1600 units of movement in 20 frames at racing speed.
+        // When stuck, skip 2 waypoints so the new target is past the wall and kick the speed to 80 so steering has momentum to work with
         if (--ai->stuckTimer <= 0)
         {
             long dx = ai->player.gsObjectCoord.coord.t[0] - ai->lastPosX;
@@ -1179,9 +1194,8 @@ void DrawAIRacers(PlayerStruct *cameraPlayer, GsOT *ot) {
 
 
 /*****************************************************
-Link race: the other player's car (driven on the other
-console) is tracked like the player's, and the two
-players are ranked against each other (no AI racers)
+Link race: the other player's car (driven on the other console) is tracked like the player's
+and the two players are ranked against each other (no AI racers)
 *****************************************************/
 static int opponentRaceSegIdx;
 static int opponentRaceLapCount;

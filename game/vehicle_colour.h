@@ -2,6 +2,7 @@
 #define VEHICLE_COLOUR_H
 
 #include <libps.h>
+#include "player.h"
 
 typedef enum {
     VEHICLE_COLOUR_ORIGINAL = 0,
@@ -52,7 +53,13 @@ extern const VehicleColour car5Colours[5];
 
 
 /************* FUNCTION PROTOTYPES *******************/
+// The cars that can have their own paint at once (player 1, player 2 and the 5 the AI racers)
+#define CAR_PAINT_SLOTS 7
+
 void ApplyVehicleColour(long texAddr, int bodyStart, int bodyEnd, VehicleColour colour);
+void InitialiseCarPaint(void);
+void PaintCar(PlayerStruct *car, int slot, int vehicleIndex);
+void ApplyCarPaint(PlayerStruct *car);
 /*****************************************************/
 
 #endif

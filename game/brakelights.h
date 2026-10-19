@@ -1,12 +1,11 @@
 #ifndef BRAKELIGHTS_H
 #define BRAKELIGHTS_H
 
+#include <libps.h>
+
 
 /************* FUNCTION PROTOTYPES *******************/
-void InitBrakeLightEffect(long texAddr, int vehicleIndex);
-void SetBrakeLightTexture(int braking);
-void InitAIBrakeLightEffect(long texAddr, int vehicleIndex);
-void SetAIBrakeLightTexture(int braking);
+void LightBrakeLights(u_short *clut, int config);
 /*****************************************************/
 
 

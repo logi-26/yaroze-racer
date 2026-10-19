@@ -2,13 +2,14 @@
 #include "../engine/graphics.h"
 #include "../engine/model.h"
 #include "player.h"
+#include "vehicle_colour.h"
 #include "headlights.h"
 #include "game.h"
 #include "world.h"
 
 int selectedVehicleIndex = 0;
-int remoteVehicleIndex = -1;    // The other player's vehicle in a link game (-1: none)
-int player2VehicleIndex = 0;    // Player 2's vehicle in a two player race
+int remoteVehicleIndex = -1;    // The other players vehicle in a link game (-1: none)
+int player2VehicleIndex = 0;    // Player 2s vehicle in a two player race
 
 // Hatchback car (car3)
 VehicleAttributes car3Attribs = {
@@ -115,6 +116,10 @@ void InitialisePlayer(PlayerStruct *thePlayer, int playerNumber, int nX, int nY,
 	
 	// Initialise the collision radius
 	thePlayer->collisionRadius = 300;
+
+	// Its models own colour (until PaintCar gives it its own) and no brake lights
+	thePlayer->paintClut[0] = thePlayer->paintClut[1] = 0;
+	thePlayer->brakesOn = 0;
 	
 	// Initialise other player variables and link in tmd
 	AddModelToPlayer(thePlayer, nX, nY, nZ, lModelAddress);
@@ -136,6 +141,9 @@ void DrawPlayer(PlayerStruct *thePlayer, GsOT *othWorld) {
 	GsGetLws(thePlayer->gsObjectHandler.coord2, &tmplw, &tmpls);
 	GsSetLightMatrix(&tmplw);
 	GsSetLsMatrix(&tmpls);
+
+	// Its own colour and brake lights (its models polygons pointed at its CLUT)
+	ApplyCarPaint(thePlayer);
 
 	GsSortObject4(&thePlayer->gsObjectHandler, othWorld, 3, (u_long *)getScratchAddr(0));
 

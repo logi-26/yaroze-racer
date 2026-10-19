@@ -108,7 +108,7 @@ static void InitialisePreview(int track)
         }
     }
 
-    // (no track: the whole map)
+    // No track (the whole map)
     if (r1 < 0)
     {
         r0 = c0 = 0;
@@ -192,10 +192,10 @@ static void StartRace(int track, int night)
     nightMode = night;
 
     // Link game (tell the other console the race has started, on which track and day or night)
-    // The race then keeps sending our car's position with it
+    // The race then keeps sending our cars position with it
     if (IsLinkGame())
     {
-        Link_SetLocalData(LINK_RACE_STATUS(0, 0));
+        Link_SetLocalData(LINK_RACE_STATUS(0, 0, 0));
         Link_SetLocalExtra(LINK_RACE_EXTRA(0, 0, LINK_RACE_SETUP(track, night)));
     }
 

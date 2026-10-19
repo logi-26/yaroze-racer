@@ -84,25 +84,12 @@ static void ApplyShowroomOrientation(PlayerStruct *car)
 }
 
 
-// Load a model's texture and colour it as the variant
-static void ColourModel(int model, int variant)
+// Load a models texture and give a showroom car its own colour (its own CLUT so the two
+// players cars can be the same model in different colours)
+static void ColourModel(PlayerStruct *car, int slot, int model, int variant)
 {
     LoadTexture(carTexAddr[model][variant]);
-    if (model == 0)
-	{
-        ApplyVehicleColour(carTexAddr[0][variant], CAR3_BODY_CLUT_START, CAR3_BODY_CLUT_END, car3Colours[variant]);
-    }
-	else if (model == 1)
-	{
-        ApplyVehicleColour(carTexAddr[1][variant], CAR2_BODY_CLUT_START_1, CAR2_BODY_CLUT_END_1, car2Colours[variant]);
-        ApplyVehicleColour(carTexAddr[1][variant], CAR2_BODY_CLUT_START_2, CAR2_BODY_CLUT_END_2, car2Colours[variant]);
-    }
-	else if (model == 2)
-	{
-        ApplyVehicleColour(carTexAddr[2][variant], CAR5_BODY_CLUT_START_1, CAR5_BODY_CLUT_END_1, car5Colours[variant]);
-        ApplyVehicleColour(carTexAddr[2][variant], CAR5_BODY_CLUT_START_2, CAR5_BODY_CLUT_END_2, car5Colours[variant]);
-        ApplyVehicleColour(carTexAddr[2][variant], CAR5_BODY_CLUT_START_3, CAR5_BODY_CLUT_END_3, car5Colours[variant]);
-    }
+    PaintCar(car, slot, modelOffset[model] + variant);
 }
 
 
@@ -114,18 +101,10 @@ static void DecodeVehicle(int index, int *model, int *variant)
 }
 
 
-// Set player 2's selected vehicle (the same model as player 1's has player 1's colour)
+// Set player 2's selected vehicle (its own colour even on the same model as player 1's)
 static void ApplySelection2(void)
 {
-	if (p2ModelIndex == selectedModelIndex)
-	{
-		p2VariantIndex = selectedVariantIndex;
-	}
-	else
-	{
-		ColourModel(p2ModelIndex, p2VariantIndex);
-	}
-
+	ColourModel(&showroomCar2, 1, p2ModelIndex, p2VariantIndex);
 	SwapTMD(&showroomCar2, (unsigned long*)carTmdAddr[p2ModelIndex][p2VariantIndex]);
 	ApplyShowroomOrientation(&showroomCar2);
 	player2VehicleIndex = modelOffset[p2ModelIndex] + p2VariantIndex;
@@ -151,10 +130,10 @@ static void StateInit(void)
 
 	// Initialise the vehicle, load its texture and apply its colour, facing towards the screen
     InitialisePlayer(&showroomCar, 1, 0, 0, 0, (unsigned long*)carTmdAddr[selectedModelIndex][selectedVariantIndex]);
-	ColourModel(selectedModelIndex, selectedVariantIndex);
+	ColourModel(&showroomCar, 0, selectedModelIndex, selectedVariantIndex);
 	ApplyShowroomOrientation(&showroomCar);
 
-	// If it is a two player race, initialise player 2's vehicle (the same model as player 1's has player 1's colour)
+	// If it is a two player race, initialise player 2's vehicle
 	if (IsTwoPlayer())
 	{
 		SetScreenMode(SCREEN_MODE_SPLITSCREEN);
@@ -165,19 +144,14 @@ static void StateInit(void)
 }
 
 
-// Set the slected vehicle for the player
+// Set the selected vehicle for the player
 static void ApplySelection(void)
 {
-	ColourModel(selectedModelIndex, selectedVariantIndex);
+	ColourModel(&showroomCar, 0, selectedModelIndex, selectedVariantIndex);
     SwapTMD(&showroomCar, (unsigned long*)carTmdAddr[selectedModelIndex][selectedVariantIndex]);
     ApplyShowroomOrientation(&showroomCar);
     selectedVehicleIndex = modelOffset[selectedModelIndex] + selectedVariantIndex;
 
-	// If it is a two player race, player 2's follows (the same model shares the colour, another keeps its own)
-	if (IsTwoPlayer())
-	{
-		ApplySelection2();
-	}
 }
 
 
@@ -289,12 +263,12 @@ static void UpdateTwoPlayer(void)
 			p2ModelIndex = (p2ModelIndex + 1) % NUM_MODELS;
 			ApplySelection2();
 		}
-		else if (p2ModelIndex != selectedModelIndex && BTN_PRESSED(PADLup))
+		else if (BTN_PRESSED(PADLup))
 		{
 			p2VariantIndex = (p2VariantIndex + numVariants[p2ModelIndex] - 1) % numVariants[p2ModelIndex];
 			ApplySelection2();
 		}
-		else if (p2ModelIndex != selectedModelIndex && BTN_PRESSED(PADLdown))
+		else if (BTN_PRESSED(PADLdown))
 		{
 			p2VariantIndex = (p2VariantIndex + 1) % numVariants[p2ModelIndex];
 			ApplySelection2();
@@ -421,7 +395,7 @@ static void UpdateMenuVehicleSelect(void)
 }
 
 
-// Two player race: (a players choice in their half of the screen)
+// Two player race (a players choice in their half of the screen)
 static void RenderHalf(int p, GsOT *ot)
 {
 	static char title[] = "PLAYER 0";

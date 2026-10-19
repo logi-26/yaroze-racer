@@ -1,6 +1,7 @@
 #include <libps.h>
 
 #include "state_manager.h"
+#include "../game/vehicle_colour.h"
 #include "graphics.h"
 #include "controller.h"
 #include "audio.h"
@@ -43,6 +44,9 @@ GameState prevGameState = STATE_INIT;
 // Add game objects here for initialisation
 void InitialiseGameObjects(void)
 {
+	// Where the car models polygons have their CLUTs (before any of them are drawn)
+	// This is later used to set the CLUTs for the car models when they are drawn
+	InitialiseCarPaint();
 }
 
 

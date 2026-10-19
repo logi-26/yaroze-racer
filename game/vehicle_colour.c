@@ -1,5 +1,6 @@
 #include <libps.h>
 #include "vehicle_colour.h"
+#include "brakelights.h"
 
 
 /*****************************************************
@@ -17,7 +18,7 @@ typedef struct {
 
 
 // Colour transforms (to modify the CLUT colours rather than replacing the colours)
-// This enables colours to be replcaed whilst preserving the colour shades from the texture
+// This enables colours to be replaced whilst preserving the colour shades from the texture
 static const ColourTransform transforms[VEHICLE_COLOUR_COUNT] = {
     { 16, 16, 16,    0,   0,   0,     0,    0 }, 	// ORIGINAL
     { 16,  7, 16,    0,   0,   0,     0,    0 }, 	// ORANGE (from yellow)
@@ -72,12 +73,59 @@ static u_short workClut[256];
 static RECT clutRect;
 
 
-// Recolours a vehicle by modifying entries in its TIM texture CLUT
+// Recolour the body range of a CLUT (in RAM) to a colour, keeping the texture's shading
+static void TransformClut(u_short *clut, int clutWords, int bodyStart, int bodyEnd, VehicleColour colour) {
+    const ColourTransform *t;
+    int i, r, g, b, orig_b;
+    u_short pixel;
+
+	// Ignore requests for the original colour or invalid colour IDs
+    if (colour == VEHICLE_COLOUR_ORIGINAL || (int)colour >= VEHICLE_COLOUR_COUNT) {
+        return;
+	}
+
+	// Select the colour transf params for the requested paint colour
+    t = &transforms[colour];
+
+	// Only re-colour the palette range used by the vehicle body
+    for (i = bodyStart; i <= bodyEnd && i < clutWords; i++) {
+
+		// PS1 colours stored as (bit 15 = STP, bits 10-14 = Blue, bits 5- 9 = Green, bits 0- 4 = Red)
+		pixel = clut[i];
+
+		// Extract 5-bit RGB components
+		r = (pixel >>  0) & 0x1F;
+        g = (pixel >>  5) & 0x1F;
+        b = (pixel >> 10) & 0x1F;
+
+		// Preserve the original blue channel (Some colour transforms use it as an intensity/shading source)
+		orig_b = b;
+
+		// Apply channel scaling (multipliers use fixed-point values where 16 == 1.0)
+        r = (r * t->rMul) >> 4;
+        g = (g * t->gMul) >> 4;
+        b = (b * t->bMul) >> 4;
+
+		// Apply colour offsets and optional blue-channel contribution
+		// Using blue as a source helps preserve texture shading and highlights
+        r += t->rAdd + ((orig_b * t->rFromB) >> 4);
+        g += t->gAdd + ((orig_b * t->gFromB) >> 4);
+        b += t->bAdd;
+
+		// Clamp back to the PS1's 5-bit colour range (0-31)
+        if (r > 31) r = 31;
+        if (g > 31) g = 31;
+        if (b > 31) b = 31;
+
+        // Rebuild the palette entry while preserving the STP flag
+        clut[i] = (pixel & 0x8000) | (u_short)((b << 10) | (g << 5) | r);
+    }
+}
+
+
+// Recolours a vehicle by modifying entries in its TIM texture CLUT (in VRAM)
 void ApplyVehicleColour(long texAddr, int bodyStart, int bodyEnd, VehicleColour colour) {
     GsIMAGE tim;
-    const ColourTransform *t;
-    int i, clutWords, r, g, b, orig_b;
-    u_short pixel;
 
 	// Ignore requests for the original colour or invalid colour IDs
     if (colour == VEHICLE_COLOUR_ORIGINAL || (int)colour >= VEHICLE_COLOUR_COUNT) {
@@ -100,53 +148,176 @@ void ApplyVehicleColour(long texAddr, int bodyStart, int bodyEnd, VehicleColour 
 
 	// Copy the CLUT from VRAM into a working buffer so it can be edited
     StoreImage(&clutRect, (u_long *)workClut);
-    
-	// Wait for GPU transfer to complete
 	DrawSync(0);
 
-	// Select the colour transf params for the requested paint colour
-    t = &transforms[colour];
-	
-	// Total number of palette entries available
-    clutWords = tim.cw * tim.ch;
-
-	// Only re-colour the palette range used by the vehicle body
-    for (i = bodyStart; i <= bodyEnd && i < clutWords; i++) {
-        
-		// PS1 colours stored as (bit 15 = STP, bits 10-14 = Blue, bits 5- 9 = Green, bits 0- 4 = Red)
-		pixel = workClut[i];
-        
-		// Extract 5-bit RGB components
-		r = (pixel >>  0) & 0x1F;
-        g = (pixel >>  5) & 0x1F;
-        b = (pixel >> 10) & 0x1F;
-        
-		// Preserve the original blue channel (Some colour transforms use it as an intensity/shading source)
-		orig_b = b;
-
-		// Apply channel scaling (multipliers use fixed-point values where 16 == 1.0)
-        r = (r * t->rMul) >> 4;
-        g = (g * t->gMul) >> 4;
-        b = (b * t->bMul) >> 4;
-
-		// Apply colour offsets and optional blue-channel contribution
-		// Using blue as a source helps preserve texture shading and highlights
-        r += t->rAdd + ((orig_b * t->rFromB) >> 4);
-        g += t->gAdd + ((orig_b * t->gFromB) >> 4);
-        b += t->bAdd;
-
-		// Clamp back to the PS1's 5-bit colour range (0-31)
-        if (r > 31) r = 31;
-        if (g > 31) g = 31;
-        if (b > 31) b = 31;
-
-        // Rebuild the palette entry while preserving the STP flag
-        workClut[i] = (pixel & 0x8000) | (u_short)((b << 10) | (g << 5) | r);
-    }
+	TransformClut(workClut, tim.cw * tim.ch, bodyStart, bodyEnd, colour);
 
 	// Upload the modified CLUT back into VRAM
     LoadImage(&clutRect, (u_long *)workClut);
-	
-	// Wait for the GPU transfer to complete before the texture can be used
     DrawSync(0);
+}
+
+
+/*****************************************************
+Each cars own paint
+
+All the cars of the same model share the same texture and its polygons all use the textures CLUT.
+So that cars of the same model can be different colours each car gets its own two CLUTs in VRAM 
+(its colour and its colour with the brake lights lit)
+
+*****************************************************/
+#define PAINT_CLUT_X   320          // Where the cars CLUTs are in VRAM (2 rows for each slot)
+#define PAINT_CLUT_Y   488
+
+// The base texture of each model (car3, car2, car5)
+static const long modelTexAddr[3] = { CAR_3Y_TEX_MEM_ADDR, CAR_2B_TEX_MEM_ADDR, CAR_5G_TEX_MEM_ADDR };
+
+// The brake light entries to light for each vehicle
+static const int brakeConfig[15] = { 2, 2, 2, 2, 2,  4, 4, 4, 4, 4,  6, 7, 8, 9, 10 };
+
+// Store the modified CLUTs for each car on the screen (one slot for each car)
+// Also store the original CLUT of each model (from its TIM texture) so it can be restored when a car is removed
+#define MAX_CAR_POLYGONS 400
+static const long modelTmdAddr[3] = { CAR_3Y_MEM_ADDR, CAR_2B_MEM_ADDR, CAR_5G_MEM_ADDR };
+static u_char *modelPrims[3];
+static u_short clutOffsets[3][MAX_CAR_POLYGONS];
+static int numClutOffsets[3];
+static u_short modelOriginalClut[3];
+static u_short modelCurrentClut[3];
+
+
+// A models polygons (an objects offsets are made into addresses by GsMapModelingData)
+static u_char *ModelPolygons(u_long *object) {
+	return (object[4] & 0x80000000) ? (u_char *)object[4] : (u_char *)object + object[4];
+}
+
+
+// Find where each car models polygons have their CLUT (once, when the game starts before the
+// models are drawn, while their polygons headers are still as they are in the TMD files)
+void InitialiseCarPaint(void) {
+	int m;
+
+	for (m = 0; m < 3; m++) {
+		// The TMD, its ID, flags and number of objects
+		u_long *object = (u_long *)modelTmdAddr[m] + 3;
+		u_char *prim = ModelPolygons(object);
+		u_long k, n = object[5];
+		int count = 0;
+
+		modelPrims[m] = prim;
+		for (k = 0; k < n && count < MAX_CAR_POLYGONS; k++) {
+			// For each polygon get olen, ilen, flag, mode, then for a textured one u0, v0 and its CLUT)
+			if (prim[3] & 0x04) {
+				clutOffsets[m][count++] = (u_short)(prim + 6 - modelPrims[m]);
+			}
+			prim += 4 + prim[1] * 4;
+		}
+		numClutOffsets[m] = count;
+		modelOriginalClut[m] = modelCurrentClut[m] = count ? *(u_short *)(modelPrims[m] + clutOffsets[m][0]) : 0;
+	}
+}
+
+
+// Recolour a CLUT (in RAM) to a vehicles colour (index 0-4 car3, 5-9 car2, 10-14 car5)
+static void ColourClut(u_short *clut, int clutWords, int vehicleIndex) {
+	int v = vehicleIndex % 5;
+
+	if (vehicleIndex < 5) {
+		TransformClut(clut, clutWords, CAR3_BODY_CLUT_START, CAR3_BODY_CLUT_END, car3Colours[v]);
+	}
+	else if (vehicleIndex < 10) {
+		TransformClut(clut, clutWords, CAR2_BODY_CLUT_START_1, CAR2_BODY_CLUT_END_1, car2Colours[v]);
+		TransformClut(clut, clutWords, CAR2_BODY_CLUT_START_2, CAR2_BODY_CLUT_END_2, car2Colours[v]);
+	}
+	else {
+		TransformClut(clut, clutWords, CAR5_BODY_CLUT_START_1, CAR5_BODY_CLUT_END_1, car5Colours[v]);
+		TransformClut(clut, clutWords, CAR5_BODY_CLUT_START_2, CAR5_BODY_CLUT_END_2, car5Colours[v]);
+		TransformClut(clut, clutWords, CAR5_BODY_CLUT_START_3, CAR5_BODY_CLUT_END_3, car5Colours[v]);
+	}
+}
+
+
+// Give each car its own paint (its two CLUTs in its assigned slot)
+// Each slot is derived from the models original texture CLUT (the one loaded from the TIM into RAM)
+// This enable two cars of the same model to be different colours, and for each car to have its own brake lights
+void PaintCar(PlayerStruct *car, int slot, int vehicleIndex) {
+	static u_short clut[256];
+	GsIMAGE tim;
+	RECT rect;
+	int i, lit, clutWords;
+	u_short *original;
+
+	car->paintClut[0] = car->paintClut[1] = 0;
+	car->brakesOn = 0;
+	if (vehicleIndex < 0 || vehicleIndex >= 15 || slot < 0 || slot >= CAR_PAINT_SLOTS) {
+		return;
+	}
+
+	GsGetTimInfo((u_long *)(modelTexAddr[vehicleIndex / 5] + 4), &tim);
+	
+	if (!((tim.pmode >> 3) & 0x01)) {
+		return;
+	}
+
+	clutWords = tim.cw * tim.ch;
+
+	if (clutWords > 256) {
+		clutWords = 256;
+	}
+
+	original = (u_short *)tim.clut;
+
+	for (lit = 0; lit < 2; lit++) {
+		for (i = 0; i < clutWords; i++) {
+			clut[i] = original[i];
+		}
+
+		ColourClut(clut, clutWords, vehicleIndex);
+
+		if (lit) {
+			LightBrakeLights(clut, brakeConfig[vehicleIndex]);
+		}
+
+		rect.x = PAINT_CLUT_X;
+		rect.y = PAINT_CLUT_Y + slot * 2 + lit;
+		rect.w = clutWords;
+		rect.h = 1;
+		LoadImage(&rect, (u_long *)clut);
+		DrawSync(0);
+
+		// The CLUTs ID as the polygons hold it (y in bits 6-14, x / 16 in bits 0-5)
+		car->paintClut[lit] = (u_short)((rect.y << 6) | (rect.x >> 4));
+	}
+}
+
+
+// Point a cars models polygons at the cars CLUT just before the car is drawn. 
+// A car without its own paint gets its models own CLUT back.
+void ApplyCarPaint(PlayerStruct *car) {
+	u_long *object = car->gsObjectHandler.tmd;
+	u_char *prims;
+	u_short cba;
+	int m, i;
+
+	if (!object) {
+		return;
+	}
+
+	// Its model
+	prims = ModelPolygons(object);
+	for (m = 0; m < 3 && modelPrims[m] != prims; m++)
+		;
+	if (m == 3) {
+		return;
+	}
+
+	cba = car->paintClut[0] ? car->paintClut[car->brakesOn ? 1 : 0] : modelOriginalClut[m];
+	if (cba == modelCurrentClut[m]) {
+		return;
+	}
+	modelCurrentClut[m] = cba;
+
+	for (i = 0; i < numClutOffsets[m]; i++) {
+		*(u_short *)(prims + clutOffsets[m][i]) = cba;
+	}
 }

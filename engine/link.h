@@ -26,12 +26,13 @@ typedef enum
 #define LINK_STATUS_VALUE(status)        (((status) >> 2) & 15)
 #define LINK_STATUS_FLAG(status)         (((status) >> 6) & 1)
 
-// In the race the status word holds the stage (bits 0-1), finished (bit 2) and
-// the car's heading / 2 (bits 3-13); the extra data (Link_SetLocalExtra) holds
-// the car's position / 8 (X bits 0-13, Z bits 14-27) and the track (bits 28-31)
-#define LINK_RACE_STATUS(finished, heading)  (LINK_STAGE_RACE | (((finished) & 1) << 2) | ((((heading) & 4095) >> 1) << 3))
+// In the race the status word holds the stage (bits 0-1), finished (bit 2), the cars
+// heading / 4 (bits 3-12) and whether its braking (bit 13); the extra data (Link_SetLocalExtra) holds
+// the cars position / 8 (X bits 0-13, Z bits 14-27) and the track (bits 28-31)
+#define LINK_RACE_STATUS(finished, heading, braking)  (LINK_STAGE_RACE | (((finished) & 1) << 2) | ((((heading) & 4095) >> 2) << 3) | (((braking) & 1) << 13))
 #define LINK_RACE_FINISHED(status)           (((status) >> 2) & 1)
-#define LINK_RACE_HEADING(status)            ((((status) >> 3) & 2047) << 1)
+#define LINK_RACE_HEADING(status)            ((((status) >> 3) & 1023) << 2)
+#define LINK_RACE_BRAKING(status)            (((status) >> 13) & 1)
 
 #define LINK_RACE_MAX_POS                    (0x3FFF << 3)
 #define LINK_RACE_EXTRA(x, z, track)         ((((u_long)(x) >> 3) & 0x3FFF) | ((((u_long)(z) >> 3) & 0x3FFF) << 14) | (((u_long)(track) & 15) << 28))

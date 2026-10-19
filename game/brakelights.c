@@ -35,133 +35,21 @@ static const TexEntries allEntries[11] = {
     { tex10, sizeof(tex10) / sizeof(int) },
 };
 
-// Player brake light CLUT buffers
-static u_short savedClut[256];
-static u_short brakeClut[256];
-static RECT clutRect;
-static int ready = 0;
-
-// AI brake light CLUT buffers (independent from player)
-static u_short aiSavedClut[256];
-static u_short aiBrakeClut[256];
-static RECT aiClutRect;
-static int aiReady = 0;
-
-
-// Initialise the brake light effect
-void InitBrakeLightEffect(long texAddr, int vehicleIndex) {
-    GsIMAGE tim;
+// Light the brake lights in a CLUT
+void LightBrakeLights(u_short *clut, int config) {
     const int *entries;
-    int numEntries;
-    int i, clutWords;
+    int numEntries, i;
 
-    if (vehicleIndex < 0 || vehicleIndex > 10) 
-	{
-		ready = 0; 
-		return; 
-	}
-
-    GsGetTimInfo((u_long *)(texAddr + 4), &tim);
-
-    // Requires a CLUT-based texture (4-bit or 8-bit)
-    if (!((tim.pmode >> 3) & 0x01)) 
-	{ 
-		ready = 0; 
-		return; 
-	}
-
-    // Get the CLUT rect
-    clutRect.x = tim.cx;
-    clutRect.y = tim.cy;
-    clutRect.w = tim.cw;
-    clutRect.h = tim.ch;
-
-    // Store the original CLUT from VRAM
-    StoreImage(&clutRect, (u_long *)savedClut);
-    DrawSync(0);
-
-    // Copy to brake version
-    clutWords = tim.cw * tim.ch;
-    for (i = 0; i < clutWords; i++) 
-	{
-        brakeClut[i] = savedClut[i];
-	}
-
-    // Apply red to the tail-light CLUT indices for this specific texture variant
-    entries = allEntries[vehicleIndex].entries;
-    numEntries = allEntries[vehicleIndex].count;
-    
-	for (i = 0; i < numEntries; i++) 
-	{
-        brakeClut[entries[i]] = BRAKE_RED;
-	}
-
-    ready = 1;
-}
-
-
-void InitAIBrakeLightEffect(long texAddr, int vehicleIndex) {
-    GsIMAGE tim;
-    const int *entries;
-    int numEntries, i, clutWords;
-
-    if (vehicleIndex < 0 || vehicleIndex > 10) 
-	{ 
-		aiReady = 0; 
-		return; 
-	}
-
-    GsGetTimInfo((u_long *)(texAddr + 4), &tim);
-    if (!((tim.pmode >> 3) & 0x01)) 
-	{ 
-		aiReady = 0; 
-		return; 
-	}
-
-    aiClutRect.x = tim.cx;
-    aiClutRect.y = tim.cy;
-    aiClutRect.w = tim.cw;
-    aiClutRect.h = tim.ch;
-
-    StoreImage(&aiClutRect, (u_long *)aiSavedClut);
-    DrawSync(0);
-
-    clutWords = tim.cw * tim.ch;
-    for (i = 0; i < clutWords; i++) 
-	{
-		aiBrakeClut[i] = aiSavedClut[i];
-	}
-
-    entries = allEntries[vehicleIndex].entries;
-    numEntries = allEntries[vehicleIndex].count;
-    
-	for (i = 0; i < numEntries; i++) 
-	{
-		aiBrakeClut[entries[i]] = BRAKE_RED;
-	}
-
-    aiReady = 1;
-}
-
-
-void SetAIBrakeLightTexture(int braking) {
-    if (!aiReady) 
+    if (config < 0 || config > 10)
 	{
 		return;
 	}
-	
-    LoadImage(&aiClutRect, (u_long *)(braking ? aiBrakeClut : aiSavedClut));
-    DrawSync(0);
-}
 
+    entries = allEntries[config].entries;
+    numEntries = allEntries[config].count;
 
-// Load the appropriate brake light CLUT
-void SetBrakeLightTexture(int braking) {
-    if (!ready) 
+	for (i = 0; i < numEntries; i++)
 	{
-		return;
+        clut[entries[i]] = BRAKE_RED;
 	}
-	
-    LoadImage(&clutRect, (u_long *)(braking ? brakeClut : savedClut));
-    DrawSync(0);
 }

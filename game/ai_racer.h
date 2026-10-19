@@ -30,6 +30,7 @@ typedef struct {
     int steerSmooth;    		// Smoothed steering value
     int recoverTimer;   		// > 0 while reversing away from a wall
     int braking;        		// 1 while braking (for its brake lights)
+    int vehicleIndex;   		// Its model and colour (0-14, as the players)
     int stuckTimer;     		// Counts down to the next position-based stuck check
     long lastPosX;      		// World X at the start of the stuck-check window
     long lastPosZ;      		// World Z at the start of the stuck-check window
