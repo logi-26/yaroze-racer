@@ -1,6 +1,7 @@
 #include "gameplay.h"
 
 #include "../engine/state_manager.h"
+#include "../engine/lang.h"
 #include "../engine/controller.h"
 #include "../engine/graphics.h"
 #include "../engine/model.h"
@@ -14,7 +15,6 @@
 #include "../game/minimap.h"
 #include "../game/world.h"
 #include "../game/hud.h"
-#include "../game/brakelights.h"
 #include "../game/vehicle_colour.h"
 #include "../game/ai_racer.h"
 #include "../game/link_race.h"
@@ -31,6 +31,36 @@ static int finishPlace = 0;
 // Two player race: player 2's finishing position (0 while racing)
 static int finishPlace2 = 0;
 
+// The countdown at the start of the race (3, 2, 1, then GO as the race starts)
+// Nobody can move, the buttons do nothing and the lap timers dont run until it reaches GO
+#define COUNTDOWN_NUMBER_MS 3000    					// How long each number (3, 2, 1) is on the screen
+#define COUNTDOWN_MS (COUNTDOWN_NUMBER_MS * 3)  	    // From the race loading to GO
+#define COUNTDOWN_GO_MS  1500       					// How long GO stays on the screen
+#define COUNTDOWN_STEP_MS 100      						// The most a frame adds to it (the first frames time includes the loading)
+static int countdownMs = 0;         					// How far into the countdown it is
+static int countdownLastMs = 0;     					// gameMs last frame
+static int raceStarted = 0;         					// The countdown has reached GO
+static int raceWaiting = 0;         					// Link race (waiting for the other console to load the race)
+
+
+// Move the countdown on by the time since the last frame (at most COUNTDOWN_STEP_MS, so the time
+// spent loading the race or paused doesn't count)
+static void UpdateCountdown(void)
+{
+	int step = gameMs - countdownLastMs;
+
+	countdownLastMs = gameMs;
+	if (step > COUNTDOWN_STEP_MS)
+	{
+		step = COUNTDOWN_STEP_MS;
+	}
+
+	if (step > 0 && countdownMs < COUNTDOWN_MS + COUNTDOWN_GO_MS)
+	{
+		countdownMs += step;
+	}
+}
+
 // Waypoints for the AI routes
 long waypointX = 0;
 long waypointZ = 0;
@@ -43,45 +73,6 @@ static const long playerTmdAddr[15] = {
     CAR_2B_MEM_ADDR, CAR_2B_MEM_ADDR, CAR_2B_MEM_ADDR, CAR_2B_MEM_ADDR, CAR_2B_MEM_ADDR,
     CAR_5G_MEM_ADDR, CAR_5G_MEM_ADDR, CAR_5G_MEM_ADDR, CAR_5G_MEM_ADDR, CAR_5G_MEM_ADDR,
 };
-
-
-static const long playerTexAddr[15] = {
-    CAR_3Y_TEX_MEM_ADDR, CAR_3Y_TEX_MEM_ADDR, CAR_3Y_TEX_MEM_ADDR, CAR_3Y_TEX_MEM_ADDR, CAR_3Y_TEX_MEM_ADDR,
-    CAR_2B_TEX_MEM_ADDR, CAR_2B_TEX_MEM_ADDR, CAR_2B_TEX_MEM_ADDR, CAR_2B_TEX_MEM_ADDR, CAR_2B_TEX_MEM_ADDR,
-    CAR_5G_TEX_MEM_ADDR, CAR_5G_TEX_MEM_ADDR, CAR_5G_TEX_MEM_ADDR, CAR_5G_TEX_MEM_ADDR, CAR_5G_TEX_MEM_ADDR,
-};
-
-
-// car3 maps to yellow brake config (2); car2 maps to blue brake config (4)
-static const int brakeLightIdx[15] = { 2, 2, 2, 2, 2,  4, 4, 4, 4, 4,  6, 7, 8, 9, 10 };
-
-
-// Re-colour a vehicle's body (its base texture) to its variant
-static void ColourVehicle(int vehicleIndex)
-{
-	// Re-colour car3 body (yellow base) to selected variant
-    if (vehicleIndex < 5) 
-	{
-        ApplyVehicleColour(playerTexAddr[vehicleIndex], CAR3_BODY_CLUT_START, CAR3_BODY_CLUT_END, car3Colours[vehicleIndex]);
-	}
-
-	// Re-colour car2 body (blue base) to selected variant
-    if (vehicleIndex >= 5 && vehicleIndex < 10) 
-	{
-        int v = vehicleIndex - 5;
-        ApplyVehicleColour(playerTexAddr[vehicleIndex], CAR2_BODY_CLUT_START_1, CAR2_BODY_CLUT_END_1, car2Colours[v]);
-        ApplyVehicleColour(playerTexAddr[vehicleIndex], CAR2_BODY_CLUT_START_2, CAR2_BODY_CLUT_END_2, car2Colours[v]);
-    }
-
-	// Re-colour car5 body (green base) to selected variant
-    if (vehicleIndex >= 10) 
-	{
-        int v = vehicleIndex - 10;
-        ApplyVehicleColour(playerTexAddr[vehicleIndex], CAR5_BODY_CLUT_START_1, CAR5_BODY_CLUT_END_1, car5Colours[v]);
-        ApplyVehicleColour(playerTexAddr[vehicleIndex], CAR5_BODY_CLUT_START_2, CAR5_BODY_CLUT_END_2, car5Colours[v]);
-        ApplyVehicleColour(playerTexAddr[vehicleIndex], CAR5_BODY_CLUT_START_3, CAR5_BODY_CLUT_END_3, car5Colours[v]);
-    }
-}
 
 
 // Two player race: player 2's car, on its start position, driven with the second controller
@@ -102,13 +93,8 @@ static void InitialiseLocalPlayer2(void)
 	player2_isBraking = 0;
 	rearViewActive2 = 0;
 
-	// A different model has its own colour and brake lights
-	// The same vehicle model as player 1 has player 1's colour and brake lights (due to the shared base texture)
-	if (v / 5 != selectedVehicleIndex / 5)
-	{
-		ColourVehicle(v);
-		InitAIBrakeLightEffect(playerTexAddr[v], brakeLightIdx[v]);
-	}
+	// Its own colour and brake lights (even on the same model as player 1's)
+	PaintCar(&player2, 1, v);
 }
 
 
@@ -119,7 +105,7 @@ static void StateInit(void)
 
     stateInitialised = 1;
 
-	// The selected track's data (its start positions are needed before the world is initialised)
+	// The selected tracks data (its start positions are needed before the world is initialised)
 	SelectTrack();
 
 	// Two player race (each player has half the screen)
@@ -128,7 +114,7 @@ static void StateInit(void)
 		SetScreenMode(SCREEN_MODE_SPLITSCREEN);
 	}
 
-	// A link race if the link is connected (two players, no AI racers)
+	// A link race if the link is connected (two players and no AI racers)
 	LinkRace_Begin();
 	LinkRace_GetStart(&startX, &startZ, &startHeading);
 	
@@ -152,42 +138,19 @@ static void StateInit(void)
 	// The tracks mini-map (after the track and the screen mode are set)
 	InitialiseMiniMap();
 
-	// Load the vehicle texture (car3 variants all share the yellow base)
-    LoadTexture(playerTexAddr[selectedVehicleIndex]);
+	// Load the three vehicle textures (each car has its own CLUT for its colour and brake lights)
+	LoadTexture(CAR_3Y_TEX_MEM_ADDR);
+	LoadTexture(CAR_2B_TEX_MEM_ADDR);
+	LoadTexture(CAR_5G_TEX_MEM_ADDR);
 
-	// Re-colour the body to the selected variant
-	ColourVehicle(selectedVehicleIndex);
-
-	// Prepare CLUT swap buffers for player brake light effect
-    InitBrakeLightEffect(playerTexAddr[selectedVehicleIndex], brakeLightIdx[selectedVehicleIndex]);
-
-	// Load textures for all three AI vehicles (skip whichever the player already loaded)
-    if (selectedVehicleIndex >= 5) 
-	{
-		LoadTexture(CAR_3Y_TEX_MEM_ADDR);
-	}
-    
-	if (selectedVehicleIndex < 5  || selectedVehicleIndex >= 10)
-	{		
-		LoadTexture(CAR_2B_TEX_MEM_ADDR);
-	}
-    
-	if (selectedVehicleIndex < 10)                                       
-	{
-		LoadTexture(CAR_5G_TEX_MEM_ADDR);
-	}
-	
-	// Enable the brake light effect for the AI racers
-    InitAIBrakeLightEffect(CAR_3Y_TEX_MEM_ADDR, 2);
+	// Player 1's colour and brake lights
+	PaintCar(&player1, 0, selectedVehicleIndex);
 
 	if (LinkRace_IsActive())
 	{
-		// The other player's car (re-coloured unless it's the same model as ours)
+		// The other players car (in its own colour even on the same model as ours)
 		LinkRace_InitOpponent((unsigned long *)playerTmdAddr[remoteVehicleIndex]);
-		if (remoteVehicleIndex / 5 != selectedVehicleIndex / 5)
-		{
-			ColourVehicle(remoteVehicleIndex);
-		}
+		PaintCar(&player2, 1, remoteVehicleIndex);
 	}
 	else if (NumberOfPlayers == 2)
 	{
@@ -207,6 +170,10 @@ static void StateInit(void)
 	finishPlace = 0;
 	finishPlace2 = 0;
 	ResetLapTimer();
+	countdownMs = 0;
+	countdownLastMs = gameMs;
+	raceStarted = 0;
+	raceWaiting = 1;
 	currentGear = 1;
 	player1_lateralSpeed = 0;
 	player1_pitch = 0;
@@ -217,8 +184,6 @@ static void StateInit(void)
 
 static void StateDeinitialise(void)
 {
-    SetBrakeLightTexture(0);
-    SetAIBrakeLightTexture(0);
     stateInitialised = 0;
 }
 
@@ -285,8 +250,6 @@ static void UpdateRaceFinish(void)
 
 static void UpdateGameplay(void)
 {
-    static int prevBraking   = 0;
-    static int prevAIBraking = 0;
 
 	// Initialise the state on first entry
     if (!stateInitialised) 
@@ -294,7 +257,33 @@ static void UpdateGameplay(void)
         StateInit();
 	}
 
-	// L1: record current position as a waypoint (for craeting AI route)
+	// During the race countdown nothing moves and the buttons do nothing
+	// In a link race the countdown waits until the other console has loaded the race before it starts
+	if (raceWaiting)
+	{
+		LinkRace_Update();
+		countdownLastMs = gameMs;
+		if (!LinkRace_OpponentReady())
+		{
+			return;
+		}
+
+		raceWaiting = 0;
+	}
+
+	UpdateCountdown();
+	if (!raceStarted)
+	{
+		if (countdownMs < COUNTDOWN_MS)
+		{
+			LinkRace_Update();
+			return;
+		}
+		raceStarted = 1;
+		ResetLapTimer();
+	}
+
+	// L1: record current position as a waypoint (for creating the AI route)
     if (BTN_PRESSED(PADL1) && !LinkRace_IsActive()) 
 	{
         waypointX = player1.gsObjectCoord.coord.t[0];
@@ -356,36 +345,20 @@ static void UpdateGameplay(void)
 	// Link race (exchange car positions with the other console, positions, finish)
 	LinkRace_Update();
 
-	// Player brake lights (in a two player race the same model shares them)
+	// The cars brake lights (each car has its own and they are lit when its drawn)
+	player1.brakesOn = player1_isBraking;
+	if (NumberOfPlayers == 2)
 	{
-		int braking = player1_isBraking ||
-			(NumberOfPlayers == 2 && player2VehicleIndex / 5 == selectedVehicleIndex / 5 && player2_isBraking);
-		if (braking != prevBraking)
+		player2.brakesOn = player2_isBraking;
+	}
+	if (AIRacersActive())
+	{
+		int i;
+		for (i = 0; i < NUM_AI_RACERS; i++)
 		{
-			SetBrakeLightTexture(braking);
-			prevBraking = braking;
+			aiRacers[i].player.brakesOn = aiRacers[i].braking;
 		}
 	}
-
-	// In a two player race, the other players brake lights are only active if they are a different model (as the same model shares the brake light effect)
-	if (NumberOfPlayers == 2 && player2VehicleIndex / 5 != selectedVehicleIndex / 5)
-	{
-		if (player2_isBraking != prevAIBraking)
-		{
-			SetAIBrakeLightTexture(player2_isBraking);
-			prevAIBraking = player2_isBraking;
-		}
-	}
-
-	// AI brake lights — only active when player uses car2/car5 (different CLUT from AI car3 texture)
-    if (AIRacersActive() && selectedVehicleIndex >= 5)
-	{
-        if (aiRacerBraking != prevAIBraking) 
-		{
-            SetAIBrakeLightTexture(aiRacerBraking);
-            prevAIBraking = aiRacerBraking;
-        }
-    }
 
 	// No pause during a link race
 	// Once finished (or the other player has gone) Start returns to the main menu
@@ -460,6 +433,54 @@ static void DrawRaceResult(int place, int raceOver, GsOT *ot)
 }
 
 
+// The countdown in the middle of a player's view: 3, 2, 1, then GO for a moment as the race starts
+static void DrawCountdown(GsOT *ot)
+{
+	int elapsed = countdownMs;
+	int split = (NumberOfPlayers == 2);
+	char number[2];
+
+	if (elapsed >= COUNTDOWN_MS + COUNTDOWN_GO_MS)
+	{
+		return;
+	}
+
+	// Link race (waiting for the other console)
+	if (raceWaiting)
+	{
+		FontFX_FontBegin();
+		FontFX_SetStyle(FONT_STYLE_2);
+		FontFX_SetCenter(SCREEN_X_OFFSET, gScreenWidth);
+		FontFX_SetColour(COL_WHITE);
+		FontFX_SetOutline(COL_DARKGREY);
+		FontFX_SetPulse(0, 255, 20);
+		FontFX_Print(20, split ? 50 : 100, (char *)TXT(TXT_WAITING_FOR_PLAYER), ot, OT_UI);
+		FontFX_FontEnd();
+		return;
+	}
+
+	FontFX_FontBegin();
+	FontFX_SetStyle(FONT_STYLE_2);
+	FontFX_SetCenter(SCREEN_X_OFFSET, gScreenWidth);
+	FontFX_SetSize(4);
+	FontFX_SetOutline(COL_WHITE);
+	if (elapsed < COUNTDOWN_MS)
+	{
+		number[0] = (char)('3' - elapsed / COUNTDOWN_NUMBER_MS);
+		number[1] = 0;
+		FontFX_SetColour(COL_GOLD);
+		FontFX_Print(20, split ? 40 : 80, number, ot, OT_UI);
+	}
+	else
+	{
+		FontFX_SetColour(COL_GREEN);
+		FontFX_Print(20, split ? 40 : 80, (char *)TXT(TXT_GO), ot, OT_UI);
+	}
+	FontFX_SetSize(1);
+	FontFX_FontEnd();
+}
+
+
 static void RenderGameplay(void)
 {
 	RenderWorld();
@@ -474,6 +495,8 @@ static void RenderGameplay(void)
 		DrawMiniMap(&player2, &WorldOrderingTable[activeBuffer + 2]);
 		DrawRaceResult(finishPlace, raceOver, &WorldOrderingTable[activeBuffer]);
 		DrawRaceResult(finishPlace2, raceOver, &WorldOrderingTable[activeBuffer + 2]);
+		DrawCountdown(&WorldOrderingTable[activeBuffer]);
+		DrawCountdown(&WorldOrderingTable[activeBuffer + 2]);
 		return;
 	}
 
@@ -481,6 +504,7 @@ static void RenderGameplay(void)
 	DrawMiniMap(&player1, &WorldOrderingTable[activeBuffer]);
 	LinkRace_DrawHUD(&WorldOrderingTable[activeBuffer]);
 	DrawRaceResult(finishPlace, 1, &WorldOrderingTable[activeBuffer]);
+	DrawCountdown(&WorldOrderingTable[activeBuffer]);
 }
 
 
