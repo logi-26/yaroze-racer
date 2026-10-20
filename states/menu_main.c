@@ -331,6 +331,7 @@ static void RenderMenuMain(void)
 	int t, eased, shift;
 
     // Display the game title
+	/*
     FontFX_FontBegin();
     FontFX_SetStyle(FONT_STYLE_2);
     FontFX_SetSize(2);
@@ -341,6 +342,7 @@ static void RenderMenuMain(void)
     FontFX_Print(12, 20, TXT(TXT_GAME_TITLE), &WorldOrderingTable[activeBuffer], OT_UI);
     FontFX_SetSize(1);
     FontFX_FontEnd();
+	*/
 
 	// How far the pages have slid
 	// (eased in and out: t * t * (3 - 2t), with t from 0 to 256)

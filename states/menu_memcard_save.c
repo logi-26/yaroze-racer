@@ -12,6 +12,7 @@
 #include "../engine/message.h"
 #include "../engine/keyboard.h"
 #include "../engine/lang.h"
+#include "../game/tournament.h"
 
 #define EMPTY_SLOT_TEXT "EMPTY SLOT"
 #define MENU_ITEM_COUNT 6
@@ -78,6 +79,25 @@ static void StateDeinitialise(void)
 {
 	// Reset the state initialised flag
 	stateInitialised = 0;
+}
+
+
+/*****************************************************
+Open the on-screen keyboard (in a tournament it starts with a name for the save
+which tournament and the next race, such as T1 RACE 3)
+*****************************************************/
+static void OpenKeyboard(void)
+{
+	char name[KB_MAX_INPUT + 1];
+
+	KB_SetPosition(60, 100);
+	KB_Open();
+	if (Tournament_IsActive())
+	{
+		sprintf(name, "T%d RACE %d", tournament.id + 1, tournament.raceIndex + 1);
+		KB_SetInput(name);
+	}
+	showKeyboard = 1;
 }
 
 
@@ -159,13 +179,23 @@ static void UpdateMenuMemcardSave(void)
 		memset(&slotData, 0, sizeof(SaveSlot));
 
 		slotData.used = 1;
-		slotData.value1 = 10;
-		slotData.value2 = 20;
-		slotData.value3 = 30;
-		
+
+		// A tournament (between two of its races)
+		if (Tournament_IsActive())
+		{
+			slotData.type = SAVE_TYPE_TOURNAMENT;
+			Tournament_ToSave(slotData.data, SAVE_DATA_SIZE);
+		}
+		else
+		{
+			slotData.value1 = 10;
+			slotData.value2 = 20;
+			slotData.value3 = 30;
+		}
+
 		strncpy(slotData.title, saveFileName, 31);
 		slotData.title[31] = '\0';
-		
+
 		CardWriteSlot(memcardContext.selectedSlot, pendingOverwriteSlot, &slotData);
 		
 		// Reset save state
@@ -190,14 +220,14 @@ static void UpdateMenuMemcardSave(void)
 	*****************************************************/
 	if (!showKeyboard && !Message_IsActive())
 	{
-		// Return to main menu
+		// Go back to where the memory card menus were opened from (the next race in a tournament)
 		if (BTN_PRESSED(PADcircle))
 		{
 			// Deinitialise the state
 			StateDeinitialise();
-			
-			// Return to the main menu
-			gameState = STATE_MENU_MAIN;
+
+			gameState = Memcard_ReturnState();
+			return;
 		}
 
 		// Select slot
@@ -229,9 +259,7 @@ static void UpdateMenuMemcardSave(void)
 					// Display the on-screen-keyboard
 					if (!showKeyboard)
 					{
-						KB_SetPosition(60, 100);
-						KB_Open();
-						showKeyboard = 1;
+						OpenKeyboard();
 					}
 				}
 			}
@@ -269,9 +297,7 @@ static void UpdateMenuMemcardSave(void)
 			// Display the on-screen-keyboard
 			if (!showKeyboard)
 			{
-				KB_SetPosition(60, 100);
-				KB_Open();
-				showKeyboard = 1;
+				OpenKeyboard();
 			}
 		}
 		// If result is No

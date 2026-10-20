@@ -11,6 +11,8 @@
 #include "../engine/message.h"
 #include "../engine/ui.h"
 #include "../engine/lang.h"
+#include "../game/game.h"
+#include "../game/tournament.h"
 
 #define MENU_ITEM_COUNT 6
 #define MAX_MENU_ITEMS SAVE_SLOT_COUNT
@@ -138,20 +140,33 @@ static void LoadSaveSlots(void)
 
 static void UpdateMenuMemcardLoad(void)
 {
+	int messageWasOpen;
+
     // First state entry
 	if (!stateInitialised)
+	{
 		StateInit();
-	
-	// If circle is pressed, return to the main menu
+	}
+
+	// While a message is open (and the frame it closes) the buttons are only for the message
+	messageWasOpen = Message_IsActive();
+	Message_Update();
+
+	if (messageWasOpen)
+	{
+		return;
+	}
+
+	// If circle is pressed, go back to where the memory card menus were opened from
 	if (BTN_PRESSED(PADcircle))
 	{
 		// Deinitialise the state
 		StateDeinitialise();
-		
-		// Return to the main menu
-		gameState = STATE_MENU_MAIN;
+
+		gameState = Memcard_ReturnState();
+		return;
 	}
-	
+
 	// Load save
 	if (BTN_PRESSED(PADcross))
 	{
@@ -163,10 +178,22 @@ static void UpdateMenuMemcardLoad(void)
 			// Get the save slot
 			SaveSlot *s = GetSlot(slot);
 
-			// LOAD THE GAME STATE HERE!!!
 			if (s && s->used)
 			{
-				printf("Loading save value=%d\n", s->value1);
+				// A tournament: carry it on at its next race (NEXT RACE on the track screen)
+				if (s->type == SAVE_TYPE_TOURNAMENT && Tournament_FromSave(s->data))
+				{
+					StateDeinitialise();
+					NumberOfPlayers = 1;
+					ResumeMusic();
+					PlayMusic();
+					gameState = STATE_MENU_TRACK_SELECT;
+					return;
+				}
+
+				// Anything else can't be loaded (an older save, or a damaged one)
+				MSG_SetPredefinedTheme(MSG_THEME_DEFAULT);
+				Message_Show(TXT(TXT_SAVE_CANT_LOAD));
 			}
 		}
 	}
@@ -224,6 +251,9 @@ static void RenderMenuMemcardLoad(void)
             FontFX_PrintOutline(menuX[i], menuY[i], menuItems[i], FONT_STYLE_2, COL_GREEN, COL_DARKGREY, &WorldOrderingTable[activeBuffer], OT_UI);
         }
     }
+
+	// Render the message box popup if it is active
+	Message_Render(&WorldOrderingTable[activeBuffer], OT_POPUP);
 }
 
 

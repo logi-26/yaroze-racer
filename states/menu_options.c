@@ -7,6 +7,7 @@
 #include "../engine/audio.h"
 #include "../engine/graphics.h"
 #include "../engine/memcard.h"
+#include "../engine/memcard_context.h"
 #include "../engine/ui.h"
 #include "../engine/lang.h"
 
@@ -129,7 +130,9 @@ static void UpdateMenuOptions(void)
 	if (BTN_PRESSED(PADcross))
 	{
 		if (selectedItem == LOAD_ITEM)
-			gameState = STATE_MENU_MEMCARD;
+		{
+			Memcard_Open(MEMCARD_MODE_LOAD, STATE_MENU_MAIN);
+		}
 	}
 }
 
@@ -149,7 +152,8 @@ static void RenderMenuOptions(void)
 	FontFX_FontEnd();
 	
 	// Display the options menu items
-    for (i = 0; i < MENU_OPTIONS_ITEM_COUNT; i++) {
+    for (i = 0; i < MENU_OPTIONS_ITEM_COUNT; i++) 
+	{
 		int optionIndex;
 		int vol;
 		int maxVol;
@@ -222,7 +226,8 @@ static void RenderMenuOptions(void)
 		maxVol = options[optionIndex].max;
 		
 		// Highlight the selected item
-        if (selectedItem == i) {
+        if (selectedItem == i) 
+		{
             FontFX_FontBegin();
             FontFX_SetColour(COL_DARKGREEN);
             FontFX_SetOutline(COL_LIGHTGREY);
@@ -230,7 +235,9 @@ static void RenderMenuOptions(void)
             FontFX_Print(menuOptionsX[i], menuOptionsY[i], TXT(menuOptionItems[i]), &WorldOrderingTable[activeBuffer], OT_UI);
             FontFX_FontEnd();
         // Normal item
-		} else {
+		} 
+		else 
+		{
             FontFX_PrintOutline(menuOptionsX[i], menuOptionsY[i], TXT(menuOptionItems[i]), FONT_STYLE_2, COL_GREEN, COL_DARKGREY, &WorldOrderingTable[activeBuffer], OT_UI);
         }
 		

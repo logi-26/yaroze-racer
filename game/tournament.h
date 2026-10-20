@@ -20,7 +20,10 @@ Tournament Mode:
 #define TOURNAMENT_COMPETITORS  (1 + NUM_AI_RACERS)
 
 // Competitor 0 is the player, competitor 1 + i is AI racer i
-#define COMPETITOR_PLAYER       0
+#define COMPETITOR_PLAYER 0
+
+// A memory card save slot holding a tournament (between two of its races)
+#define SAVE_TYPE_TOURNAMENT 1
 
 
 typedef struct {
@@ -55,6 +58,9 @@ void Tournament_GetStandings(int order[TOURNAMENT_COMPETITORS]);
 int Tournament_RacePoints(int position);
 const char *Tournament_CompetitorName(int c);
 void Tournament_PrintResults(void);
+int Tournament_CanSave(void);
+int Tournament_ToSave(unsigned char *data, int size);
+int Tournament_FromSave(const unsigned char *data);
 /*****************************************************/
 
 #endif // TOURNAMENT_H

@@ -354,6 +354,15 @@ int KB_GetInputLength(void)
 
 
 // Open the keyboard
+// Start the input with this text (after KB_Open)
+void KB_SetInput(const char *text)
+{
+    strncpy(inputBuf, (char *)text, KB_MAX_INPUT);
+    inputBuf[KB_MAX_INPUT] = ' ';
+    inputLen = strlen(inputBuf);
+}
+
+
 void KB_Open(void)
 {
     memset(inputBuf, 0, sizeof(inputBuf));

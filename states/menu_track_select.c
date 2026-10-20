@@ -10,6 +10,7 @@
 #include "../engine/lang.h"
 #include "../engine/audio.h"
 #include "../engine/message.h"
+#include "../engine/memcard_context.h"
 #include "../game/ground.h"
 #include "../game/tournament.h"
 
@@ -257,7 +258,7 @@ static void UpdateSlide(void)
 
 // A tournament: its next track is shown (START RACE for the first race, then NEXT RACE)
 // X or Start races on it, in the tournaments day or night. Before the first race Circle goes back
-// to the vehicle select, after it Select asks to quit the tournament
+// to the vehicle select, after it Triangle saves the tournament and Select asks to quit it
 static void UpdateTournament(void)
 {
     int promptWasOpen = Message_IsActive();
@@ -296,6 +297,12 @@ static void UpdateTournament(void)
     {
         MSG_SetPredefinedTheme(MSG_THEME_DEFAULT);
         Message_Prompt(TXT(TXT_QUIT_TOURNAMENT), MSG_YES_NO);
+    }
+    else if (BTN_PRESSED(PADtriangle) && Tournament_CanSave())
+    {
+        // Save it on the memory card (and come back here for the next race)
+        stateInitialised = 0;
+        Memcard_Open(MEMCARD_MODE_SAVE, STATE_MENU_TRACK_SELECT);
     }
 }
 
@@ -486,7 +493,7 @@ static void RenderTournament(GsOT *ot)
     FontFX_SetColour(COL_GOLD);
     FontFX_SetOutline(COL_WHITE);
     FontFX_SetCenter(SCREEN_X_OFFSET, gScreenWidth);
-    FontFX_Print(20, 12, (char *)TXT(tournament.raceIndex == 0 ? TXT_START_RACE : TXT_NEXT_RACE), ot, OT_UI);
+    FontFX_Print(20, 8, (char *)TXT(tournament.raceIndex == 0 ? TXT_START_RACE : TXT_NEXT_RACE), ot, OT_UI);
     FontFX_SetSize(1);
     FontFX_FontEnd();
 
@@ -503,22 +510,26 @@ static void RenderTournament(GsOT *ot)
     FontFX_SetSize(1);
     FontFX_FontEnd();
 
-    // The tournament and which of its races this is
+    // The tournament and which of its races this is (between the title and the track)
     sprintf(text, "%s  %s %d/%d", TXT(name), TXT(TXT_RACE), tournament.raceIndex + 1, TOURNAMENT_RACES);
     FontFX_FontBegin();
     FontFX_SetColour(COL_WHITE);
     FontFX_SetOutline(COL_DARKGREY);
     FontFX_SetCenter(SCREEN_X_OFFSET, gScreenWidth);
-    FontFX_Print(20, PANEL_Y + PANEL_H + 28, text, ot, OT_UI);
+    FontFX_Print(20, PANEL_Y - 12, text, ot, OT_UI);
     FontFX_FontEnd();
 
-    // How to start the race (and go back or quit the tournament)
+    // How to start the race (and go back or quit the tournament and save it after the first race)
     FontFX_FontBegin();
     FontFX_SetColour(COL_WHITE);
     FontFX_SetOutline(COL_DARKGREY);
     FontFX_SetCenter(SCREEN_X_OFFSET, gScreenWidth);
     FontFX_SetPulse(0, 255, 20);
-    FontFX_Print(20, PANEL_Y + PANEL_H + 40, (char *)TXT(tournament.raceIndex == 0 ? TXT_TOURNAMENT_PROMPT_FIRST : TXT_TOURNAMENT_PROMPT_NEXT), ot, OT_UI);
+    FontFX_Print(20, PANEL_Y + PANEL_H + 28, (char *)TXT(tournament.raceIndex == 0 ? TXT_TOURNAMENT_PROMPT_FIRST : TXT_TOURNAMENT_PROMPT_NEXT), ot, OT_UI);
+    if (Tournament_CanSave())
+    {
+        FontFX_Print(20, PANEL_Y + PANEL_H + 40, (char *)TXT(TXT_TOURNAMENT_PROMPT_SAVE), ot, OT_UI);
+    }
     FontFX_FontEnd();
 
     Message_Render(ot, OT_POPUP);

@@ -58,6 +58,12 @@ typedef struct
 } SaveSlot;
 */
 
+// What a save slots data is (the game defines its own types from 1)
+#define SAVE_TYPE_NONE 0
+
+// The size of a save slots data (the games own save data goes in here)
+#define SAVE_DATA_SIZE 512
+
 typedef struct
 {
     int used;
@@ -66,12 +72,15 @@ typedef struct
     int value2;
     int value3;
     char title[32];
+    int type;                               // What the data is (SAVE_TYPE_NONE in older saves)
+    unsigned char data[SAVE_DATA_SIZE];     // The games save data
 
 	// Padding to fill the slot data to 1280 bytes
     unsigned char padding[
         SAVE_SLOT_SIZE
-        - sizeof(int) * 5   // used, slotNumber, value1, value2, value3
+        - sizeof(int) * 6   // used, slotNumber, value1, value2, value3, type
         - 32                // title
+        - SAVE_DATA_SIZE    // data
     ];
 } SaveSlot;
 

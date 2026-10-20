@@ -135,27 +135,29 @@ static void UpdateMenuMemcard(void)
 	// If cross is pressed
 	if (BTN_PRESSED(PADcross))
 	{
+		// Load from (or save to) the card, the load or save menu
+		GameState cardState = (memcardContext.mode == MEMCARD_MODE_SAVE) ? STATE_MENU_MEMCARD_SAVE : STATE_MENU_MEMCARD_LOAD;
+
 		switch (menuMemcardState.selectedItem)
 		{
 			case 0:
-				// Load Slot A
+				// Slot A
 				StateDeinitialise();
 				memcardContext.selectedSlot = 0;
-				gameState = STATE_MENU_MEMCARD_LOAD;
+				gameState = cardState;
 				break;
 
 			case 1:
-				// Load Slot B
+				// Slot B
 				StateDeinitialise();
 				memcardContext.selectedSlot = 1;
-				gameState = STATE_MENU_MEMCARD_LOAD;
-				//gameState = STATE_MENU_MEMCARD_SAVE;
+				gameState = cardState;
 				break;
 
 			case 2:
-				// Do not load - return to the main menu
+				// Do not load (or save) - go back to where the memory card menus were opened from
 				StateDeinitialise();
-				gameState = STATE_MENU_MAIN;
+				gameState = Memcard_ReturnState();
 				break;
 		}
 
@@ -172,39 +174,52 @@ static void RenderMenuMemcard(void)
 	FontFX_SetColour(COL_DARKGREEN);
 	FontFX_SetStyle(FONT_STYLE_2);
 	FontFX_SetCenter(SCREEN_X_OFFSET, gScreenWidth);
-	FontFX_Print(0, 30, TXT(TXT_MEMCARD_LOAD_WHICH), &WorldOrderingTable[activeBuffer], OT_UI);
+	FontFX_Print(0, 30, TXT(memcardContext.mode == MEMCARD_MODE_SAVE ? TXT_MEMCARD_SAVE_WHICH : TXT_MEMCARD_LOAD_WHICH), &WorldOrderingTable[activeBuffer], OT_UI);
 	FontFX_FontEnd();
 	
 	// Display the menu items
     for (i = 0; i < MENU_MEMCARD_ITEM_COUNT; i++) 
 	{
 		int alpha = 1;
+		TextID item = menuMemcardItems[i];
+
+		// Do not load (or save)
+		if (i == 2 && memcardContext.mode == MEMCARD_MODE_SAVE)
+		{
+			item = TXT_MEMCARD_DONT_SAVE;
+		}
 		
 		// If slot A has no valid memory card inserted, set the alpha value
 		if (i == 0 && menuMemcardState.slotAStatus != 1)
+		{
 			alpha = 0;
+		}
 
 		// If slot B has no valid memory card inserted, set the alpha value
 		else if (i == 1 && menuMemcardState.slotBStatus != 1)
+		{
 			alpha = 0;
+		}
 		
-        if (menuMemcardState.selectedItem == i) {
+        if (menuMemcardState.selectedItem == i) 
+		{
             // Highlight the selected item
             FontFX_FontBegin();
             FontFX_SetColour(COL_DARKGREEN);
             FontFX_SetOutline(COL_LIGHTGREY);
             FontFX_SetPulse(0, 255, 20);
 			FontFX_SetAlpha(alpha);
-            FontFX_Print(menuMemcardItemsX[i], menuMemcardItemsY[i], TXT(menuMemcardItems[i]), &WorldOrderingTable[activeBuffer], OT_UI);
+            FontFX_Print(menuMemcardItemsX[i], menuMemcardItemsY[i], TXT(item), &WorldOrderingTable[activeBuffer], OT_UI);
 			FontFX_SetAlpha(1);
             FontFX_FontEnd();
-        
-		} else {
+		} 
+		else 
+		{
 			// Normal item
 			FontFX_FontBegin();
             FontFX_SetColour(COL_DARKGREEN);
 			FontFX_SetAlpha(alpha);
-            FontFX_Print(menuMemcardItemsX[i], menuMemcardItemsY[i], TXT(menuMemcardItems[i]), &WorldOrderingTable[activeBuffer], OT_UI);
+            FontFX_Print(menuMemcardItemsX[i], menuMemcardItemsY[i], TXT(item), &WorldOrderingTable[activeBuffer], OT_UI);
 			FontFX_SetAlpha(1);
             FontFX_FontEnd();	
         }

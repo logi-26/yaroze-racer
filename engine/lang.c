@@ -97,7 +97,15 @@ static const char* strings_english[TXT_COUNT] =
 	"PLAYER",
 	"WINNER",
 	"YOU WIN THE TOURNAMENT",
-	"PRESS X OR START"
+	"PRESS X OR START",
+
+	/*****************************************************
+    TOURNAMENT SAVES
+    *****************************************************/
+	"TRIANGLE: SAVE",
+	"Save to which Memory Card",
+	"Do not save",
+	"CAN NOT LOAD THIS SAVE"
 };
 
 
@@ -193,8 +201,15 @@ static const char* strings_french[TXT_COUNT] =
 	"JOUEUR",
 	"VAINQUEUR",
 	"VOUS GAGNEZ LE TOURNOI",
-	"APPUYEZ SUR X OU START"
+	"APPUYEZ SUR X OU START",
 
+	/*****************************************************
+    TOURNAMENT SAVES
+    *****************************************************/
+	"TRIANGLE: SAUVEGARDER",
+	"Sauvegarder sur quelle Carte Memoire",
+	"Ne pas sauvegarder",
+	"CHARGEMENT IMPOSSIBLE"
 };
 
 
@@ -290,8 +305,15 @@ static const char* strings_dutch[TXT_COUNT] =
 	"SPELER",
 	"WINNAAR",
 	"JIJ WINT HET TOERNOOI",
-	"DRUK OP X OF START"
+	"DRUK OP X OF START",
 
+	/*****************************************************
+    TOURNAMENT SAVES
+    *****************************************************/
+	"DRIEHOEK: OPSLAAN",
+	"Opslaan op welke Memory Card",
+	"Niet opslaan",
+	"KAN SAVE NIET LADEN"
 };
 
 
@@ -387,8 +409,15 @@ static const char* strings_german[TXT_COUNT] =
 	"SPIELER",
 	"SIEGER",
 	"DU GEWINNST DAS TURNIER",
-	"DRUCKE X ODER START"
+	"DRUCKE X ODER START",
 
+	/*****************************************************
+    TOURNAMENT SAVES
+    *****************************************************/
+	"DREIECK: SPEICHERN",
+	"Auf welcher Memory Card speichern",
+	"Nicht speichern",
+	"LADEN NICHT MOGLICH"
 };
 
 

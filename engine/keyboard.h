@@ -105,6 +105,7 @@ void KB_RenderAtStoredPos(GsOT *ot, int priority);
 
 // Input functions
 const char *KB_GetInput(void);
+void KB_SetInput(const char *text);
 int KB_GetInputLength(void);
 
 // Position functions

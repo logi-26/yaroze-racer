@@ -29,6 +29,7 @@ Yaroze Racer is a 3D racing game written in C targeting the original PlayStation
 - **Three vehicles** with auto/manual gearbox
 - **Five AI opponents**
 - **Six race tracks**
+- **Tournament mode** six races, day or night, with points, results and final standings
 - **Race position tracking**
 - **Lap counter**
 - **Multiple camera modes**
@@ -41,7 +42,7 @@ Yaroze Racer is a 3D racing game written in C targeting the original PlayStation
 - **HUD** speed, gear, lap timer, best/last lap, race position
 - **Mini-map** the track with every racers position
 - **Menu system**
-- **Memory card support** 6 save slots with animated icons
+- **Memory card support** 6 save slots with animated icons (save a tournament between races)
 - **Localisation framework** multi-language support
 - **Track editor** Python/Pygame tool
 
@@ -92,7 +93,9 @@ yaroze-racer/
 │   ├── game             Physics
 │   ├── player           PlayerStruct
 │   ├── car_controls     Player input
-│   ├── ai_racer         AI, pos, lap count
+│   ├── ai_racer         AI, pos, lap count, finishing order
+│   ├── ai_drivers       AI driver names and personalities
+│   ├── tournament       Tournament state, points, standings, save data
 │   ├── link_race        Link race (2 consoles)
 │   ├── vehicle_attribs  Per-vehicle tuning
 │   ├── suspension       Suspension/body sim
@@ -106,16 +109,17 @@ yaroze-racer/
 │   ├── minimap          In-race mini-map
 │   └── vehicle_colour   Body colour (single texture CLUT swap)
 │
-├── states/              Game flow
-│   ├── gameplay         Main race loop
-│   ├── menu_main        Title / main menu
-│   ├── menu_lobby       Link-game lobby
-│   ├── menu_vehicle     Vehicle select
-│   ├── menu_track       Track select
-│   ├── menu_options     Settings screen
-│   ├── menu_pause       In-race pause
-│   ├── menu_memcard     Memory card browser
-│   └── gameover         Results screen
+├── states/                       Game flow
+│   ├── gameplay                  Main race loop
+│   ├── menu_main                 Title / main menu
+│   ├── menu_lobby                Link-game lobby
+│   ├── menu_vehicle              Vehicle select
+│   ├── menu_track                Track select (START RACE / NEXT RACE in a tournament)
+│   ├── menu_tournament_results   Race results and final standings
+│   ├── menu_options              Settings screen
+│   ├── menu_pause                In-race pause
+│   ├── menu_memcard              Memory card browser
+│   └── gameover                  Results screen
 │
 └── tools/
     ├── map_editor.py    Track layout editor

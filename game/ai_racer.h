@@ -35,6 +35,9 @@ typedef struct {
     int stuckTimer;     		// Counts down to the next position-based stuck check
     long lastPosX;      		// World X at the start of the stuck-check window
     long lastPosZ;      		// World Z at the start of the stuck-check window
+    int mistakeWaypoint;     	// The waypoint the mistake below was decided for
+    int mistake;             	// 1 = it brakes late for this waypoint's corner (its drivers mistake)
+    VehicleAttributes tuned; 	// Its handling (its cars, changed by its drivers personality)
     VehicleAttributes *attribs;
     SuspensionConfig *suspension;
 } AIRacer;

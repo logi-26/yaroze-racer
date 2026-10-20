@@ -10,6 +10,25 @@ TournamentState tournament;
 // The tracks in race order (currently in numerical order, may make this more random later)
 static const int trackOrder[TOURNAMENT_RACES] = { 0, 1, 2, 3, 4, 5 };
 
+// The vehicles (0-14: 3 models in 5 colours)
+#define TOURNAMENT_VEHICLES 15
+
+// A tournament saved on the memory card (between two of its races)
+#define TOURNAMENT_SAVE_MAGIC   0x54524E59      // "TRNY"
+#define TOURNAMENT_SAVE_VERSION 1
+
+typedef struct {
+    int magic;
+    int version;
+    int id;                                                             // Tournament 1 or 2 (0 or 1)
+    int raceIndex;                                                      // The next race (1-5: saved after a race)
+    int playerVehicle;
+    int aiVehicle[NUM_AI_RACERS];
+    int scores[TOURNAMENT_COMPETITORS];
+    unsigned char results[TOURNAMENT_RACES][TOURNAMENT_COMPETITORS];
+    int checksum;                                                       // Checksum of everything above
+} TournamentSave;
+
 
 // Start a new tournament (no points, the first race)
 void Tournament_Begin(int id)
@@ -260,4 +279,174 @@ void Tournament_PrintResults(void)
     {
         printf("  %d %-16s %d\n", pos + 1, Tournament_CompetitorName(order[pos]), tournament.scores[order[pos]]);
     }
+}
+
+
+// Can the tournament be saved now (between two of its races: after a race, before the next one)
+int Tournament_CanSave(void)
+{
+    return tournament.active && !tournament.raceFinalised && tournament.raceIndex > 0 && tournament.raceIndex < TOURNAMENT_RACES;
+}
+
+
+// The checksum of a save (of everything before its checksum)
+static int SaveChecksum(const TournamentSave *save)
+{
+    const unsigned char *bytes = (const unsigned char *)save;
+    unsigned long sum = 0x5A17;
+    int i;
+
+    for (i = 0; i < (int)((const unsigned char *)&save->checksum - bytes); i++)
+    {
+        sum = sum * 31 + bytes[i];
+    }
+
+    return (int)(sum & 0x7FFFFFFF);
+}
+
+
+// Put the tournament into a save slots data (returns the size used, or 0 if it can't be saved now)
+int Tournament_ToSave(unsigned char *data, int size)
+{
+    TournamentSave save;
+    int i;
+
+    if (!Tournament_CanSave() || size < (int)sizeof(TournamentSave))
+    {
+        return 0;
+    }
+
+    memset((unsigned char *)&save, 0, sizeof(save));
+    save.magic = TOURNAMENT_SAVE_MAGIC;
+    save.version = TOURNAMENT_SAVE_VERSION;
+    save.id = tournament.id;
+    save.raceIndex = tournament.raceIndex;
+    save.playerVehicle = tournament.playerVehicle;
+
+    for (i = 0; i < NUM_AI_RACERS; i++)
+    {
+        save.aiVehicle[i] = tournament.aiVehicle[i];
+    }
+
+    for (i = 0; i < TOURNAMENT_COMPETITORS; i++)
+    {
+        save.scores[i] = tournament.scores[i];
+    }
+
+    memcpy((unsigned char *)save.results, (unsigned char *)tournament.results, sizeof(save.results));
+    save.checksum = SaveChecksum(&save);
+
+    memcpy(data, (unsigned char *)&save, sizeof(save));
+    return sizeof(save);
+}
+
+
+// Is a saved tournament complete and correct (the races before the next one each have every
+// position once, the others none, and the points match the positions)
+static int IsValidSave(const TournamentSave *save)
+{
+    int r, c;
+
+    if (save->magic != TOURNAMENT_SAVE_MAGIC || save->version != TOURNAMENT_SAVE_VERSION || save->checksum != SaveChecksum(save))
+    {
+        return 0;
+    }
+
+    if (save->id < 0 || save->id >= TOURNAMENT_COUNT || save->raceIndex < 1 || save->raceIndex >= TOURNAMENT_RACES)
+    {
+        return 0;
+    }
+
+    if (save->playerVehicle < 0 || save->playerVehicle >= TOURNAMENT_VEHICLES)
+    {
+        return 0;
+    }
+
+    for (c = 0; c < NUM_AI_RACERS; c++)
+    {
+        if (save->aiVehicle[c] < 0 || save->aiVehicle[c] >= TOURNAMENT_VEHICLES)
+        {
+            return 0;
+        }
+    }
+
+    for (r = 0; r < TOURNAMENT_RACES; r++)
+    {
+        int seen[TOURNAMENT_COMPETITORS + 1];
+
+        for (c = 0; c <= TOURNAMENT_COMPETITORS; c++)
+        {
+            seen[c] = 0;
+        }
+
+        for (c = 0; c < TOURNAMENT_COMPETITORS; c++)
+        {
+            int pos = save->results[r][c];
+
+            if (r >= save->raceIndex)
+            {
+                if (pos != 0)
+                {
+                    return 0;
+                }
+            }
+            else if (pos < 1 || pos > TOURNAMENT_COMPETITORS || seen[pos]++)
+            {
+                return 0;
+            }
+        }
+    }
+
+    for (c = 0; c < TOURNAMENT_COMPETITORS; c++)
+    {
+        int points = 0;
+
+        for (r = 0; r < save->raceIndex; r++)
+        {
+            points += Tournament_RacePoints(save->results[r][c]);
+        }
+
+        if (points != save->scores[c])
+        {
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
+
+// Carry on a tournament from a save slots data (returns 0, and changes nothing, if the save isn't a valid tournament)
+// It carries on at the next race (NEXT RACE on the track screen)
+int Tournament_FromSave(const unsigned char *data)
+{
+    TournamentSave save;
+    int i, c;
+
+    memcpy((unsigned char *)&save, (unsigned char *)data, sizeof(save));
+    if (!IsValidSave(&save))
+    {
+        return 0;
+    }
+
+    Tournament_Begin(save.id);
+    tournament.raceIndex = save.raceIndex;
+    tournament.playerVehicle = save.playerVehicle;
+
+    for (i = 0; i < NUM_AI_RACERS; i++)
+    {
+        tournament.aiVehicle[i] = save.aiVehicle[i];
+    }
+    
+    for (c = 0; c < TOURNAMENT_COMPETITORS; c++)
+    {
+        tournament.scores[c] = save.scores[c];
+
+        // The last race's order (from the positions in it)
+        tournament.lastOrder[save.results[save.raceIndex - 1][c] - 1] = c;
+    }
+    memcpy((unsigned char *)tournament.results, (unsigned char *)save.results, sizeof(tournament.results));
+
+    selectedVehicleIndex = tournament.playerVehicle;
+    return 1;
 }

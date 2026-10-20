@@ -1,19 +1,22 @@
 #include <libps.h>
-#include "ai_racer.h"
-#include "vehicle_colour.h"
-#include "player.h"
-#include "game.h"
-#include "gear.h"
+#include "../engine/calculations.h"
+#include "../engine/state_manager.h"
 #include "../engine/graphics.h"
-#include "world.h"
-#include "ground.h"
 #include "../engine/model.h"
+#include "game.h"
+#include "ground.h"
+#include "world.h"
+#include "player.h"
+#include "ai_racer.h"
+#include "ai_drivers.h"
 #include "link_race.h"
+#include "gear.h"
+#include "vehicle_colour.h"
 
 #define LOOKAHEAD_DIST 1800
 #define ADVANCE_DIST 600
-#define BRAKE_SPEED 150
-#define AVOID_DIST 2500
+#define BRAKE_SPEED 150      // The usual speed the AI brakes for corners above (each driver has their own)
+#define AVOID_DIST 2500      // The usual distance the AI steers around cars (each driver has their own, never more than this)
 
 // Trigger-detection probe distances
 // Two probe points are projected ahead-left and ahead-right of the car
@@ -387,11 +390,44 @@ void ResolveAIVehicles(int vehicles[NUM_AI_RACERS])
 }
 
 
+// A percentage of a value
+static int Percent(int value, int pct)
+{
+    return value * pct / 100;
+}
+
+
+// An AI racers handling (its cars AI handling, changed by its drivers personality)
+// A driver with a form spread is a little faster or slower each race
+static void TuneVehicle(AIRacer *ai, const VehicleAttributes *base, const DriverProfile *driver)
+{
+    int speedPct = driver->speedPct;
+
+    if (driver->formSpread > 0)
+    {
+        speedPct += RandomNumber() % (2 * driver->formSpread + 1) - driver->formSpread;
+    }
+
+    ai->tuned = *base;
+    ai->tuned.maxSpeed            = Percent(base->maxSpeed, speedPct);
+    ai->tuned.acceleration        = base->acceleration + driver->accelAdj;
+    ai->tuned.brakeDeceleration   = base->brakeDeceleration + driver->brakeDecelAdj;
+    ai->tuned.maxGrip             = Percent(base->maxGrip, driver->gripPct);
+    ai->tuned.minGrip             = Percent(base->minGrip, driver->gripPct);
+    ai->tuned.steeringResponse    = Percent(base->steeringResponse, driver->steerPct);
+    ai->tuned.minSteeringResponse = Percent(base->minSteeringResponse, driver->steerPct);
+    ai->attribs = &ai->tuned;
+}
+
+
 // Initialise all AI-controlled racers at their starting positions and reset their runtime state
 // Each AI racer uses the same vehicle throughout the tournament
 void InitialiseAIRacers(const int *lockedVehicles) {
     int i;
     int vehicles[NUM_AI_RACERS];
+
+    // The drivers form and mistakes are different each race
+    SeedRandom((unsigned long)frameNumber * 2654435761UL + (unsigned long)gameMs);
 
     if (lockedVehicles)
     {
@@ -448,26 +484,31 @@ void InitialiseAIRacers(const int *lockedVehicles) {
         aiRacers[i].recoverTimer = 0;
         aiRacers[i].braking = 0;
 
-        // Stagger stuck checks so all three racers don't fire the same frame
+        // Stagger stuck checks so all three racers dont fire the same frame
         aiRacers[i].stuckTimer = 60 + i * 20;
         aiRacers[i].lastPosX = start->x;
         aiRacers[i].lastPosZ = start->z;
 		
-		// Assign vehicle-specific handling and suspension settings
-        aiRacers[i].attribs = aiVehicleAttribs[i];
+		// No mistake decided yet
+        aiRacers[i].mistakeWaypoint = -1;
+        aiRacers[i].mistake = 0;
+
+		// Assign vehicle-specific handling (changed by its drivers personality) and suspension settings
+        TuneVehicle(&aiRacers[i], aiVehicleAttribs[i], &aiDrivers[i]);
         aiRacers[i].suspension = aiVehicleSuspensions[i];
     }
 }
 
 
-// Avoidance — steer around any car (AI or player) directly ahead within AVOID_DIST
-// Uses racer index to break ties (even racers prefer right, odd prefer left)
+// Avoidance — steer around any car (AI or player) directly ahead within the drivers avoid distance
+// (a shorter distance passes closer). Uses racer index to break ties (even racers prefer right, odd prefer left)
 static int ComputeAvoidance(AIRacer *ai, int racerIdx) {
-    
+
 	// Forward direction vector of this AI racer
 	long fwdX = ai->player.gsObjectCoord.coord.m[0][2];
     long fwdZ = ai->player.gsObjectCoord.coord.m[2][2];
-    
+    long avoidDist = aiDrivers[racerIdx].avoidDist;
+
 	long dx, dz, dot, cross, absDX, absDZ;
     int j;
 
@@ -498,7 +539,7 @@ static int ComputeAvoidance(AIRacer *ai, int racerIdx) {
         absDZ = dz < 0 ? -dz : dz;
 		
 		// Ignore racers outside the avoidance zone
-        if (absDX > AVOID_DIST || absDZ > AVOID_DIST) 
+        if (absDX > avoidDist || absDZ > avoidDist)
 		{
 			continue;
 		}
@@ -539,7 +580,7 @@ static int ComputeAvoidance(AIRacer *ai, int racerIdx) {
             if (dot > 0) {
                 absDX = dx < 0 ? -dx : dx;
                 absDZ = dz < 0 ? -dz : dz;
-                if (absDX <= AVOID_DIST && absDZ <= AVOID_DIST) {
+                if (absDX <= avoidDist && absDZ <= avoidDist) {
                     cross = (fwdZ * (dx >> 5)) - (fwdX * (dz >> 5));
                     
 					if (cross > 0) 
@@ -1131,6 +1172,7 @@ void UpdateAIRacers(void) {
         int steerWpIdx, steer, isBraking, movDir;
         long dX, dZ, absDX, absDZ;
         long speedBefore;
+        const DriverProfile *driver = &aiDrivers[i];
 
         ai = &aiRacers[i];
 
@@ -1167,34 +1209,43 @@ void UpdateAIRacers(void) {
 
         steer = ComputeSteering(&ai->player.gsObjectCoord, trackWaypoints[steerWpIdx].x, trackWaypoints[steerWpIdx].z);
 
-        // Smooth steering — always interpolate toward the target at a fixed rate
+        // Smooth steering — always interpolate toward the target at the drivers rate
         // Bidirectional lerp prevents the discrete jumps in ComputeSteering output
         // (0 / ±14 / ±26 / ±38) from producing visible frame-to-frame twitching
         {
-            if (ai->steerSmooth < steer) 
-			{ 
-				ai->steerSmooth += 4; 
-				if (ai->steerSmooth > steer) 
+            if (ai->steerSmooth < steer)
+			{
+				ai->steerSmooth += driver->steerRate;
+				if (ai->steerSmooth > steer)
 				{
-					ai->steerSmooth = steer; 
+					ai->steerSmooth = steer;
 				}
 			}
-			else if (ai->steerSmooth > steer) 
-			{ 
-				ai->steerSmooth -= 4;
-				if (ai->steerSmooth < steer) 
+			else if (ai->steerSmooth > steer)
+			{
+				ai->steerSmooth -= driver->steerRate;
+				if (ai->steerSmooth < steer)
 				{
-					ai->steerSmooth = steer; 
+					ai->steerSmooth = steer;
 				}
 			}
 		}
 
-        // Brake for medium and sharp corners and also predict-brake before
-        // the next waypoint when it requires a sharp turn.
+        // A mistake (the driver misses the braking point for the corner at this waypoint)
+        // Decided once for each waypoint, so it is the whole approach to the corner
+        if (ai->mistakeWaypoint != ai->waypointIndex)
+        {
+            ai->mistakeWaypoint = ai->waypointIndex;
+            ai->mistake = (driver->mistakeChance > 0) && ((RandomNumber() & 255) < driver->mistakeChance);
+        }
+
+        // Brake for medium and sharp corners (how hard it steers, the drivers corner steer) and also
+        // predict-brake before the next waypoint when it requires a sharp turn (not when it is making
+        // A mistake (then it only brakes once it is in the corner). Only above the drivers brake speed)
         {
             int absRaw = steer < 0 ? -steer : steer;
-            int predictBrake = (absDX < LOOKAHEAD_DIST * 3 && absDZ < LOOKAHEAD_DIST * 3) && IsSharpCorner(ai);
-            isBraking = ((absRaw >= 26 || predictBrake) && ai->player.speed > BRAKE_SPEED) ? 1 : 0;
+            int predictBrake = (absDX < LOOKAHEAD_DIST * 3 && absDZ < LOOKAHEAD_DIST * 3) && !ai->mistake && IsSharpCorner(ai);
+            isBraking = ((absRaw >= driver->cornerBrakeSteer || predictBrake) && ai->player.speed > driver->brakeSpeed) ? 1 : 0;
         }
         ai->braking = isBraking;
 

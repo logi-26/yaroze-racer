@@ -93,6 +93,14 @@ typedef enum
 	TXT_PLAYER_WINS,
 	TXT_PRESS_X_OR_START,
 
+    /*****************************************************
+    TOURNAMENT SAVES
+    *****************************************************/
+	TXT_TOURNAMENT_PROMPT_SAVE,
+	TXT_MEMCARD_SAVE_WHICH,
+	TXT_MEMCARD_DONT_SAVE,
+	TXT_SAVE_CANT_LOAD,
+
     TXT_COUNT
 
 } TextID;
